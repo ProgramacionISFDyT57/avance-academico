@@ -8,7 +8,7 @@ const pgp = pg();
 const app = express();
 app.use(bodyParser.json());
 const cn = {
-    host: 'localhost', // 'localhost' is the default;
+    host: '172.16.8.193', // 'localhost' is the default;
     port: 5432, // 5432 is the default;
     database: 'instituto',
     user: 'postgres',
