@@ -1,7 +1,7 @@
 import * as express from 'express';
 import * as bodyParser from 'body-parser';
 import * as pg from 'pg-promise';
-import { TipoMateria, Materia, Carrera, CarreraAbierta, InscripcionCarrera } from "./modelo";
+import { TipoMateria, Materia, Carrera, CarreraAbierta, InscripcionCarrera, Usuario } from "./modelo";
 // import { UsuariosController } from './controller/usuarios';
 // import { CarrerasController } from './controller/carreras';
 const pgp = pg();
@@ -357,39 +357,67 @@ app.post("/inscripciones_carreras", (req, res) => {
                             FROM carreras_abiertas CA
                             WHERE CURRENT_TIMESTAMP BETWEEN CA.fecha_inicio AND CA.fecha_limite
                             AND id = $1`, [ca.id_carrera_abierta])
-                .then((data) => {
-                    if (data) {
-                        db.one(`INSERT INTO inscripciones_carreras (id_alumno, id_carrera_abierta) 
+                    .then((data) => {
+                        if (data) {
+                            db.one(`INSERT INTO inscripciones_carreras (id_alumno, id_carrera_abierta) 
                                 VALUES ($1, $2) RETURNING ID`, [ca.id_alumno, ca.id_carrera_abierta])
-                            .then((data) => {
-                                res.status(200).json({
-                                    mensaje: null,
-                                    datos: data
+                                .then((data) => {
+                                    res.status(200).json({
+                                        mensaje: null,
+                                        datos: data
+                                    });
+                                })
+                                .catch((err) => {
+                                    res.status(500).json({
+                                        mensaje: err,
+                                        datos: null
+                                    });
                                 });
-                            })
-                            .catch((err) => {
-                                res.status(500).json({
-                                    mensaje: err,
-                                    datos: null
-                                });
+                        } else {
+                            res.status(400).json({
+                                mensaje: 'La carrera no se encuentra abierta',
+                                datos: null
                             });
-                    } else {
-                        res.status(400).json({
-                            mensaje: 'La carrera no se encuentra abierta',
+                        }
+                    })
+                    .catch((err) => {
+                        res.status(500).json({
+                            mensaje: err,
                             datos: null
                         });
-                    }
-                })
-                .catch((err) => {
-                    res.status(500).json({
-                        mensaje: err,
-                        datos: null
                     });
-                });
             }
         })
 
 });
 app.listen(3000, () => {
     console.log("Servidor escuchando en le puerto 3000");
+});
+
+/// CREAR USUARIOS
+
+app.post("/usuarios", (req, res) => {
+    const usuario: Usuario = new Usuario();
+    usuario.email = req.body.email;
+    usuario.clave = req.body.clave;
+    usuario.nombre = req.body.nombre;
+    usuario.apellido = req.body.apellido;
+    usuario.fecha_nacimiento = req.body.fecha_nacimento;
+    usuario.fecha_alta = req.body.alta;
+    usuario.id_rol = req.body.id_rol;
+    usuario.id = req.body.id;
+
+    db.one('INSERT INTO usuarios (id, email, clave, nombre, apellido, fecha_nacimiento, fecha_alta, id_rol) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING ID', [usuario.id, usuario.email, usuario.clave, usuario.nombre, usuario.apellido, usuario.fecha_nacimiento, usuario.fecha_alta, usuario.id_rol ])
+        .then((data) => {
+            res.status(200).json({
+                mensaje: null,
+                datos: data
+            });
+        })
+        .catch((err) => {
+            res.status(500).json({
+                mensaje: err,
+                datos: null
+            });
+        });
 });
