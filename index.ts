@@ -21,12 +21,12 @@ const materiasController = new MateriasController(db);
 // TIPOS DE MATERIAS
 app.get("/tipos_materia", materiasController.ver_tipos_materias);
 app.post("/tipos_materia", materiasController.crear_tipo_materia);
-app.put("/tipos_materia/:id", materiasController.insertar_tipo_materia);
+app.put("/tipos_materia/:id", materiasController.modificar_tipo_materia);
 app.delete("/tipos_materia/:id", materiasController.borrar_tipo_materia);
 // MATERIAS
-app.get("/materias", materiasController.materias);
-app.post("/materias", materiasController.nueva_materia);
-app.put("/materias/:id", materiasController.id_materia);
+app.get("/materias", materiasController.ver_materias);
+app.post("/materias", materiasController.crear_materia);
+app.put("/materias/:id", materiasController.modificar_materia);
 app.delete("/materias/:id", materiasController.borrar_materia);
 // CARRERAS
 // app.get("/carreras", (req, res) => {

@@ -8,14 +8,14 @@ export class MateriasController {
         this.db = db;
         this.ver_tipos_materias = this.ver_tipos_materias.bind(this);
         this.crear_tipo_materia = this.crear_tipo_materia.bind(this);
-        this.insertar_tipo_materia = this.insertar_tipo_materia.bind(this);
-        this.materias = this.materias.bind(this);
+        this.modificar_tipo_materia = this.modificar_tipo_materia.bind(this);
+        this.ver_materias = this.ver_materias.bind(this);
         this.borrar_tipo_materia.bind(this);
-        this.nueva_materia.bind(this);
-        this.id_materia.bind(this);
+        this.crear_materia.bind(this);
+        this.modificar_materia.bind(this);
         this.borrar_materia.bind(this);
     }
-    public materias(req: Request, res: Response){
+    public ver_materias(req: Request, res: Response){
         this.db.manyOrNone(`SELECT id, nombre, 'año' FROM materias ORDER BY nombre`)
         .then((data) => {
             res.status(200).json({
@@ -61,7 +61,7 @@ export class MateriasController {
                 });
         });
     }
-    public insertar_tipo_materia(req: Request, res: Response){
+    public modificar_tipo_materia(req: Request, res: Response){
         const id = +req.params.id;
         const tipo_materia: TipoMateria = req.body.tipo_materia;
         if (id) {
@@ -108,7 +108,7 @@ export class MateriasController {
             });
         }
     }
-    public nueva_materia(req: Request, res: Response){
+    public crear_materia(req: Request, res: Response){
         const materia: Materia = req.body.tipo_materia;
         this.db.one('INSERT INTO materias (nombre, año, id_carrera, id_tipo) VALUES ($1, $2, $3, $4) RETURNING ID', [materia.nombre, materia.año, materia.id_carrera, materia.id_tipo])
             .then((data) => {
@@ -124,7 +124,7 @@ export class MateriasController {
                 });
             });
     }
-    public id_materia(req: Request, res: Response){
+    public modificar_materia(req: Request, res: Response){
         const id = +req.params.id;
         const materia: Materia = req.body.tipo_materia;
         if (id) {
