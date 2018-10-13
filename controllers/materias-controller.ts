@@ -1,6 +1,6 @@
 import {IDatabase} from 'pg-promise';
 import {Request, Response} from 'express';
-import {TipoMateria, Materia} from "./modelo";   //revisar esto que no me reconoce './modelo'
+import {TipoMateria, Materia} from "../modelo";   //revisar esto que no me reconoce './modelo'
 export class MateriasController {
     private db:IDatabase<any>;
 
