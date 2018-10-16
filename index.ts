@@ -6,6 +6,7 @@ import { TipoMateria, Materia, Carrera, CarreraAbierta, InscripcionCarrera } fro
 // import { CarrerasController } from './controller/carreras';
 const pgp = pg();
 const app = express();
+const port = process.env.PORT;
 app.use(bodyParser.json());
 const cn = {
     host: 'localhost', // 'localhost' is the default;
@@ -390,6 +391,6 @@ app.post("/inscripciones_carreras", (req, res) => {
         })
 
 });
-app.listen(3000, () => {
-    console.log("Servidor escuchando en le puerto 3000");
+app.listen(port, () => {
+    console.log("Servidor escuchando en le puerto ", + port );
 });
