@@ -397,15 +397,8 @@ app.listen(3000, () => {
 /// CREAR USUARIOS
 
 app.post("/usuarios", (req, res) => {
-    const usuario: Usuario = new Usuario();
-    usuario.email = req.body.email;
-    usuario.clave = req.body.clave;
-    usuario.nombre = req.body.nombre;
-    usuario.apellido = req.body.apellido;
-    usuario.fecha_nacimiento = req.body.fecha_nacimento;
-    usuario.fecha_alta = req.body.alta;
-    usuario.id_rol = req.body.id_rol;
-    usuario.id = req.body.id;
+    const usuario: Usuario = req.body.usuario;
+    
 
     db.one('INSERT INTO usuarios (id, email, clave, nombre, apellido, fecha_nacimiento, fecha_alta, id_rol) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING ID', [usuario.id, usuario.email, usuario.clave, usuario.nombre, usuario.apellido, usuario.fecha_nacimiento, usuario.fecha_alta, usuario.id_rol ])
         .then((data) => {
