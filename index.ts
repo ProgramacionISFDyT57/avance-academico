@@ -394,14 +394,33 @@ app.listen(3000, () => {
     console.log("Servidor escuchando en le puerto 3000");
 });
 
+
+
 /// CREAR USUARIOS
 
 app.post("/usuarios", (req, res) => {
     const usuario: Usuario = req.body.usuario;
-    
 
-    db.one('INSERT INTO usuarios (id, email, clave, nombre, apellido, fecha_nacimiento, fecha_alta, id_rol) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING ID', [usuario.id, usuario.email, usuario.clave, usuario.nombre, usuario.apellido, usuario.fecha_nacimiento, usuario.fecha_alta, usuario.id_rol ])
+
+    db.one('INSERT INTO usuarios (id, email, clave, nombre, apellido, fecha_nacimiento, fecha_alta, id_rol) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING ID', [usuario.id, usuario.email, usuario.clave, usuario.nombre, usuario.apellido, usuario.fecha_nacimiento, usuario.fecha_alta, usuario.id_rol])
         .then((data) => {
+
+            if (data.id_rol === 4) {
+                db.one('INSERT INTO profedores (id_usuario) VALUES ($1) RETURNING ID', [usuario.id])
+                    .then((data) => {
+
+                    }
+                )
+            }
+
+            if (data.id_rol === 5) {
+                db.one('INSERT INTO alumnos (id_usuario) VALUES ($1) RETURNING ID', [usuario.id])
+                    .then((data) => {
+
+                    }
+                )
+
+            }
             res.status(200).json({
                 mensaje: null,
                 datos: data
