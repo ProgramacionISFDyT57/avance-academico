@@ -384,6 +384,44 @@ app.post("/inscripciones_carreras", (req, res) => {
         })
 
 });
+
+//Definir correlativa
+
+app.post('/correlativas', function (req, res) {
+    const idmateria = req.body.mt
+    const idcorrelativa = req.body.cr
+    db.manyOrNone(`SELECT id_carrera,año 
+        FROM materias WHERE id =$1`, [idmateria])
+        .then(resultado1 => {
+            db.manyOrNone(`SELECT id_carrera, año 
+                FROM materias WHERE id =$2`, [idcorrelativa])
+                .then(resultado2 => {
+                    if (resultado1.id_carrera === resultado2.id_carrera) {
+                        if (resultado2.año > resultado1.año) {
+                            db.none(`INSERT INTO correlativas (id_materia, id_correlativa) 
+                                VALUES ($1, $2)`, [idmateria, idcorrelativa])
+                                .then((data) => {
+                                    res.status(200).json({
+                                        mensaje: 'insertado correctamente',
+                                        datos: true,
+                                    });
+                                })
+                        } else {
+                            res.status(400).json({
+                                mensaje: 'Correlativa ilógica',
+                                datos: null,
+                            })
+                        }
+                    } else {
+                        res.status(400).json({
+                            mensaje: 'Materias de diferentes carreras',
+                            datos: null,
+                        })
+                    }
+                })
+        })
+});
+
 app.listen(port, () => {
     console.log("Servidor escuchando en le puerto ", + port );
 });
