@@ -6,15 +6,9 @@ import { TipoMateria, Materia, Carrera, CarreraAbierta, InscripcionCarrera } fro
 import { CarrerasController } from './controllers/carreras-controller';
 const pgp = pg();
 const app = express();
+const port = process.env.PORT;
 app.use(bodyParser.json());
-const cn = {
-    host: '172.16.8.193', // 'localhost' is the default;
-    port: 5432, // 5432 is the default;
-    database: 'instituto',
-    user: 'postgres',
-    password: '123'
-}
-const db = pgp(cn);
+const db = pgp(process.env.DATABASE_URL);
 // const usuariosController = new UsuariosController(db);
 const carrerasController = new CarrerasController(db);
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -391,6 +385,6 @@ app.post("/inscripciones_carreras", (req, res) => {
         })
 
 });
-app.listen(3000, () => {
-    console.log("Servidor escuchando en le puerto 3000");
+app.listen(port, () => {
+    console.log("Servidor escuchando en le puerto ", + port );
 });
