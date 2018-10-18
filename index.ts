@@ -97,7 +97,7 @@ app.delete("/tipos_materia/:id", (req, res) => {
 });
 // MATERIAS
 app.get("/materias", (req, res) => {
-    db.manyOrNone('SELECT id, nombre, año FROM materias ORDER BY nombre')
+    db.manyOrNone(`SELECT id, nombre, 'año' FROM materias ORDER BY nombre`)
         .then((data) => {
             res.status(200).json({
                 mensaje: null,
