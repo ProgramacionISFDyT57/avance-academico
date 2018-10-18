@@ -15,5 +15,6 @@
 ],
 "files": [
     "index.ts",
+    "controllers/carreras-controller.ts"
     ]
 }

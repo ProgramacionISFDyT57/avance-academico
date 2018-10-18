@@ -3,14 +3,14 @@ import * as bodyParser from 'body-parser';
 import * as pg from 'pg-promise';
 import { TipoMateria, Materia, Carrera, CarreraAbierta, InscripcionCarrera } from "./modelo";
 // import { UsuariosController } from './controller/usuarios';
-// import { CarrerasController } from './controller/carreras';
+import { CarrerasController } from './controllers/carreras-controller';
 const pgp = pg();
 const app = express();
 const port = process.env.PORT;
 app.use(bodyParser.json());
 const db = pgp(process.env.DATABASE_URL);
 // const usuariosController = new UsuariosController(db);
-// const carrerasController = new CarrerasController(db);
+const carrerasController = new CarrerasController(db);
 /////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////// RUTAS /////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -175,21 +175,22 @@ app.delete("/materias/:id", (req, res) => {
     }
 });
 // CARRERAS
-app.get("/carreras", (req, res) => {
-    db.manyOrNone('SELECT id, nombre, duracion, cantidad_materias FROM carreras ORDER BY nombre')
-        .then((data) => {
-            res.status(200).json({
-                mensaje: null,
-                datos: data
-            });
-        })
-        .catch((err) => {
-            res.status(500).json({
-                mensaje: err,
-                datos: null
-            });
-        });
-});
+// app.get("/carreras", (req, res) => {
+//     db.manyOrNone('SELECT id, nombre, duracion, cantidad_materias FROM carreras ORDER BY nombre')
+//         .then((data) => {
+//             res.status(200).json({
+//                 mensaje: null,
+//                 datos: data
+//             });
+//         })
+//         .catch((err) => {
+//             res.status(500).json({
+//                 mensaje: err,
+//                 datos: null
+//             });
+//         });
+// });
+app.get('/carreras', carrerasController.VerCarreras);
 app.post("/carreras", (req, res) => {
     const carrera: Carrera = req.body.carrera;
     db.one('INSERT INTO carreras (nombre, duracion, cantidad_materias) VALUES ($1, $2, $3) RETURNING ID;',
