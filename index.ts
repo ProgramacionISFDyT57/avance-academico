@@ -1,7 +1,7 @@
 import * as express from 'express';
 import * as bodyParser from 'body-parser';
 import * as pg from 'pg-promise';
-import { TipoMateria, Materia, Carrera, CarreraAbierta, InscripcionCarrera } from "./modelo";
+import { TipoMateria, Materia, Carrera, CarreraAbierta, InscripcionCarrera, Cursada } from "./modelo";
 // import { UsuariosController } from './controller/usuarios';
 import { CarrerasController } from './controllers/carreras-controller';
 const pgp = pg();
@@ -352,39 +352,101 @@ app.post("/inscripciones_carreras", (req, res) => {
                             FROM carreras_abiertas CA
                             WHERE CURRENT_TIMESTAMP BETWEEN CA.fecha_inicio AND CA.fecha_limite
                             AND id = $1`, [ca.id_carrera_abierta])
-                .then((data) => {
-                    if (data) {
-                        db.one(`INSERT INTO inscripciones_carreras (id_alumno, id_carrera_abierta) 
+                    .then((data) => {
+                        if (data) {
+                            db.one(`INSERT INTO inscripciones_carreras (id_alumno, id_carrera_abierta) 
                                 VALUES ($1, $2) RETURNING ID`, [ca.id_alumno, ca.id_carrera_abierta])
-                            .then((data) => {
-                                res.status(200).json({
-                                    mensaje: null,
-                                    datos: data
+                                .then((data) => {
+                                    res.status(200).json({
+                                        mensaje: null,
+                                        datos: data
+                                    });
+                                })
+                                .catch((err) => {
+                                    res.status(500).json({
+                                        mensaje: err,
+                                        datos: null
+                                    });
                                 });
-                            })
-                            .catch((err) => {
-                                res.status(500).json({
-                                    mensaje: err,
-                                    datos: null
-                                });
+                        } else {
+                            res.status(400).json({
+                                mensaje: 'La carrera no se encuentra abierta',
+                                datos: null
                             });
-                    } else {
-                        res.status(400).json({
-                            mensaje: 'La carrera no se encuentra abierta',
+                        }
+                    })
+                    .catch((err) => {
+                        res.status(500).json({
+                            mensaje: err,
                             datos: null
                         });
-                    }
-                })
-                .catch((err) => {
-                    res.status(500).json({
-                        mensaje: err,
-                        datos: null
                     });
-                });
             }
         })
 
 });
+
+
+// CURSADAS ABIERTAS
+app.post("/cursadas", (req, res) => {
+    const cursada: Cursada = req.body.cursada;
+    const año = new Date().getFullYear();
+    if (cursada.año < año) {
+        res.status(400).json({
+            mensaje: 'El año no puede ser menor que el año actual',
+            datos: null
+        });
+    } else {
+        const fecha_inicio = new Date(cursada.fecha_inicio);
+        const fecha_limite = new Date(cursada.fecha_limite);
+        if (fecha_inicio > fecha_limite) {
+            res.status(400).json({
+                mensaje: 'La fecha de inicio no puede ser superior a la fecha límite',
+                datos: null
+            });
+        } else {
+            const fecha_actual = new Date();
+            if (fecha_actual > fecha_limite) {
+                res.status(400).json({
+                    mensaje: 'La fecha límite no puede ser menor a la actual',
+                    datos: null
+                });
+            } else {
+                db.oneOrNone(`SELECT id FROM cursadas 
+                        WHERE id_materia = $1 AND año = $2`, [cursada.id_materia, cursada.año])
+                    .then((data) => {
+                        if (data) {
+                            res.status(400).json({
+                                mensaje: 'La cursada ya se encuentra abierta para inscripción',
+                                datos: null
+                            });
+                        } else {
+                            db.one(`INSERT INTO cursadas (id_materia, id_profesor, año, fecha_inicio, fecha_limite) 
+                                VALUES ($1, $2, $3, $4, $5) RETURNING ID`,
+                                [cursada.id_materia, cursada.id_profesor, cursada.año, cursada.fecha_inicio, cursada.fecha_limite])
+                                .then((data) => {
+                                    res.status(200).json({
+                                        mensaje: null,
+                                        datos: data
+                                    });
+                                })
+                                .catch((err) => {
+                                    res.status(500).json({
+                                        mensaje: err,
+                                        datos: null
+                                    });
+                                });
+                        }
+                    })
+                    .catch((err) => {
+                        res.status(500).json({
+                            mensaje: err,
+                            datos: null
+                        });
+                    });
+            }
+        }
+    }
 
 //Definir correlativa
 
@@ -421,6 +483,7 @@ app.post('/correlativas', function (req, res) {
                     }
                 })
         })
+
 });
 
 app.listen(port, () => {
