@@ -7,6 +7,7 @@ export class CarrerasController {
     constructor(db:IDatabase<any>) {
         this.db = db;
         this.BorrarInscripcionCarrera = this.BorrarInscripcionCarrera.bind(this);
+        this.VerCarreras = this.VerCarreras.bind(this);
     }
 
     public BorrarInscripcionCarrera(req:Request, res:Response) {
@@ -32,5 +33,22 @@ export class CarrerasController {
                 datos: null
             })
         }
+    }
+
+    public VerCarreras(req: Request, res: Response) {
+        this.db.manyOrNone('SELECT id, nombre, duracion, cantidad_materias FROM carreras ORDER BY nombre ASC;')
+        .then(datos => {
+            res.json({
+                mensaje: 'Listado de materias',
+                datos: datos
+            })
+        })
+        .catch(err => {
+            console.error(err);
+            res.status(500).json({
+                mensaje: err.detail,
+                datos: err
+            })
+        })
     }
 }
