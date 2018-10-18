@@ -447,16 +447,16 @@ app.post("/cursadas", (req, res) => {
             }
         }
     }
-
+});
 //Definir correlativa
 
 app.post('/correlativas', function (req, res) {
     const idmateria = req.body.mt
     const idcorrelativa = req.body.cr
-    db.manyOrNone(`SELECT id_carrera,año 
+    db.one(`SELECT id_carrera,año 
         FROM materias WHERE id =$1`, [idmateria])
         .then(resultado1 => {
-            db.manyOrNone(`SELECT id_carrera, año 
+            db.one(`SELECT id_carrera, año 
                 FROM materias WHERE id =$2`, [idcorrelativa])
                 .then(resultado2 => {
                     if (resultado1.id_carrera === resultado2.id_carrera) {
