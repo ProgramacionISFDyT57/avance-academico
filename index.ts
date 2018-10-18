@@ -1,7 +1,6 @@
 import * as express from 'express';
 import * as bodyParser from 'body-parser';
 import * as pg from 'pg-promise';
-import { TipoMateria, Materia, Carrera, CarreraAbierta, InscripcionCarrera, Usuario } from "./modelo";
 import { TipoMateria, Materia, Carrera, CarreraAbierta, InscripcionCarrera, Cursada, Usuario } from "./modelo";
 // import { UsuariosController } from './controller/usuarios';
 import { CarrerasController } from './controllers/carreras-controller';
