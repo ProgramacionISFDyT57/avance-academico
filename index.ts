@@ -2,14 +2,14 @@ import * as express from 'express';
 import * as bodyParser from 'body-parser';
 import * as pg from 'pg-promise';
 import { TipoMateria, Materia, Carrera, CarreraAbierta, InscripcionCarrera, Cursada, Usuario } from "./modelo";
-// import { UsuariosController } from './controller/usuarios';
+import { UsuariosController } from './controllers/usuarios-controller';
 import { CarrerasController } from './controllers/carreras-controller';
 const pgp = pg();
 const app = express();
 const port = process.env.PORT;
 app.use(bodyParser.json());
 const db = pgp(process.env.DATABASE_URL);
-// const usuariosController = new UsuariosController(db);
+const usuariosController = new UsuariosController(db);
 const carrerasController = new CarrerasController(db);
 /////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////// RUTAS /////////////////////////////////////////
@@ -486,46 +486,9 @@ app.post('/correlativas', function (req, res) {
 
 });
 
+/// CREAR USUARIOS
+app.post("/usuarios", usuariosController.crear_usuario);
+
 app.listen(port, () => {
     console.log("Servidor escuchando en le puerto ", + port );
-});
-
-
-
-/// CREAR USUARIOS
-
-app.post("/usuarios", (req, res) => {
-    const usuario: Usuario = req.body.usuario;
-
-
-    db.one('INSERT INTO usuarios (id, email, clave, nombre, apellido, fecha_nacimiento, fecha_alta, id_rol) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING ID', [usuario.id, usuario.email, usuario.clave, usuario.nombre, usuario.apellido, usuario.fecha_nacimiento, usuario.fecha_alta, usuario.id_rol])
-        .then((data) => {
-
-            if (data.id_rol === 4) {
-                db.one('INSERT INTO profedores (id_usuario) VALUES ($1) RETURNING ID', [usuario.id])
-                    .then((data) => {
-
-                    }
-                )
-            }
-
-            if (data.id_rol === 5) {
-                db.one('INSERT INTO alumnos (id_usuario) VALUES ($1) RETURNING ID', [usuario.id])
-                    .then((data) => {
-
-                    }
-                )
-
-            }
-            res.status(200).json({
-                mensaje: null,
-                datos: data
-            });
-        })
-        .catch((err) => {
-            res.status(500).json({
-                mensaje: err,
-                datos: null
-            });
-        });
 });
