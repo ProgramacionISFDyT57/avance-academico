@@ -206,4 +206,19 @@ export class MateriasController {
                     })
             })
     }
+    public ver_correlativa(req:Request, res: Response){
+        this.db.manyOrNone(`SELECT id_materia, id_correlativa FROM correlativas ORDER BY id_materia`)
+        .then((data) => {
+            res.status(200).json({
+                mensaje: null,
+                datos: data
+            });
+        })
+        .catch((err) => {
+            res.status(500).json({
+                mensaje: err,
+                datos: null
+            });
+        });
+    }
 }
