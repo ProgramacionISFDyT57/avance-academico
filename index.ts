@@ -5,6 +5,7 @@ import { UsuariosController } from './controllers/usuarios-controller';
 import { CarrerasController } from './controllers/carreras-controller';
 import { MateriasController } from './controllers/materias-controller';
 import { CursadasController } from './controllers/cursadas-controller';
+import { MesasController } from './controllers/mesas-controller';
 const pgp = pg();
 const app = express();
 const port = process.env.PORT;
@@ -14,6 +15,7 @@ const usuariosController = new UsuariosController(db);
 const carrerasController = new CarrerasController(db);
 const materiasController = new MateriasController(db);
 const cursadasController = new CursadasController(db);
+const mesasController = new MesasController(db);
 /////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////// RUTAS /////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -45,6 +47,8 @@ app.post("/inscripciones_carreras", carrerasController.crear_inscripcion_carrera
 app.post("/cursadas", cursadasController.crear_cursada);
 // CREAR USUARIOS
 app.post("/usuarios", usuariosController.crear_usuario);
+// INSCRIPCIONES MESAS
+app.post("/inscripciones_mesas", mesasController.crear_inscripcion_mesa);
 //
 app.listen(port, () => {
     console.log("Servidor escuchando en le puerto ", + port);
