@@ -28,6 +28,8 @@ app.get("/materias", materiasController.ver_materias);
 app.post("/materias", materiasController.crear_materia);
 app.put("/materias/:id", materiasController.modificar_materia);
 app.delete("/materias/:id", materiasController.borrar_materia);
+//Definir correlativa
+app.post('/correlativas', materiasController.crear_correlativas);
 // CARRERAS
 // app.get("/carreras", (req, res) => {
 //     db.manyOrNone('SELECT id, nombre, duracion, cantidad_materias FROM carreras ORDER BY nombre')
@@ -302,43 +304,7 @@ app.post("/cursadas", (req, res) => {
         }
     }
 });
-//Definir correlativa
 
-app.post('/correlativas', function (req, res) {
-    const idmateria = req.body.mt
-    const idcorrelativa = req.body.cr
-    db.one(`SELECT id_carrera,año 
-        FROM materias WHERE id =$1`, [idmateria])
-        .then(resultado1 => {
-            db.one(`SELECT id_carrera, año 
-                FROM materias WHERE id =$2`, [idcorrelativa])
-                .then(resultado2 => {
-                    if (resultado1.id_carrera === resultado2.id_carrera) {
-                        if (resultado2.año > resultado1.año) {
-                            db.none(`INSERT INTO correlativas (id_materia, id_correlativa) 
-                                VALUES ($1, $2)`, [idmateria, idcorrelativa])
-                                .then((data) => {
-                                    res.status(200).json({
-                                        mensaje: 'insertado correctamente',
-                                        datos: true,
-                                    });
-                                })
-                        } else {
-                            res.status(400).json({
-                                mensaje: 'Correlativa ilógica',
-                                datos: null,
-                            })
-                        }
-                    } else {
-                        res.status(400).json({
-                            mensaje: 'Materias de diferentes carreras',
-                            datos: null,
-                        })
-                    }
-                })
-        })
-
-});
 
 app.listen(port, () => {
     console.log("Servidor escuchando en le puerto ", + port );
