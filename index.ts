@@ -29,6 +29,8 @@ app.get("/materias", materiasController.ver_materias);
 app.post("/materias", materiasController.crear_materia);
 app.put("/materias/:id", materiasController.modificar_materia);
 app.delete("/materias/:id", materiasController.borrar_materia);
+// CORRELATIVAS
+app.post('/correlativas', materiasController.crear_correlativas);
 // CARRERA
 app.get('/carreras', carrerasController.ver_carreras);
 app.post("/carreras", carrerasController.crear_carrera);
@@ -41,42 +43,6 @@ app.post("/carreras_abiertas", carrerasController.crear_carreras_abiertas);
 app.post("/inscripciones_carreras", carrerasController.crear_inscripcion_carrera);
 // CURSADAS ABIERTAS
 app.post("/cursadas", cursadasController.crear_cursada);
-// CORRELAVIVAS
-app.post('/correlativas', function (req, res) {
-    const idmateria = req.body.mt
-    const idcorrelativa = req.body.cr
-    db.one(`SELECT id_carrera,año 
-        FROM materias WHERE id =$1`, [idmateria])
-        .then(resultado1 => {
-            db.one(`SELECT id_carrera, año 
-                FROM materias WHERE id =$2`, [idcorrelativa])
-                .then(resultado2 => {
-                    if (resultado1.id_carrera === resultado2.id_carrera) {
-                        if (resultado2.año > resultado1.año) {
-                            db.none(`INSERT INTO correlativas (id_materia, id_correlativa) 
-                                VALUES ($1, $2)`, [idmateria, idcorrelativa])
-                                .then((data) => {
-                                    res.status(200).json({
-                                        mensaje: 'insertado correctamente',
-                                        datos: true,
-                                    });
-                                })
-                        } else {
-                            res.status(400).json({
-                                mensaje: 'Correlativa ilógica',
-                                datos: null,
-                            })
-                        }
-                    } else {
-                        res.status(400).json({
-                            mensaje: 'Materias de diferentes carreras',
-                            datos: null,
-                        })
-                    }
-                })
-        })
-
-});
 // CREAR USUARIOS
 app.post("/usuarios", usuariosController.crear_usuario);
 //
