@@ -1,6 +1,6 @@
 import {IDatabase} from 'pg-promise';
 import {Request, Response} from 'express';
-import {TipoMateria, Materia} from "../modelo";   //revisar esto que no me reconoce './modelo'
+import {TipoMateria, Materia} from "../modelo";   
 export class MateriasController {
     private db:IDatabase<any>;
 
@@ -10,10 +10,10 @@ export class MateriasController {
         this.crear_tipo_materia = this.crear_tipo_materia.bind(this);
         this.modificar_tipo_materia = this.modificar_tipo_materia.bind(this);
         this.ver_materias = this.ver_materias.bind(this);
-        this.borrar_tipo_materia.bind(this);
-        this.crear_materia.bind(this);
-        this.modificar_materia.bind(this);
-        this.borrar_materia.bind(this);
+        this.borrar_tipo_materia = this.borrar_tipo_materia.bind(this);
+        this.crear_materia = this.crear_materia.bind(this);
+        this.modificar_materia = this.modificar_materia.bind(this);
+        this.borrar_materia = this.borrar_materia.bind(this);
     }
     public ver_materias(req: Request, res: Response){
         this.db.manyOrNone(`SELECT id, nombre, 'año' FROM materias ORDER BY nombre`)
@@ -170,5 +170,40 @@ export class MateriasController {
                 datos: null
             });
         }
+    }
+    public crear_correlativas(req: Request, res: Response){
+        const idmateria = req.body.mt
+        const idcorrelativa = req.body.cr
+        this.db.one(`SELECT id_carrera,año 
+            FROM materias WHERE id =$1`, [idmateria])
+            .then(resultado1 => {
+                this.db.one(`SELECT id_carrera, año 
+                    FROM materias WHERE id =$2`, [idcorrelativa])
+                    .then(resultado2 => {
+                        if (resultado1.id_carrera === resultado2.id_carrera) {
+                            if (resultado2.año > resultado1.año) {
+                                this.db.none(`INSERT INTO correlativas (id_materia, id_correlativa) 
+                                    VALUES ($1, $2)`, [idmateria, idcorrelativa])
+                                    .then((data) => {
+                                        res.status(200).json({
+                                            mensaje: 'insertado correctamente',
+                                            datos: true,
+                                        });
+                                    })
+                            } else {
+                                res.status(400).json({
+                                    mensaje: 'Correlativa ilógica',
+                                    datos: null,
+                                })
+                            }
+                        } 
+                        else {
+                            res.status(400).json({
+                                mensaje: 'Materias de diferentes carreras',
+                                datos: null,
+                            })
+                        }
+                    })
+            })
     }
 }
