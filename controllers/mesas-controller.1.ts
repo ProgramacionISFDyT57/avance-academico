@@ -1,12 +1,30 @@
 import {IDatabase} from 'pg-promise';
 import {Request, Response} from 'express';
+import {Mesa} from "../modelo"
 
 export class MesasController {
     private db:IDatabase<any>;
 
     constructor(db:IDatabase<any>) {
         this.db = db;
-        
+        this.crear_mesa = this.crear_mesa.bind(this);
+    }
+    public crear_mesa(req: Request, res: Response){
+        const mesa: Mesa = req.body.tipo_materia;
+        this.db.one(`INSERT INTO mesas (id_materia, fecha_inicio, fecha_limite, fecha_examen, id_profesor, 
+            id_vocal1, id_vocal2) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING ID`, [mesa.id_materia, mesa.fecha_inicio, mesa.fecha_limite, mesa.fecha_examen, mesa.id_profesor, mesa.id_vocal1, mesa.id_vocal2])
+            .then((data) => {
+                res.status(200).json({
+                    mensaje: null,
+                    datos: data
+                });
+            })
+            .catch((err) => {
+                res.status(500).json({
+                    mensaje: err,
+                    datos: null
+                });
+            });
     }
 
     
