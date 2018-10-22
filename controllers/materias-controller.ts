@@ -1,51 +1,38 @@
-import {IDatabase} from 'pg-promise';
-import {Request, Response} from 'express';
-import {TipoMateria, Materia} from "../modelo";   
+import { IDatabase } from 'pg-promise';
+import { Request, Response } from 'express';
+import { TipoMateria, Materia } from "../modelo";
 export class MateriasController {
-    private db:IDatabase<any>;
+    private db: IDatabase<any>;
 
-    constructor(db:IDatabase<any>) {
+    constructor(db: IDatabase<any>) {
         this.db = db;
         this.ver_tipos_materias = this.ver_tipos_materias.bind(this);
         this.crear_tipo_materia = this.crear_tipo_materia.bind(this);
         this.modificar_tipo_materia = this.modificar_tipo_materia.bind(this);
-        this.ver_materias = this.ver_materias.bind(this);
         this.borrar_tipo_materia = this.borrar_tipo_materia.bind(this);
+        this.ver_materias = this.ver_materias.bind(this);
         this.crear_materia = this.crear_materia.bind(this);
         this.modificar_materia = this.modificar_materia.bind(this);
         this.borrar_materia = this.borrar_materia.bind(this);
-    }
-    public ver_materias(req: Request, res: Response){
-        this.db.manyOrNone(`SELECT id, nombre, 'año' FROM materias ORDER BY nombre`)
-        .then((data) => {
-            res.status(200).json({
-                mensaje: null,
-                datos: data
-            });
-        })
-        .catch((err) => {
-            res.status(500).json({
-                mensaje: err,
-                datos: null
-            });
-        });
+        this.crear_correlativas = this.crear_correlativas.bind(this);
+        this.borrar_correlativas = this.borrar_correlativas.bind(this);
     }
     public ver_tipos_materias(req: Request, res: Response) {
         this.db.manyOrNone('SELECT id, nombre FROM tipos_materias ORDER BY nombre')
-        .then((data) => {
-            res.status(200).json({
-                mensaje: null,
-                datos: data
+            .then((data) => {
+                res.status(200).json({
+                    mensaje: null,
+                    datos: data
+                });
+            })
+            .catch((err) => {
+                res.status(500).json({
+                    mensaje: err,
+                    datos: null
+                });
             });
-        })
-        .catch((err) => {
-            res.status(500).json({
-                mensaje: err,
-                datos: null
-            });
-        });
     }
-    public crear_tipo_materia(req:Request, res: Response) {
+    public crear_tipo_materia(req: Request, res: Response) {
         const tipo_materia: TipoMateria = req.body.tipo_materia;
         this.db.one('INSERT INTO tipos_materias (nombre) VALUES ($1) RETURNING ID', [tipo_materia.nombre])
             .then((data) => {
@@ -59,9 +46,9 @@ export class MateriasController {
                     mensaje: err,
                     datos: null
                 });
-        });
+            });
     }
-    public modificar_tipo_materia(req: Request, res: Response){
+    public modificar_tipo_materia(req: Request, res: Response) {
         const id = +req.params.id;
         const tipo_materia: TipoMateria = req.body.tipo_materia;
         if (id) {
@@ -85,7 +72,7 @@ export class MateriasController {
             });
         }
     }
-    public borrar_tipo_materia(req: Request, res: Response){
+    public borrar_tipo_materia(req: Request, res: Response) {
         const id = +req.params.id;
         if (id) {
             this.db.none('DELETE FROM tipos_materias WHERE id = $1', [id])
@@ -108,7 +95,22 @@ export class MateriasController {
             });
         }
     }
-    public crear_materia(req: Request, res: Response){
+    public ver_materias(req: Request, res: Response) {
+        this.db.manyOrNone(`SELECT id, nombre, 'año' FROM materias ORDER BY nombre`)
+            .then((data) => {
+                res.status(200).json({
+                    mensaje: null,
+                    datos: data
+                });
+            })
+            .catch((err) => {
+                res.status(500).json({
+                    mensaje: err,
+                    datos: null
+                });
+            });
+    }
+    public crear_materia(req: Request, res: Response) {
         const materia: Materia = req.body.tipo_materia;
         this.db.one('INSERT INTO materias (nombre, año, id_carrera, id_tipo) VALUES ($1, $2, $3, $4) RETURNING ID', [materia.nombre, materia.año, materia.id_carrera, materia.id_tipo])
             .then((data) => {
@@ -124,7 +126,7 @@ export class MateriasController {
                 });
             });
     }
-    public modificar_materia(req: Request, res: Response){
+    public modificar_materia(req: Request, res: Response) {
         const id = +req.params.id;
         const materia: Materia = req.body.tipo_materia;
         if (id) {
@@ -148,7 +150,7 @@ export class MateriasController {
             });
         }
     }
-    public borrar_materia(req: Request, res: Response){
+    public borrar_materia(req: Request, res: Response) {
         const id = +req.params.id;
         if (id) {
             this.db.none('DELETE FROM materias WHERE id = $1', [id])
@@ -171,19 +173,19 @@ export class MateriasController {
             });
         }
     }
-    public crear_correlativas(req: Request, res: Response){
-        const idmateria = req.body.mt
-        const idcorrelativa = req.body.cr
+    public crear_correlativas(req: Request, res: Response) {
+        const id_materia = req.body.id_materia
+        const id_correlativa = req.body.id_correlativa
         this.db.one(`SELECT id_carrera,año 
-            FROM materias WHERE id =$1`, [idmateria])
+            FROM materias WHERE id =$1`, [id_materia])
             .then(resultado1 => {
                 this.db.one(`SELECT id_carrera, año 
-                    FROM materias WHERE id =$2`, [idcorrelativa])
+                    FROM materias WHERE id =$2`, [id_correlativa])
                     .then(resultado2 => {
                         if (resultado1.id_carrera === resultado2.id_carrera) {
                             if (resultado2.año > resultado1.año) {
                                 this.db.none(`INSERT INTO correlativas (id_materia, id_correlativa) 
-                                    VALUES ($1, $2)`, [idmateria, idcorrelativa])
+                                    VALUES ($1, $2)`, [id_materia, id_correlativa])
                                     .then((data) => {
                                         res.status(200).json({
                                             mensaje: 'insertado correctamente',
@@ -196,7 +198,7 @@ export class MateriasController {
                                     datos: null,
                                 })
                             }
-                        } 
+                        }
                         else {
                             res.status(400).json({
                                 mensaje: 'Materias de diferentes carreras',
@@ -204,6 +206,35 @@ export class MateriasController {
                             })
                         }
                     })
+                    .catch( (err) => {
+                        res.status(500).json({
+                            mensaje: err,
+                            datos: null,
+                        });
+                    })
+            })
+            .catch( (err) => {
+                res.status(500).json({
+                    mensaje: err,
+                    datos: null,
+                });
+            })
+    }
+    public borrar_correlativas(req: Request, res: Response) {
+        const id_materia = req.body.id_materia
+        const id_correlativa = req.body.id_correlativa
+        this.db.none(`DELETE FROM corrrelativas WHERE id_materia =$1 AND id_correlativa = $2`, [id_materia, id_correlativa])
+            .then( () => {
+                res.status(200).json({
+                    mensaje: 'Eliminado correctamente',
+                    datos: true,
+                });
+            })
+            .catch( (err) => {
+                res.status(500).json({
+                    mensaje: err,
+                    datos: null,
+                });
             })
     }
 }
