@@ -10,7 +10,7 @@ export class MesasController {
         this.crear_mesa = this.crear_mesa.bind(this);
     }
     public crear_mesa(req: Request, res: Response){
-        const mesa: Mesa = req.body.tipo_materia;
+        const mesa: Mesa = req.body.mesa;
         this.db.one(`INSERT INTO mesas (id_materia, fecha_inicio, fecha_limite, fecha_examen, id_profesor, 
             id_vocal1, id_vocal2) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING ID`, [mesa.id_materia, mesa.fecha_inicio, mesa.fecha_limite, mesa.fecha_examen, mesa.id_profesor, mesa.id_vocal1, mesa.id_vocal2])
             .then((data) => {
