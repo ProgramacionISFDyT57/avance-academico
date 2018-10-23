@@ -238,9 +238,9 @@ export class MateriasController {
             })
     }
     public ver_correlativas(req:Request, res: Response){
-        const id_materia = req.body.id_materia
+        const id_materia = req.params.id_materia
         this.db.manyOrNone(`
-            SELECT id, nombre, año, id_carrera, id_tipo
+            SELECT M.id, M.nombre, M.año, M.id_carrera, M.id_tipo
             FROM materias M 
             INNER JOIN correlativas C ON C.id_materia = M.id
             WHERE C.id_materia = $1 ORDER BY año`, [id_materia])
