@@ -34,6 +34,7 @@ app.delete("/materias/:id", materiasController.borrar_materia);
 // CORRELATIVAS
 app.post('/correlativas', materiasController.crear_correlativas);
 app.delete('/correlativas', materiasController.borrar_correlativas);
+app.get("/correlativas/:id_materia", materiasController.ver_correlativas);
 // CARRERA
 app.get('/carreras', carrerasController.ver_carreras);
 app.post("/carreras", carrerasController.crear_carrera);
@@ -50,10 +51,12 @@ app.post("/cursadas", cursadasController.crear_cursada);
 app.post("/usuarios", usuariosController.crear_usuario);
 // INSCRIPCIONES MESAS
 app.post("/inscripciones_mesas", mesasController.crear_inscripcion_mesa);
-//
+// PROFESORES
+app.get("/profesores", usuariosController.ver_profesores);
+// MESAS
+app.post("/crear_mesa", mesasController.crear_mesa);
 app.get("/lista_mesas", mesasController.lista_mesas);
 //
-
 app.listen(port, () => {
     console.log("Servidor escuchando en le puerto ", + port);
 });

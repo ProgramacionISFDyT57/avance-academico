@@ -8,6 +8,7 @@ export class UsuariosController {
     constructor(db: IDatabase<any>) {
         this.db = db;
         this.crear_usuario = this.crear_usuario.bind(this);
+        this.ver_profesores = this.ver_profesores.bind(this);
     }
 
     public crear_usuario(req: Request, res: Response) {
@@ -29,6 +30,23 @@ export class UsuariosController {
                         )
 
                 }
+                res.status(200).json({
+                    mensaje: null,
+                    datos: data
+                });
+            })
+            .catch((err) => {
+                res.status(500).json({
+                    mensaje: err,
+                    datos: null
+                });
+            });
+    }
+    public ver_profesores(req: Request, res: Response) {
+        this.db.manyOrNone(`
+            SELECT id, email, nombre, apellido, fecha_nacimiento, fecha_alta 
+            FROM usuarios WHERE id_rol = 4`)
+            .then((data) => {
                 res.status(200).json({
                     mensaje: null,
                     datos: data
