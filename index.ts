@@ -5,7 +5,7 @@ import { UsuariosController } from './controllers/usuarios-controller';
 import { CarrerasController } from './controllers/carreras-controller';
 import { MateriasController } from './controllers/materias-controller';
 import { CursadasController } from './controllers/cursadas-controller';
-import { MesasController } from './controllers/mesas-controller';
+import { MesasController } from './controllers/mesas2-controller';
 const pgp = pg();
 const app = express();
 const port = process.env.PORT;
