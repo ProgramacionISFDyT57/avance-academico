@@ -50,6 +50,8 @@ app.post("/cursadas", cursadasController.crear_cursada);
 app.post("/usuarios", usuariosController.crear_usuario);
 // INSCRIPCIONES MESAS
 app.post("/inscripciones_mesas", mesasController.crear_inscripcion_mesa);
+// PROFESORES
+app.get("/profesores", usuariosController.ver_profesores);
 //
 app.listen(port, () => {
     console.log("Servidor escuchando en le puerto ", + port);
