@@ -34,6 +34,7 @@ app.delete("/materias/:id", materiasController.borrar_materia);
 // CORRELATIVAS
 app.post('/correlativas', materiasController.crear_correlativas);
 app.delete('/correlativas', materiasController.borrar_correlativas);
+app.get("/correlativas", materiasController.ver_correlativas);
 // CARRERA
 app.get('/carreras', carrerasController.ver_carreras);
 app.post("/carreras", carrerasController.crear_carrera);

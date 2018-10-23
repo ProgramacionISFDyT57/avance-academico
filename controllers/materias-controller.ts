@@ -237,4 +237,24 @@ export class MateriasController {
                 });
             })
     }
+    public ver_correlativas(req:Request, res: Response){
+        const id_materia = req.body.id_materia
+        this.db.manyOrNone(`
+            SELECT id, nombre, año, id_carrera, id_tipo
+            FROM materias M 
+            INNER JOIN correlativas C ON C.id_materia = M.id
+            WHERE C.id_materia = $1 ORDER BY año`, [id_materia])
+        .then((data) => {
+            res.status(200).json({
+                mensaje: null,
+                datos: data
+            });
+        })
+        .catch((err) => {
+            res.status(500).json({
+                mensaje: err,
+                datos: null
+            });
+        });
+    }
 }
