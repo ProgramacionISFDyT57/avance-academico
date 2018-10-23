@@ -44,7 +44,7 @@ export class UsuariosController {
     }
     public ver_profesores(req: Request, res: Response) {
         this.db.manyOrNone(`
-            SELECT email, nombre, apellido, fecha_nacimiento, fecha_alta 
+            SELECT id, email, nombre, apellido, fecha_nacimiento, fecha_alta 
             FROM usuarios WHERE id_rol = 4`)
             .then((data) => {
                 res.status(200).json({
