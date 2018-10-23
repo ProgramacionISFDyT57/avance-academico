@@ -51,6 +51,9 @@ app.post("/usuarios", usuariosController.crear_usuario);
 // INSCRIPCIONES MESAS
 app.post("/inscripciones_mesas", mesasController.crear_inscripcion_mesa);
 //
+app.get("/lista_mesas", mesasController.lista_mesas);
+//
+
 app.listen(port, () => {
     console.log("Servidor escuchando en le puerto ", + port);
 });
