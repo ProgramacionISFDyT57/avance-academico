@@ -1,6 +1,6 @@
 import { IDatabase } from 'pg-promise';
 import { Request, Response } from 'express';
-import { Cursada } from '../modelo-cursada';
+import { Cursada } from '../modelos/modelo-cursada';
 
 export class CursadasController {
     private db: IDatabase<any>;
