@@ -1,7 +1,8 @@
 import { IDatabase } from 'pg-promise';
 import { Request, Response } from 'express';
-import { Carrera, CarreraAbierta, InscripcionCarrera } from '../modelo';
-
+import { Carrera } from '../modelo-carrera';
+import { CarreraAbierta } from '../modelo-carreraabierta';
+import { InscripcionCarrera } from '../modelo-inscripcioncarrera';
 export class CarrerasController {
     private db: IDatabase<any>;
 

@@ -1,6 +1,6 @@
 import {IDatabase} from 'pg-promise';
 import {Request, Response} from 'express';
-import {Mesa} from "../modelo"
+import {Mesa} from "../modelo-mesa"
 
 export class MesasController {
     private db:IDatabase<any>;

@@ -1,6 +1,6 @@
 import { IDatabase } from 'pg-promise';
 import { Request, Response } from 'express';
-import { Usuario } from '../modelo';
+import { Usuario } from '../modelo-usuario';
 
 export class UsuariosController {
     private db: IDatabase<any>;
