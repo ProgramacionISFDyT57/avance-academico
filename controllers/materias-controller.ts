@@ -1,6 +1,7 @@
 import { IDatabase } from 'pg-promise';
 import { Request, Response } from 'express';
-import { TipoMateria, Materia } from "../modelo";
+import { TipoMateria } from "../modelos/modelo-tipomateria";
+import { Materia } from "../modelos/modelo-materia"
 export class MateriasController {
     private db: IDatabase<any>;
 
