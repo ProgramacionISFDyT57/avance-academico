@@ -20,7 +20,7 @@ const mesasController = new MesasController(db);
 ///////////////////////////////////////// RUTAS /////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////
 app.get("/", (req, res) => {
-    res.end("<h1>Backend Avance Academico</h1>")
+    res.status(200).end("<h1>Backend Avance Academico</h1>")
 });
 // USUARIOS
 // app.post("/tipos_materia", usuariosController.crear_usuario);
