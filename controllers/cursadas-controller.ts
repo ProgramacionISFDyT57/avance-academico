@@ -1,6 +1,7 @@
 import { IDatabase } from 'pg-promise';
 import { Request, Response } from 'express';
 import { Cursada } from '../modelos/modelo-cursada';
+import { Avance } from '../modelos/modelo-avance-academico';
 
 export class CursadasController {
     private db: IDatabase<any>;
@@ -8,6 +9,8 @@ export class CursadasController {
     constructor(db: IDatabase<any>) {
         this.db = db;
         this.crear_cursada = this.crear_cursada.bind(this);
+        this.crear_avance = this.crear_avance.bind(this);
+
     }
     public crear_cursada(req: Request, res: Response) {
         const cursada: Cursada = req.body.cursada;
@@ -108,6 +111,46 @@ export class CursadasController {
             ORDER BY M.nombre`, [id_alumno])
             .then( (data) => {
                 res.status(200).json({
+                          mensaje: null,
+                          datos: data
+                      });
+                })
+            .catch((err) => {
+                res.status(500).json({
+                    mensaje: err,
+                    datos: null
+                });
+            });
+    }
+
+    public crear_avance(req: Request, res: Response) {
+        const avance: Avance = req.body.avance_academico;
+        if (avance.nota_cuat_1 > 4 && avance.nota_cuat_2 > 4 && avance.nota_recuperatorio != null) {
+            res.status(400).json({
+                mensaje: 'No es posible tener Nota-Recuperatorio con los do2 cuatrimestres aprovados.'
+            })
+        }
+        if (avance.nota_cuat_1 < 4 && avance.nota_cuat_2 < 4 && avance.nota_recuperatorio != null) {
+            res.status(400).json({
+                mensaje: 'No es posible tener Nota-Recuperatorio con los do2 cuatrimestres desaprovados.'
+            })
+        }
+        if (avance.nota_cuat_1 % 1 !== 0 || avance.nota_cuat_2 % 1 !== 0 || avance.nota_recuperatorio % 1 !== 0) {
+            res.status(400).json({
+                mensaje: 'Las notas deben ser Numeros Enteros'
+            })
+        }
+        if (avance.nota_cuat_1 < 0 || avance.nota_cuat_2 < 0 || avance.nota_recuperatorio < 0 || avance.nota_recuperatorio > 10 || avance.nota_cuat_1 > 10 || avance.nota_cuat_2 > 10) {
+            res.status(400).json({
+                mensaje: 'Las notas deben ser entre 1 y 10'
+            })
+        }
+
+        this.db.one(`INSERT INTO avance_academico (id_inscripcion_cursada, nota_cuat_1, nota_cuat_2, nota_recuperatorio, asistencia) 
+        VALUES ($1, $2, $3, $4, $5) RETURNING ID`,
+            [avance.id_inscripcion_cursada, avance.nota_cuat_1, avance.nota_cuat_2, avance.nota_recuperatorio, avance.asistencia])
+            .then((data) => {
+               res.status(200).json({
                     mensaje: null,
                     datos: data
                 });
@@ -118,7 +161,7 @@ export class CursadasController {
                     datos: null
                 });
             });
-    } 
 
+    }
 
 }
