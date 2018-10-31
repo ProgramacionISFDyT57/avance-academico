@@ -74,15 +74,17 @@ export class CursadasController {
 
     }
     public listar_cursadas_aprovadas(req: Request, res: Response) {
-        this.db.manyOrNone(`select usuarios.nombre,materias.nombre,  from avance_academico
+        const id = req.params.id;
+        this.db.manyOrNone(`select materias.nombre  from avance_academico
         inner join incripciones_cursadas on inscripciones_cursadas.id = avance_academico.id_incripcion_cursada
         inner join alumnos on alumnos.id  = incripciones_cursadas.id_alumno
         inner join usuarios on usuarios.id = alumnos.id_usuario
         where
+        usuarios.id = $1 and
         nota_cuat_1 > 4 and nota_cuat_2  > 4 and asistencia >= 60 or
         nota_cuat_1 < 4 and nota_recuperatorio >  4 and nota_cuat_2 >  4  and asistencia >= 60  or
         nota_cuat_1 > 4 and nota_cuat_2 < 4 and nota_ recuperatorio > 4 and asistencia >= 60
-        `)
+        `, [id])
                 
         .then(resultado => {
             if (resultado) {
