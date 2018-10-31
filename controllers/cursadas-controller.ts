@@ -8,6 +8,8 @@ export class CursadasController {
     constructor(db: IDatabase<any>) {
         this.db = db;
         this.crear_cursada = this.crear_cursada.bind(this);
+        this.listar_cursadas_aprovadas = this.listar_cursadas_aprovadas.bind(this);
+
     }
     public crear_cursada(req: Request, res: Response) {
         const cursada: Cursada = req.body.cursada;
@@ -67,7 +69,33 @@ export class CursadasController {
                         });
                 }
             }
+     
         }
+
+    }
+    public listar_cursadas_aprovadas(req: Request, res: Response) {
+        this.db.manyOrNone(`select usuarios.nombre,materias.nombre,  from avance_academico
+        inner join incripciones_cursadas on inscripciones_cursadas.id = avance_academico.id_incripcion_cursada
+        inner join alumnos on alumnos.id  = incripciones_cursadas.id_alumno
+        inner join usuarios on usuarios.id = alumnos.id_usuario
+        where
+        nota_cuat_1 > 4 and nota_cuat_2  > 4 and asistencia >= 60 or
+        nota_cuat_1 < 4 and nota_recuperatorio >  4 and nota_cuat_2 >  4  and asistencia >= 60  or
+        nota_cuat_1 > 4 and nota_cuat_2 < 4 and nota_ recuperatorio > 4 and asistencia >= 60
+        `)
+                
+        .then(resultado => {
+            if (resultado) {
+                res.json(resultado);
+            }
+            else {
+                console.log('No se Registran Cursadas aprovadas...');
+                res.end(false);
+            }
+        })
+            .catch(err => {
+            console.log('error' + err);
+        });
     }
 
 }
