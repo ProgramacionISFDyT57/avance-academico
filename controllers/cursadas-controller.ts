@@ -80,7 +80,6 @@ export class CursadasController {
         inner join alumnos on alumnos.id  = incripciones_cursadas.id_alumno
         inner join usuarios on usuarios.id = alumnos.id_usuario
         where
-        usuarios.id = $1 and
         nota_cuat_1 > 4 and nota_cuat_2  > 4 and asistencia >= 60 or
         nota_cuat_1 < 4 and nota_recuperatorio >  4 and nota_cuat_2 >  4  and asistencia >= 60  or
         nota_cuat_1 > 4 and nota_cuat_2 < 4 and nota_ recuperatorio > 4 and asistencia >= 60
