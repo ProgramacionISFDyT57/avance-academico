@@ -9,6 +9,8 @@ export class UsuariosController {
         this.db = db;
         this.crear_usuario = this.crear_usuario.bind(this);
         this.ver_profesores = this.ver_profesores.bind(this);
+        this.listar_alumnos = this.listar_alumnos.bind(this);
+    
     }
 
     public crear_usuario(req: Request, res: Response) {
@@ -25,13 +27,14 @@ export class UsuariosController {
                                 mensaje: null,
                                 datos: data
                             });
-                        })
-                        .catch((err) => {
-                            res.status(500).json({
-                                mensaje: err,
-                                datos: null
-                            });
+                        }
+                    )
+                    .catch((err) => {
+                        res.status(500).json({
+                            mensaje: err,
+                            datos: null
                         });
+                    });
                 }
                 else if (data.id_rol === 5) {
                     this.db.one('INSERT INTO alumnos (id_usuario) VALUES ($1) RETURNING ID', [usuario.id])
@@ -40,6 +43,14 @@ export class UsuariosController {
                                 mensaje: null,
                                 datos: data
                             });
+                        })
+                        .catch((err) => {
+                            res.status(500).json({
+                                mensaje: err,
+                                datos: null
+                            });
+                        });
+                }
                         })
                         .catch((err) => {
                             res.status(500).json({
@@ -81,5 +92,22 @@ export class UsuariosController {
                 });
             });
     }
+    public listar_alumnos(req: Request, res: Response) {
+        this.db.manyOrNone(`
+        SELECT alumnos.id, usuarios.nombre, usuarios.apellido FROM alumnos
+        inner join usuarios on usuarios.id = alumnos.id_usuario`)
 
+        .then((data) => {
+            res.status(200).json({
+                mensaje: null,
+                datos: data
+            });
+        })
+        .catch((err) => {
+            res.status(500).json({
+                mensaje: err,
+                datos: null
+            });
+        });
+    }
 }
