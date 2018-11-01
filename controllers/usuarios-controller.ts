@@ -21,24 +21,24 @@ export class UsuariosController {
                 if (data.id_rol === 4) {
                     this.db.one('INSERT INTO profedores (id_usuario) VALUES ($1) RETURNING ID', [usuario.id])
                         .then((data) => {
+                            res.status(200).json({
+                                mensaje: null,
+                                datos: data
+                            });
                         })
-                        res.status(200).json({
-                            mensaje: null,
-                            datos: data
-                        });
                 }
                 else if (data.id_rol === 5) {
                     this.db.one('INSERT INTO alumnos (id_usuario) VALUES ($1) RETURNING ID', [usuario.id])
                         .then((data) => {
-                        })
-                        res.status(200).json({
-                            mensaje: null,
-                            datos: data
-                        });
+                            res.status(200).json({
+                                mensaje: null,
+                                datos: data
+                            });
+                        }) 
                 }
                 else{
                     res.status(200).json({
-                        mensaje: "El id de rol ingresado es incorrecto",
+                        mensaje: "El id_rol ingresado es incorrecto",
                         datos: data
                     });
                 }
