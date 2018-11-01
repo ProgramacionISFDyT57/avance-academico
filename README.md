@@ -12,4 +12,20 @@ Los preceptores podrán actualizar el avance académico de los alumnos.
 Los directivos podrán cargar nuevas carreras y materias
 El sistema permitirá generar reportes, formularios, listas de alumnos, etc.
 
-
+TIPOS DE MATERIAS:
+{
+    id: 1
+    nombre: "Curricular"
+} 
+{
+    id: 2
+    nombre: "Practica"
+} 
+{
+    id: 3
+    nombre: "Taller"
+} 
+{
+    id: 4
+    nombre: "Seminario"
+} 
