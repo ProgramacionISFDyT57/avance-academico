@@ -78,21 +78,25 @@ export class CursadasController {
         if (avance.nota_cuat_1 > 4 && avance.nota_cuat_2 > 4 && avance.nota_recuperatorio != null) {
             res.status(400).json({
                 mensaje: 'No es posible tener Nota-Recuperatorio con los do2 cuatrimestres aprovados.'
+                
             })
         }
         if (avance.nota_cuat_1 < 4 && avance.nota_cuat_2 < 4 && avance.nota_recuperatorio != null) {
             res.status(400).json({
-                mensaje: 'No es posible tener Nota-Recuperatorio con los do2 cuatrimestres desaprovados.'
+                mensaje: 'No es posible tener Nota-Recuperatorio con los do2 cuatrimestres desaprovados.',
+                datos:null
             })
         }
         if (avance.nota_cuat_1 % 1 !== 0 || avance.nota_cuat_2 % 1 !== 0 || avance.nota_recuperatorio % 1 !== 0) {
             res.status(400).json({
-                mensaje: 'Las notas deben ser Numeros Enteros'
+                mensaje: 'Las notas deben ser Numeros Enteros',
+                datos:null
             })
         }
         if (avance.nota_cuat_1 < 0 || avance.nota_cuat_2 < 0 || avance.nota_recuperatorio < 0 || avance.nota_recuperatorio > 10 || avance.nota_cuat_1 > 10 || avance.nota_cuat_2 > 10) {
             res.status(400).json({
-                mensaje: 'Las notas deben ser entre 1 y 10'
+                mensaje: 'Las notas deben ser entre 1 y 10',
+                datos:null
             })
         }
 
