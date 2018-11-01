@@ -46,10 +46,14 @@ export class UsuariosController {
                                 mensaje: err,
                                 datos: null
                             });
-                        });
+                        }); 
                 }
-            
-                
+                else{
+                    res.status(200).json({
+                        mensaje: "El id_rol ingresado es incorrecto",
+                        datos: data
+                    });
+                }
             })
             .catch((err) => {
                 res.status(500).json({
