@@ -109,12 +109,12 @@ export class CursadasController {
                 ) 
                 OR CO.id_correlativa IS NULL )
             ORDER BY M.nombre`, [id_alumno])
-            .then( (data) => {
+            .then((data) => {
                 res.status(200).json({
-                          mensaje: null,
-                          datos: data
-                      });
-                })
+                    mensaje: null,
+                    datos: data
+                });
+            })
             .catch((err) => {
                 res.status(500).json({
                     mensaje: err,
@@ -130,37 +130,39 @@ export class CursadasController {
                 mensaje: 'No es posible tener Nota-Recuperatorio con los do2 cuatrimestres aprovados.'
             })
         }
-        if (avance.nota_cuat_1 < 4 && avance.nota_cuat_2 < 4 && avance.nota_recuperatorio != null) {
+        else if (avance.nota_cuat_1 < 4 && avance.nota_cuat_2 < 4 && avance.nota_recuperatorio != null) {
             res.status(400).json({
                 mensaje: 'No es posible tener Nota-Recuperatorio con los do2 cuatrimestres desaprovados.'
             })
         }
-        if (avance.nota_cuat_1 % 1 !== 0 || avance.nota_cuat_2 % 1 !== 0 || avance.nota_recuperatorio % 1 !== 0) {
+        else if (avance.nota_cuat_1 % 1 !== 0 || avance.nota_cuat_2 % 1 !== 0 || avance.nota_recuperatorio % 1 !== 0) {
             res.status(400).json({
                 mensaje: 'Las notas deben ser Numeros Enteros'
             })
         }
-        if (avance.nota_cuat_1 < 0 || avance.nota_cuat_2 < 0 || avance.nota_recuperatorio < 0 || avance.nota_recuperatorio > 10 || avance.nota_cuat_1 > 10 || avance.nota_cuat_2 > 10) {
+        else if (avance.nota_cuat_1 < 0 || avance.nota_cuat_2 < 0 || avance.nota_recuperatorio < 0 || avance.nota_recuperatorio > 10 || avance.nota_cuat_1 > 10 || avance.nota_cuat_2 > 10) {
             res.status(400).json({
                 mensaje: 'Las notas deben ser entre 1 y 10'
             })
         }
+        else {
 
-        this.db.one(`INSERT INTO avance_academico (id_inscripcion_cursada, nota_cuat_1, nota_cuat_2, nota_recuperatorio, asistencia) 
-        VALUES ($1, $2, $3, $4, $5) RETURNING ID`,
-            [avance.id_inscripcion_cursada, avance.nota_cuat_1, avance.nota_cuat_2, avance.nota_recuperatorio, avance.asistencia])
-            .then((data) => {
-               res.status(200).json({
-                    mensaje: null,
-                    datos: data
+            this.db.one(`INSERT INTO avance_academico (id_inscripcion_cursada, nota_cuat_1, nota_cuat_2, nota_recuperatorio, asistencia) 
+            VALUES ($1, $2, $3, $4, $5) RETURNING ID`,
+                [avance.id_inscripcion_cursada, avance.nota_cuat_1, avance.nota_cuat_2, avance.nota_recuperatorio, avance.asistencia])
+                .then((data) => {
+                    res.status(200).json({
+                        mensaje: null,
+                        datos: data
+                    });
+                })
+                .catch((err) => {
+                    res.status(500).json({
+                        mensaje: err,
+                        datos: null
+                    });
                 });
-            })
-            .catch((err) => {
-                res.status(500).json({
-                    mensaje: err,
-                    datos: null
-                });
-            });
+        }
 
     }
 
