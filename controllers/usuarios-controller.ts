@@ -21,17 +21,35 @@ export class UsuariosController {
                 if (data.id_rol === 4) {
                     this.db.one('INSERT INTO profedores (id_usuario) VALUES ($1) RETURNING ID', [usuario.id])
                         .then((data) => {
+                            res.status(200).json({
+                                mensaje: null,
+                                datos: data
+                            });
                         })
+                        .catch((err) => {
+                            res.status(500).json({
+                                mensaje: err,
+                                datos: null
+                            });
+                        });
                 }
                 else if (data.id_rol === 5) {
                     this.db.one('INSERT INTO alumnos (id_usuario) VALUES ($1) RETURNING ID', [usuario.id])
                         .then((data) => {
+                            res.status(200).json({
+                                mensaje: null,
+                                datos: data
+                            });
                         })
+                        .catch((err) => {
+                            res.status(500).json({
+                                mensaje: err,
+                                datos: null
+                            });
+                        });
                 }
-                res.status(200).json({
-                    mensaje: null,
-                    datos: data
-                });
+            
+                
             })
             .catch((err) => {
                 res.status(500).json({
@@ -39,8 +57,6 @@ export class UsuariosController {
                     datos: null
                 });
             });
-
-
         });   
     }
 
