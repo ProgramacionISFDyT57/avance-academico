@@ -58,6 +58,7 @@ app.get("/cursadas_abiertas/:id_alumno", cursadasController.cursadas_abiertas_al
 // USUARIOS
 app.get("/usuarios", seguridadController.chequear_roles([1]), usuariosController.listar_usuarios);
 app.post("/usuarios", usuariosController.crear_usuario);
+app.post("/usuarios", usuariosController.cambiar_contraseña);
 // INSCRIPCIONES MESAS
 app.post("/inscripciones_mesas", mesasController.crear_inscripcion_mesa);
 // PROFESORES

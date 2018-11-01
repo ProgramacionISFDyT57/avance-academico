@@ -11,6 +11,7 @@ export class UsuariosController {
         this.listar_usuarios = this.listar_usuarios.bind(this);
         this.ver_profesores = this.ver_profesores.bind(this);
         this.listar_alumnos = this.listar_alumnos.bind(this);
+        this.cambiar_contraseña = this.cambiar_contraseña.bind(this);
     }
 
     public crear_usuario(req: Request, res: Response) {
@@ -120,5 +121,31 @@ export class UsuariosController {
                 datos: null
             });
         });
+    }
+    public cambiar_contraseña(req: Request, res:Response){
+        const usuario: Usuario = req.body.usuario;
+        const claveVieja: string = req.body.claveVieja;
+        const newPass: string = req.body.nuevaclave;
+        const id_usuario: Token = res.locals;
+        this.db.one(`SELECT clave FROM usuarios WHERE clave = $1`, [claveVieja])
+        .then((data) => {
+            bcrypt.compare(claveVieja, data.clave, (err, same) => {
+                if(err){
+                    res.status(500).json({
+                        mensaje: err,
+                        datos: null
+                    })
+                }
+                else if(same){
+                    this.db.one(`INSERT INTO usuarios(clave) VALUES($2)`, [newPass])
+                }
+            })
+        })
+        .catch( (err) => {
+            res.status(500).json({
+                mensaje: err,
+                datos: null
+            });
+        })
     }
 }
