@@ -26,6 +26,12 @@ export class UsuariosController {
                                 datos: data
                             });
                         })
+                        .catch((err) => {
+                            res.status(500).json({
+                                mensaje: err,
+                                datos: null
+                            });
+                        });
                 }
                 else if (data.id_rol === 5) {
                     this.db.one('INSERT INTO alumnos (id_usuario) VALUES ($1) RETURNING ID', [usuario.id])
@@ -34,7 +40,13 @@ export class UsuariosController {
                                 mensaje: null,
                                 datos: data
                             });
-                        }) 
+                        })
+                        .catch((err) => {
+                            res.status(500).json({
+                                mensaje: err,
+                                datos: null
+                            });
+                        }); 
                 }
                 else{
                     res.status(200).json({
