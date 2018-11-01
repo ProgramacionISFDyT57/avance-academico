@@ -1,7 +1,7 @@
 import { IDatabase } from 'pg-promise';
 import { Request, Response } from 'express';
 import { Usuario } from '../modelos/modelo-usuario';
-
+import * as bcrypt from 'bcrypt';
 export class UsuariosController {
     private db: IDatabase<any>;
 
@@ -15,7 +15,10 @@ export class UsuariosController {
 
     public crear_usuario(req: Request, res: Response) {
         const usuario: Usuario = req.body.usuario;
-        this.db.one('INSERT INTO usuarios (id, email, clave, nombre, apellido, fecha_nacimiento, fecha_alta, id_rol) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING ID', [usuario.id, usuario.email, usuario.clave, usuario.nombre, usuario.apellido, usuario.fecha_nacimiento, usuario.fecha_alta, usuario.id_rol])
+        bcrypt.hash(usuario.clave, 10, (error, hash) =>{
+            this.db.one(`INSERT INTO usuarios (id, email, clave, nombre, apellido, fecha_nacimiento, fecha_alta, id_rol) 
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8) 
+            RETURNING ID`, [usuario.id, usuario.email, hash, usuario.nombre, usuario.apellido, usuario.fecha_nacimiento, usuario.fecha_alta, usuario.id_rol])
             .then((data) => {
                 if (data.id_rol === 4) {
                     this.db.one('INSERT INTO profedores (id_usuario) VALUES ($1) RETURNING ID', [usuario.id])
@@ -32,8 +35,6 @@ export class UsuariosController {
                             datos: null
                         });
                     });
-        
-
                 }
                 else if (data.id_rol === 5) {
                     this.db.one('INSERT INTO alumnos (id_usuario) VALUES ($1) RETURNING ID', [usuario.id])
@@ -42,21 +43,28 @@ export class UsuariosController {
                                 mensaje: null,
                                 datos: data
                             });
-
-
-                        }
-                    )
-                    .catch((err) => {
-                        res.status(500).json({
-                            mensaje: err,
-                            datos: null
+                        })
+                        .catch((err) => {
+                            res.status(500).json({
+                                mensaje: err,
+                                datos: null
+                            });
                         });
-                    });
-        
-
                 }
-            
-                
+                        })
+                        .catch((err) => {
+                            res.status(500).json({
+                                mensaje: err,
+                                datos: null
+                            });
+                        }); 
+                }
+                else{
+                    res.status(200).json({
+                        mensaje: "El id_rol ingresado es incorrecto",
+                        datos: data
+                    });
+                }
             })
             .catch((err) => {
                 res.status(500).json({
@@ -64,6 +72,7 @@ export class UsuariosController {
                     datos: null
                 });
             });
+        });   
     }
 
     public ver_profesores(req: Request, res: Response) {
