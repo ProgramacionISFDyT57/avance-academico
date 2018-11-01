@@ -60,6 +60,8 @@ app.get("/profesores", usuariosController.ver_profesores);
 // MESAS
 app.post("/crear_mesa", mesasController.crear_mesa);
 app.get("/lista_mesas", mesasController.lista_mesas);
+// LISTAR CURSADAS APROBADAS
+app.get("/listar_cursadas_aprobadas", cursadasController.listar_cursadas_aprobadas);
 // 
 app.listen(port, () => {
     console.log("Servidor escuchando en le puerto ", + port);
