@@ -75,23 +75,27 @@ export class CursadasController {
     }
     public listar_cursadas_aprobadas(req: Request, res: Response) {
         const id = req.params.id;
-        this.db.manyOrNone(`select materias.nombre  from avance_academico
-        inner join incripciones_cursadas on inscripciones_cursadas.id = avance_academico.id_incripcion_cursada
-        inner join alumnos on alumnos.id  = incripciones_cursadas.id_alumno
-        inner join usuarios on usuarios.id = alumnos.id_usuario
-        where
-        nota_cuat_1 > 4 and nota_cuat_2  > 4 and asistencia >= 60 or
-        nota_cuat_1 < 4 and nota_recuperatorio >  4 and nota_cuat_2 >  4  and asistencia >= 60  or
-        nota_cuat_1 > 4 and nota_cuat_2 < 4 and nota_ recuperatorio > 4 and asistencia >= 60
-        `, [id])
+        this.db.manyOrNone(`select materias.nombre  from avance_academico aa
+        inner join incripciones_cursadas ic on inscripciones_cursadas.id = avance_academico.id_incripcion_cursada
+        inner join cursadas c ON c.id_matertia = m.id
+        inner join tipos_materias tm ON tm.id = m.id_tipo
+        inner join Incripciones_cursadas ic ON ic.id_cursada = c.id
+        where ic.id_alumno = $1
+        AND ((aa.nota_cuat_1 >=4 and aa.nota_cuat_2 >=4) OR (aa.nota_recuperatorio >=4))
+        AND ((tm.id = 2 AND aa.asistencia >= 80) OR (tm.id != 2 AND aa.asistencia >= 60))
+               `, [id])
 
             .then(resultado => {
-                res.json(resultado);
-                data: resultado;
-
+                res.status(200).json({
+                    mensaje: null,
+                    datos: resultado
+                });
             })
             .catch(err => {
-                console.log('error' + err);
+                res.status(200).json({
+                    mensaje: err,
+                    datos: null
+                });
             });
     }
 

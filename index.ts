@@ -60,7 +60,7 @@ app.get("/profesores", usuariosController.ver_profesores);
 app.post("/crear_mesa", mesasController.crear_mesa);
 app.get("/lista_mesas", mesasController.lista_mesas);
 // LISTAR CURSADAS APROBADAS
-app.get("/listar_cursadas_aprovadas", cursadasController.listar_cursadas_aprovadas);
+app.get("/listar_cursadas_aprobadas", cursadasController.listar_cursadas_aprobadas);
 
 
 app.listen(port, () => {
