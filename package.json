@@ -12,7 +12,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@types/bcrypt": "^3.0.0",
     "@types/express": "^4.16.0",
+    "bcrypt": "^3.0.2",
     "express": "^4.16.3",
     "pg-promise": "^8.5.0",
     "typescript": "^3.1.3"
