@@ -28,6 +28,7 @@ export class UsuariosController {
                             });
                         })
                         .catch((err) => {
+                            console.error(err);
                             res.status(500).json({
                                 mensaje: err,
                                 datos: null
@@ -42,6 +43,7 @@ export class UsuariosController {
                             });
                         })
                         .catch((err) => {
+                            console.error(err);
                             res.status(500).json({
                                 mensaje: err,
                                 datos: null
@@ -55,6 +57,7 @@ export class UsuariosController {
                 }
             })
             .catch((err) => {
+                console.error(err);
                 res.status(500).json({
                     mensaje: err,
                     datos: null
@@ -74,6 +77,7 @@ export class UsuariosController {
                 });
             })
             .catch((err) => {
+                console.error(err);
                 res.status(500).json({
                     mensaje: err,
                     datos: null
@@ -92,6 +96,7 @@ export class UsuariosController {
             });
         })
         .catch((err) => {
+            console.error(err);
             res.status(500).json({
                 mensaje: err,
                 datos: null

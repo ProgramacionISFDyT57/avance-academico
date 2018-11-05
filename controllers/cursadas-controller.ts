@@ -55,6 +55,7 @@ export class CursadasController {
                                         });
                                     })
                                     .catch((err) => {
+                                        console.error(err);
                                         res.status(500).json({
                                             mensaje: err,
                                             datos: null
@@ -63,6 +64,7 @@ export class CursadasController {
                             }
                         })
                         .catch((err) => {
+                            console.error(err);
                             res.status(500).json({
                                 mensaje: err,
                                 datos: null
@@ -93,6 +95,7 @@ export class CursadasController {
                 });
             })
             .catch(err => {
+                console.error(err);
                 res.status(200).json({
                     mensaje: err,
                     datos: null
@@ -143,6 +146,7 @@ export class CursadasController {
                       });
                 })
             .catch((err) => {
+                console.error(err);
                 res.status(500).json({
                     mensaje: err,
                     datos: null
@@ -187,6 +191,7 @@ export class CursadasController {
                 });
             })
             .catch((err) => {
+                console.error(err);
                 res.status(500).json({
                     mensaje: err,
                     datos: null

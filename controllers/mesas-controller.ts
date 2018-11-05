@@ -23,6 +23,7 @@ export class MesasController {
             });
         })
         .catch((err) => {
+            console.error(err);
             res.status(500).json({
                 mensaje: err,
                 datos: null
@@ -46,6 +47,7 @@ export class MesasController {
             });
         })
         .catch((err) => {
+            console.error(err);
             res.status(500).json({
                 mensaje: err,
                 datos: null
@@ -63,6 +65,7 @@ export class MesasController {
                 });
             })
             .catch((err) => {
+                console.error(err);
                 res.status(500).json({
                     mensaje: err,
                     datos: null
