@@ -28,6 +28,7 @@ export class CarrerasController {
                     })
                 })
                 .catch(err => {
+                    console.error(err);
                     res.status(500).json({
                         mensaje: err.detail,
                         datos: err
@@ -67,6 +68,7 @@ export class CarrerasController {
                                         });
                                     })
                                     .catch((err) => {
+                                        console.error(err);
                                         res.status(500).json({
                                             mensaje: err,
                                             datos: null
@@ -80,6 +82,7 @@ export class CarrerasController {
                             }
                         })
                         .catch((err) => {
+                            console.error(err);
                             res.status(500).json({
                                 mensaje: err,
                                 datos: null
@@ -115,6 +118,7 @@ export class CarrerasController {
                 });
             })
             .catch((err) => {
+                console.error(err);
                 res.status(500).json({
                     mensaje: err,
                     datos: null
@@ -133,6 +137,7 @@ export class CarrerasController {
                     });
                 })
                 .catch((err) => {
+                    console.error(err);
                     res.status(500).json({
                         mensaje: err,
                         datos: null
@@ -156,6 +161,7 @@ export class CarrerasController {
                     });
                 })
                 .catch((err) => {
+                    console.error(err);
                     res.status(500).json({
                         mensaje: err,
                         datos: null
@@ -182,6 +188,7 @@ export class CarrerasController {
                 });
             })
             .catch((err) => {
+                console.error(err);
                 res.status(500).json({
                     mensaje: err,
                     datos: null
@@ -238,6 +245,7 @@ export class CarrerasController {
                             }
                         })
                         .catch((err) => {
+                            console.error(err);
                             res.status(500).json({
                                 mensaje: err,
                                 datos: null
