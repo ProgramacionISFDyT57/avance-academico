@@ -55,7 +55,7 @@ export class MateriasController {
         const id = +req.params.id;
         const tipo_materia: TipoMateria = req.body.tipo_materia;
         if (id) {
-            this.db.none('UPDATE tipos_materias SET (nombre) VALUES ($1) WHERE id = $2', [tipo_materia.nombre, id])
+            this.db.none('UPDATE tipos_materias SET nombre = $1 WHERE id = $2', [tipo_materia.nombre, id])
                 .then((data) => {
                     res.status(200).json({
                         mensaje: null,
