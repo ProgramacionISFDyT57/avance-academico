@@ -29,3 +29,25 @@ TIPOS DE MATERIAS:
     id: 4
     nombre: "Seminario"
 } 
+
+ROLES
+{
+    id: 1
+    nombre: "Admin"
+}
+{
+    id: 2
+    nombre: "Directivo"
+}
+{
+    id: 3
+    nombre: "Preceptor" 
+}
+{
+    id: 4
+    nombre: "Profesor" 
+}
+{
+    id: 5
+    nombre: "Alumno" 
+}

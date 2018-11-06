@@ -6,6 +6,7 @@ import { CarrerasController } from './controllers/carreras-controller';
 import { MateriasController } from './controllers/materias-controller';
 import { CursadasController } from './controllers/cursadas-controller';
 import { MesasController } from './controllers/mesas-controller';
+import { SeguridadController } from './controllers/seguridad-controller';
 const pgp = pg();
 const app = express();
 const port = process.env.PORT;
@@ -16,6 +17,7 @@ const carrerasController = new CarrerasController(db);
 const materiasController = new MateriasController(db);
 const cursadasController = new CursadasController(db);
 const mesasController = new MesasController(db);
+const seguridadController = new SeguridadController(db);
 /////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////// RUTAS /////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -30,10 +32,10 @@ app.post("/tipos_materia", materiasController.crear_tipo_materia);
 app.put("/tipos_materia/:id", materiasController.modificar_tipo_materia);
 app.delete("/tipos_materia/:id", materiasController.borrar_tipo_materia);
 // MATERIAS
-app.get("/materias", materiasController.ver_materias);
-app.post("/materias", materiasController.crear_materia);
-app.put("/materias/:id", materiasController.modificar_materia);
-app.delete("/materias/:id", materiasController.borrar_materia);
+app.get("/materias", seguridadController.chequear_roles([1,2,3,4,5]), materiasController.ver_materias);
+app.post("/materias", seguridadController.chequear_roles([1,2]), materiasController.crear_materia);
+app.put("/materias/:id", seguridadController.chequear_roles([1,2]), materiasController.modificar_materia);
+app.delete("/materias/:id", seguridadController.chequear_roles([1,2]), materiasController.borrar_materia);
 // CORRELATIVAS
 app.post('/correlativas', materiasController.crear_correlativas);
 app.delete('/correlativas', materiasController.borrar_correlativas);

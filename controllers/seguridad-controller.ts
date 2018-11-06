@@ -1,15 +1,17 @@
 import * as jwt from 'jsonwebtoken';
 import * as bcrypt from 'bcrypt';
 import { IDatabase } from 'pg-promise';
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import { Token } from '../modelos/modelo-token';
 
-export class MesasController {
+
+export class SeguridadController {
     private db: IDatabase<any>;
 
     constructor(db: IDatabase<any>) {
         this.db = db;
         this.login = this.login.bind(this);
+        this.chequear_roles = this.chequear_roles.bind(this);
     }
 
     public login(req: Request, res: Response) {
@@ -54,7 +56,7 @@ export class MesasController {
     }
 
     public chequear_roles(id_roles: number[]) {
-        return (req, res, next) => {
+        return (req: Request, res: Response, next: NextFunction) => {
             const token = req.get('x-access-token');
             jwt.verify(token, process.env.JWT, (err, decoded: Token) => {
                 if (err) {
@@ -63,7 +65,8 @@ export class MesasController {
                         datos: null
                     })
                 } else {
-                    if (id_roles.includes(decoded.id_rol)){
+                    if (id_roles.indexOf(decoded.id_rol) != -1){
+                    // if (id_roles.includes(decoded.id_rol)){
                         res.locals = decoded;
                         next();
                     } else {
