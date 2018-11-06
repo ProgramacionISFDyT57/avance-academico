@@ -39,7 +39,7 @@ export class MateriasController {
         this.db.one('INSERT INTO tipos_materias (nombre) VALUES ($1) RETURNING ID', [tipo_materia.nombre])
             .then((data) => {
                 res.status(200).json({
-                    mensaje: null,
+                    mensaje: 'Se creo el tipo de materia ' + tipo_materia.nombre,
                     datos: data
                 });
             })
@@ -56,10 +56,10 @@ export class MateriasController {
         const tipo_materia: TipoMateria = req.body.tipo_materia;
         if (id) {
             this.db.none('UPDATE tipos_materias SET nombre = $1 WHERE id = $2', [tipo_materia.nombre, id])
-                .then((data) => {
+                .then(() => {
                     res.status(200).json({
-                        mensaje: null,
-                        datos: data
+                        mensaje: 'Se modificó el tipo de materia',
+                        datos: true
                     });
                 })
                 .catch((err) => {
@@ -80,10 +80,10 @@ export class MateriasController {
         const id = +req.params.id;
         if (id) {
             this.db.none('DELETE FROM tipos_materias WHERE id = $1', [id])
-                .then((data) => {
+                .then( () => {
                     res.status(200).json({
-                        mensaje: null,
-                        datos: data
+                        mensaje: "Se eliminó el tipo de materia",
+                        datos: true
                     });
                 })
                 .catch((err) => {
@@ -121,7 +121,7 @@ export class MateriasController {
         this.db.one('INSERT INTO materias (nombre, año, id_carrera, id_tipo) VALUES ($1, $2, $3, $4) RETURNING ID', [materia.nombre, materia.año, materia.id_carrera, materia.id_tipo])
             .then((data) => {
                 res.status(200).json({
-                    mensaje: null,
+                    mensaje: "Se creó la materia " + materia.nombre,
                     datos: data
                 });
             })
@@ -138,10 +138,10 @@ export class MateriasController {
         const materia: Materia = req.body.tipo_materia;
         if (id) {
             this.db.none('UPDATE materias SET (nombre, año, id_carrera, id_tipo) VALUES ($1, $2, $3, $4) WHERE id = $5', [materia.nombre, materia.año, materia.id_carrera, materia.id_tipo, id])
-                .then((data) => {
+                .then( () => {
                     res.status(200).json({
-                        mensaje: null,
-                        datos: data
+                        mensaje: "Se modificó la materia",
+                        datos: true
                     });
                 })
                 .catch((err) => {
@@ -162,10 +162,10 @@ export class MateriasController {
         const id = +req.params.id;
         if (id) {
             this.db.none('DELETE FROM materias WHERE id = $1', [id])
-                .then((data) => {
+                .then( () => {
                     res.status(200).json({
-                        mensaje: null,
-                        datos: data
+                        mensaje: "Se eliminó la materia",
+                        datos: true
                     });
                 })
                 .catch((err) => {
@@ -197,7 +197,7 @@ export class MateriasController {
                                     VALUES ($1, $2)`, [id_materia, id_correlativa])
                                     .then((data) => {
                                         res.status(200).json({
-                                            mensaje: 'insertado correctamente',
+                                            mensaje: 'Se creo la correlativa correctamente',
                                             datos: true,
                                         });
                                     })
@@ -237,7 +237,7 @@ export class MateriasController {
         this.db.none(`DELETE FROM corrrelativas WHERE id_materia =$1 AND id_correlativa = $2`, [id_materia, id_correlativa])
             .then( () => {
                 res.status(200).json({
-                    mensaje: 'Eliminado correctamente',
+                    mensaje: 'Se elimino la correlativa correctamente',
                     datos: true,
                 });
             })

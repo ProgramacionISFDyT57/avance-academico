@@ -9,6 +9,7 @@ export class MesasController {
         this.db = db;
         this.crear_inscripcion_mesa = this.crear_inscripcion_mesa.bind(this);
         this.lista_mesas = this.lista_mesas.bind(this);
+        this.crear_mesa = this.crear_mesa.bind(this);
     }
 
     public crear_inscripcion_mesa(req: Request, res: Response){

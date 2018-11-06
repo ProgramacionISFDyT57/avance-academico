@@ -19,7 +19,7 @@ export class CarrerasController {
     }
 
     public borrar_inscripcion_carrera(req: Request, res: Response) {
-        if (req.params.id_inscripcion) {
+        if (+req.params.id_inscripcion) {
             this.db.none(`DELETE FROM inscripciones_carreras WHERE id = $1`, req.params.id_inscripcion)
                 .then(() => {
                     res.json({
@@ -129,7 +129,7 @@ export class CarrerasController {
         const id = +req.params.id;
         const carrera: Carrera = req.body.carrera;
         if (id) {
-            this.db.none('UPDATE carreras SET (nombre, duracion, cantidad_materias) VALUES ($1, $2, $3) WHERE id = $4', [carrera.nombre, carrera.duracion, carrera.cantidad_materias, id])
+            this.db.none('UPDATE carreras SET nombre = $1, duracion = $2, cantidad_materias = $3 WHERE id = $4', [carrera.nombre, carrera.duracion, carrera.cantidad_materias, id])
                 .then((data) => {
                     res.status(200).json({
                         mensaje: null,
@@ -179,7 +179,7 @@ export class CarrerasController {
             SELECT CA.id, C.nombre, C.duracion
             FROM carreras_abiertas CA
             INNER JOIN carreras C ON C.id = CA.id_carrera
-            WHERE CURRENT_TIMESTAMP BETWEEN CA.fecha_inicio AND CA.fecha_limite
+            WHERE current_timestamp BETWEEN CA.fecha_inicio AND CA.fecha_limite
             ORDER BY C.nombre`)
             .then((data) => {
                 res.status(200).json({
@@ -237,6 +237,7 @@ export class CarrerasController {
                                         });
                                     })
                                     .catch((err) => {
+                                        console.error(err);
                                         res.status(500).json({
                                             mensaje: err,
                                             datos: null
