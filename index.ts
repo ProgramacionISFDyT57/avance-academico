@@ -53,7 +53,8 @@ app.post("/inscripciones_carreras", carrerasController.crear_inscripcion_carrera
 // CURSADAS ABIERTAS
 app.post("/cursadas", cursadasController.crear_cursada);
 app.get("/cursadas_abiertas/:id_alumno", cursadasController.cursadas_abiertas_alumno);
-// CREAR USUARIOS
+// USUARIOS
+app.get("/usuarios", seguridadController.chequear_roles([1]), usuariosController.listar_usuarios);
 app.post("/usuarios", usuariosController.crear_usuario);
 // INSCRIPCIONES MESAS
 app.post("/inscripciones_mesas", mesasController.crear_inscripcion_mesa);
