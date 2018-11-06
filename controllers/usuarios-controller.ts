@@ -19,8 +19,8 @@ export class UsuariosController {
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8) 
             RETURNING ID`, [usuario.id, usuario.email, hash, usuario.nombre, usuario.apellido, usuario.fecha_nacimiento, usuario.fecha_alta, usuario.id_rol])
             .then((data) => {
-                if (data.id_rol === 4) {
-                    this.db.one('INSERT INTO profedores (id_usuario) VALUES ($1) RETURNING ID', [usuario.id])
+                if (usuario.id_rol === 4) {
+                    this.db.one('INSERT INTO profesores (id_usuario) VALUES ($1) RETURNING ID', [data.id])
                         .then((data) => {
                             res.status(200).json({
                                 mensaje: null,
@@ -34,8 +34,8 @@ export class UsuariosController {
                                 datos: null
                             });
                         })
-                } else if (data.id_rol === 5) {
-                    this.db.one('INSERT INTO alumnos (id_usuario) VALUES ($1) RETURNING ID', [usuario.id])
+                } else if (usuario.id_rol === 5) {
+                    this.db.one('INSERT INTO alumnos (id_usuario) VALUES ($1) RETURNING ID', [data.id])
                         .then((data) => {
                             res.status(200).json({
                                 mensaje: null,
@@ -51,7 +51,7 @@ export class UsuariosController {
                         });
                 } else {
                     res.status(200).json({
-                        mensaje: "El id_rol ingresado es incorrecto",
+                        mensaje: null,
                         datos: data
                     });
                 }
@@ -65,7 +65,6 @@ export class UsuariosController {
             });
         });   
     }
-
     public ver_profesores(req: Request, res: Response) {
         this.db.manyOrNone(`
             SELECT id, email, nombre, apellido, fecha_nacimiento, fecha_alta 
@@ -84,7 +83,6 @@ export class UsuariosController {
                 });
             });
     }
-
     public listar_alumnos(req: Request, res: Response) {
         this.db.manyOrNone(`
         SELECT alumnos.id, usuarios.nombre, usuarios.apellido FROM alumnos

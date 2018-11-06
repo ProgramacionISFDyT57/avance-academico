@@ -10,6 +10,7 @@ export class CursadasController {
         this.db = db;
         this.crear_cursada = this.crear_cursada.bind(this);
         this.listar_cursadas_aprobadas = this.listar_cursadas_aprobadas.bind(this);
+        this.cursadas_abiertas_alumno = this.cursadas_abiertas_alumno.bind(this);
         this.crear_avance = this.crear_avance.bind(this);
     }
     public crear_cursada(req: Request, res: Response) {
@@ -79,15 +80,13 @@ export class CursadasController {
     public listar_cursadas_aprobadas(req: Request, res: Response) {
         const id = req.params.id;
         this.db.manyOrNone(`select materias.nombre  from avance_academico aa
-        inner join incripciones_cursadas ic on inscripciones_cursadas.id = avance_academico.id_incripcion_cursada
-        inner join cursadas c ON c.id_matertia = m.id
-        inner join tipos_materias tm ON tm.id = m.id_tipo
-        inner join Incripciones_cursadas ic ON ic.id_cursada = c.id
-        where ic.id_alumno = $1
-        AND ((aa.nota_cuat_1 >=4 and aa.nota_cuat_2 >=4) OR (aa.nota_recuperatorio >=4))
-        AND ((tm.id = 2 AND aa.asistencia >= 80) OR (tm.id != 2 AND aa.asistencia >= 60))
-               `, [id])
-
+            inner join incripciones_cursadas ic on inscripciones_cursadas.id = avance_academico.id_incripcion_cursada
+            inner join cursadas c ON c.id_matertia = m.id
+            inner join tipos_materias tm ON tm.id = m.id_tipo
+            inner join Incripciones_cursadas ic ON ic.id_cursada = c.id
+            where ic.id_alumno = $1
+            AND ((aa.nota_cuat_1 >=4 and aa.nota_cuat_2 >=4) OR (aa.nota_recuperatorio >=4))
+            AND ((tm.id = 2 AND aa.asistencia >= 80) OR (tm.id != 2 AND aa.asistencia >= 60))`, [id])
             .then(resultado => {
                 res.status(200).json({
                     mensaje: null,
@@ -102,7 +101,6 @@ export class CursadasController {
                 });
             });
     }
-
     public cursadas_abiertas_alumno(req: Request, res: Response) {
         const id_alumno: number = req.params.id_alumno;
         // Buscar las cursadas abiertas de las carreras donde esta inscripto el alumno 
@@ -153,51 +151,46 @@ export class CursadasController {
                 });
             });
     }
-
     public crear_avance(req: Request, res: Response) {
         const avance: Avance = req.body.avance_academico;
         if (avance.nota_cuat_1 > 4 && avance.nota_cuat_2 > 4 && avance.nota_recuperatorio != null) {
             res.status(400).json({
-                mensaje: 'No es posible tener Nota-Recuperatorio con los do2 cuatrimestres aprovados.'
-                
+                mensaje: 'No es posible tener nota de recuperatorio con los dos cuatrimestres aprobados',
+                datos: null
             })
-        }
-        if (avance.nota_cuat_1 < 4 && avance.nota_cuat_2 < 4 && avance.nota_recuperatorio != null) {
+        } else if (avance.nota_cuat_1 < 4 && avance.nota_cuat_2 < 4 && avance.nota_recuperatorio != null) {
             res.status(400).json({
-                mensaje: 'No es posible tener Nota-Recuperatorio con los do2 cuatrimestres desaprovados.',
+                mensaje: 'No es posible tener nota de recuperatorio con los dos cuatrimestres desaprobados',
+                datos: null
+            })
+        } else if (avance.nota_cuat_1 % 1 !== 0 || avance.nota_cuat_2 % 1 !== 0 || avance.nota_recuperatorio % 1 !== 0) {
+            res.status(400).json({
+                mensaje: 'Las notas deben ser números enteros',
                 datos:null
             })
-        }
-        if (avance.nota_cuat_1 % 1 !== 0 || avance.nota_cuat_2 % 1 !== 0 || avance.nota_recuperatorio % 1 !== 0) {
-            res.status(400).json({
-                mensaje: 'Las notas deben ser Numeros Enteros',
-                datos:null
-            })
-        }
-        if (avance.nota_cuat_1 < 0 || avance.nota_cuat_2 < 0 || avance.nota_recuperatorio < 0 || avance.nota_recuperatorio > 10 || avance.nota_cuat_1 > 10 || avance.nota_cuat_2 > 10) {
+        } else if (avance.nota_cuat_1 < 1 || avance.nota_cuat_2 < 1 || avance.nota_recuperatorio < 1 || avance.nota_recuperatorio > 10 || avance.nota_cuat_1 > 10 || avance.nota_cuat_2 > 10) {
             res.status(400).json({
                 mensaje: 'Las notas deben ser entre 1 y 10',
                 datos:null
             })
+        } else {
+            this.db.one(`INSERT INTO avance_academico (id_inscripcion_cursada, nota_cuat_1, nota_cuat_2, nota_recuperatorio, asistencia) 
+                VALUES ($1, $2, $3, $4, $5) RETURNING ID`,
+                [avance.id_inscripcion_cursada, avance.nota_cuat_1, avance.nota_cuat_2, avance.nota_recuperatorio, avance.asistencia])
+                .then((data) => {
+                   res.status(200).json({
+                        mensaje: null,
+                        datos: data
+                    });
+                })
+                .catch((err) => {
+                    console.error(err);
+                    res.status(500).json({
+                        mensaje: err,
+                        datos: null
+                    });
+                });
         }
-
-        this.db.one(`INSERT INTO avance_academico (id_inscripcion_cursada, nota_cuat_1, nota_cuat_2, nota_recuperatorio, asistencia) 
-        VALUES ($1, $2, $3, $4, $5) RETURNING ID`,
-            [avance.id_inscripcion_cursada, avance.nota_cuat_1, avance.nota_cuat_2, avance.nota_recuperatorio, avance.asistencia])
-            .then((data) => {
-               res.status(200).json({
-                    mensaje: null,
-                    datos: data
-                });
-            })
-            .catch((err) => {
-                console.error(err);
-                res.status(500).json({
-                    mensaje: err,
-                    datos: null
-                });
-            });
-
     }
 
 }
