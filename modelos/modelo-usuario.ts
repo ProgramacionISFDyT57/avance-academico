@@ -3,7 +3,7 @@ export class Usuario {
     email: string;
     clave: string;
     nombre: string;
-    apellido: number;
+    apellido: string;
     fecha_nacimiento: string;
     fecha_alta: string;
     id_rol: number;
