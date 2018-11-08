@@ -1,6 +1,7 @@
 import { IDatabase } from 'pg-promise';
 import { Request, Response } from 'express';
 import { Usuario } from '../modelos/modelo-usuario';
+import {Token } from '../modelos/modelo-token'
 import * as bcrypt from 'bcrypt';
 export class UsuariosController {
     private db: IDatabase<any>;
@@ -10,6 +11,32 @@ export class UsuariosController {
         this.crear_usuario = this.crear_usuario.bind(this);
         this.ver_profesores = this.ver_profesores.bind(this);
         this.listar_alumnos = this.listar_alumnos.bind(this);
+    }
+    public cambiar_contraseña(req: Request, res:Response){
+        const usuario: Usuario = req.body.usuario;
+        const claveVieja: string = req.body.claveVieja;
+        const newPass: string = req.body.nuevaclave;
+        const id_usuario: Token = res.locals;
+        this.db.one(`SELECT clave FROM usuarios WHERE clave = $1`, [claveVieja])
+        .then((data) => {
+            bcrypt.compare(claveVieja, data.clave, (err, same) => {
+                if(err){
+                    res.status(500).json({
+                        mensaje: err,
+                        datos: null
+                    })
+                }
+                else if(same){
+                    this.db.one(`INSERT INTO usuarios(clave) VALUES($2)`, [newPass])
+                }
+            })
+        })
+        .catch( (err) => {
+            res.status(500).json({
+                mensaje: err,
+                datos: null
+            });
+        })
     }
 
     public crear_usuario(req: Request, res: Response) {
@@ -60,7 +87,7 @@ export class UsuariosController {
                     datos: null
                 });
             });
-        });   
+        });
     }
 
     public ver_profesores(req: Request, res: Response) {

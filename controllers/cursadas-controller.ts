@@ -1,6 +1,7 @@
 import { IDatabase } from 'pg-promise';
 import { Request, Response } from 'express';
 import { Cursada } from '../modelos/modelo-cursada';
+import { inscripciones_cursadas} from '..modelos/modelo-inscripciones_cursadas'
 import { Avance } from '../modelos/modelo-avance-academico';
 
 export class CursadasController {
@@ -11,6 +12,7 @@ export class CursadasController {
         this.crear_cursada = this.crear_cursada.bind(this);
         this.listar_cursadas_aprobadas = this.listar_cursadas_aprobadas.bind(this);
         this.crear_avance = this.crear_avance.bind(this);
+        this.realizar_inscripcion_cursada = this.realizar_inscripcion_cursada.bind(this);
     }
     public crear_cursada(req: Request, res: Response) {
         const cursada: Cursada = req.body.cursada;
@@ -99,7 +101,6 @@ export class CursadasController {
                 });
             });
     }
-
     public cursadas_abiertas_alumno(req: Request, res: Response) {
         const id_alumno: number = req.params.id_alumno;
         // Buscar las cursadas abiertas de las carreras donde esta inscripto el alumno 
@@ -149,7 +150,6 @@ export class CursadasController {
                 });
             });
     }
-
     public crear_avance(req: Request, res: Response) {
         const avance: Avance = req.body.avance_academico;
         if (avance.nota_cuat_1 > 4 && avance.nota_cuat_2 > 4 && avance.nota_recuperatorio != null) {
@@ -193,6 +193,54 @@ export class CursadasController {
                 });
             });
 
+    }
+    public realizar_inscripcion_cursada (req: Request, res: Response) {
+        const id_alumno: number = req.params.id_alumno;
+        this.db.one(`
+            SELECT M.id, M.nombre, M.año FROM materias M
+            INNER JOIN cursadas C ON M.id = C.id_materia
+            LEFT JOIN correlativas CO ON CO.id_materia = M.id
+            WHERE M.id_carrera IN (
+                SELECT CA.id_carrera FROM carreras_abiertas CA
+                INNER JOIN inscripciones_carreras IC ON IC.id_carrera_abierta = CA.id
+                WHERE IC.id_alumno = $1
+                )
+            AND current_timestamp BETWEEN C.fecha_inicio AND fecha_limite
+            AND M.id NOT IN (
+                SELECT M.id FROM materias M
+                INNER JOIN cursadas C ON c.id_materia = M.id
+                INNER JOIN inscripciones_cursadas IC ON IC.id_cursada = C.id
+                INNER JOIN avance_academico AA ON AA.id_inscripcion_cursada = IC,id
+                INNER JOIN tipos_materias TM ON TM.id = M.id_tipo
+                WHERE IC.id_alumno = $1
+                AND ( (AA.nota_cuat_1 >= 4 AND AA.nota_cuat_1 >= 4) OR (AA.nota_recuperatorio >= 4 ) )
+                AND ( (TM.id = 2 AND AA.asistencia >= 80) OR (TM.id != 2 AND AA.asistencia >= 60) )
+                )
+            AND ( CO.id_correlativa IN (
+                SELECT M.id FROM materias M
+                INNER JOIN cursadas C ON c.id_materia = M.id
+                INNER JOIN inscripciones_cursadas IC ON IC.id_cursada = C.id
+                INNER JOIN avance_academico AA ON AA.id_inscripcion_cursada = IC,id
+                INNER JOIN tipos_materias TM ON TM.id = M.id_tipo
+                WHERE IC.id_alumno = $1
+                AND ( (AA.nota_cuat_1 >= 4 AND AA.nota_cuat_1 >= 4) OR (AA.nota_recuperatorio >= 4 ) )
+                AND ( (TM.id = 2 AND AA.asistencia >= 80) OR (TM.id != 2 AND AA.asistencia >= 60) )
+                ) 
+                OR CO.id_correlativa IS NULL )
+            INSERT INTO inscripciones_cursadas (id_alumno, id_cursada ) VALUES ($1, $2) 
+            RETURNING ID`, [inscripciones_cursadas.id_alumno, inscripciones_cursadas.id_cursada])
+            .then((data) => {
+                res.status(200).json({
+                    mensaje: null,
+                    datos: data
+                });
+            })
+            .catch((err) => {
+                res.status(500).json({
+                    mensaje: err,
+                    datos: null
+                });
+            });
     }
 
 }

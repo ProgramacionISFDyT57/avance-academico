@@ -51,6 +51,8 @@ app.post("/inscripciones_carreras", carrerasController.crear_inscripcion_carrera
 // CURSADAS ABIERTAS
 app.post("/cursadas", cursadasController.crear_cursada);
 app.get("/cursadas_abiertas/:id_alumno", cursadasController.cursadas_abiertas_alumno);
+//INSCRIPCION A CURSADAS
+app.post("/inscripciones_cursadas", cursadasController.realizar_inscripcion_cursada);
 // CREAR USUARIOS
 app.post("/usuarios", usuariosController.crear_usuario);
 // INSCRIPCIONES MESAS
