@@ -26,6 +26,8 @@ app.get("/", (req, res) => {
 });
 // USUARIOS
 // app.post("/tipos_materia", usuariosController.crear_usuario);
+// LOGIN
+app.post("/login", seguridadController.login);
 // TIPOS DE MATERIAS
 app.get("/tipos_materia", materiasController.ver_tipos_materias);
 app.post("/tipos_materia", materiasController.crear_tipo_materia);
