@@ -16,9 +16,9 @@ export class UsuariosController {
     public crear_usuario(req: Request, res: Response) {
         const usuario: Usuario = req.body.usuario;
         bcrypt.hash(usuario.clave, 10, (error, hash) => {
-            this.db.one(`INSERT INTO usuarios (id, email, clave, nombre, apellido, fecha_nacimiento, fecha_alta, id_rol) 
-            VALUES ($1, $2, $3, $4, $5, $6, current_timestamp, $7) 
-            RETURNING ID`, [usuario.id, usuario.email, hash, usuario.nombre, usuario.apellido, usuario.fecha_nacimiento , usuario.id_rol])
+            this.db.one(`INSERT INTO usuarios ( email, clave, nombre, apellido, fecha_nacimiento, fecha_alta, id_rol) 
+            VALUES ($1, $2, $3, $4, $5, current_timestamp, $6) 
+            RETURNING ID`, [ usuario.email, hash, usuario.nombre, usuario.apellido, usuario.fecha_nacimiento , usuario.id_rol])
             .then((data) => {
                 if (usuario.id_rol === 4) {
                     this.db.one('INSERT INTO profesores (id_usuario) VALUES ($1) RETURNING ID', [data.id])
