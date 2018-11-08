@@ -34,11 +34,18 @@ export class SeguridadController {
                             id_usuario: data.id,
                             id_rol: data.id_rol
                         }
-                        jwt.sign(token, process.env.JWT, (jwt) => {
-                            res.status(200).json({
-                                mensaje: null,
-                                datos: jwt
-                            });
+                        jwt.sign(token, process.env.JWT, (err, jwt) => {
+                            if (err) {
+                                res.status(500).json({
+                                    mensaje: err,
+                                    datos: null
+                                });
+                            } else {
+                                res.status(200).json({
+                                    mensaje: null,
+                                    datos: jwt
+                                });
+                            }
                         });
                     } else {
                         res.status(401).json({
