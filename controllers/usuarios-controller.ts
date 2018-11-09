@@ -13,11 +13,10 @@ export class UsuariosController {
         this.listar_alumnos = this.listar_alumnos.bind(this);
     }
     public cambiar_contraseña(req: Request, res:Response){
-        const usuario: Usuario = req.body.usuario;
         const claveVieja: string = req.body.claveVieja;
         const newPass: string = req.body.nuevaclave;
-        const id_usuario: Token = res.locals;
-        this.db.one(`SELECT clave FROM usuarios WHERE clave = $1`, [claveVieja])
+        const token: Token = res.locals;
+        this.db.one(`SELECT clave FROM usuarios WHERE id = $1`, [token.id_usuario])
         .then((data) => {
             bcrypt.compare(claveVieja, data.clave, (err, same) => {
                 if(err){
@@ -27,7 +26,15 @@ export class UsuariosController {
                     })
                 }
                 else if(same){
-                    this.db.one(`INSERT INTO usuarios(clave) VALUES($2)`, [newPass])
+                    bcrypt.hash(newPass, 10, (error, hash) => {
+                        this.db.one(`UPDATE usuarios SET clave = $1 WHERE id =$2`, [hash, token])
+                        .then((data)=>{
+                            res.status(200).json({
+                                mensaje: "Modificación de contraseña exitosa",
+                                datos: data
+                            });
+                        })
+                    })
                 }
             })
         })
