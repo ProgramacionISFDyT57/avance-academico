@@ -38,7 +38,7 @@ export class CursadasController {
                     });
                 } else {
                     this.db.oneOrNone(`SELECT id FROM cursadas 
-                        WHERE id_materia = $1 AND año = $2`, [cursada.id_materia, cursada.año])
+                        WHERE id_materia = $1 AND 'año' = $2`, [cursada.id_materia, cursada.año])
                         .then((data) => {
                             if (data) {
                                 res.status(400).json({
@@ -46,7 +46,7 @@ export class CursadasController {
                                     datos: null
                                 });
                             } else {
-                                this.db.one(`INSERT INTO cursadas (id_materia, id_profesor, año, fecha_inicio, fecha_limite) 
+                                this.db.one(`INSERT INTO cursadas (id_materia, id_profesor, 'año', fecha_inicio, fecha_limite) 
                                 VALUES ($1, $2, $3, $4, $5) RETURNING ID`,
                                     [cursada.id_materia, cursada.id_profesor, cursada.año, cursada.fecha_inicio, cursada.fecha_limite])
                                     .then((data) => {
@@ -106,7 +106,7 @@ export class CursadasController {
         // Buscar las cursadas abiertas de las carreras donde esta inscripto el alumno 
         // y no la tiene aprobada y si tiene las correlativas o no tiene correlativas
         this.db.manyOrNone(`
-            SELECT M.id, M.nombre, M.año FROM materias M
+            SELECT M.id, M.nombre, 'M.año' FROM materias M
             INNER JOIN cursadas C ON M.id = C.id_materia
             LEFT JOIN correlativas CO ON CO.id_materia = M.id
             WHERE M.id_carrera IN (

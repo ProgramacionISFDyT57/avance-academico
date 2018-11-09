@@ -117,8 +117,8 @@ export class MateriasController {
             });
     }
     public crear_materia(req: Request, res: Response) {
-        const materia: Materia = req.body.tipo_materia;
-        this.db.one('INSERT INTO materias (nombre, año, id_carrera, id_tipo) VALUES ($1, $2, $3, $4) RETURNING ID', [materia.nombre, materia.año, materia.id_carrera, materia.id_tipo])
+        const materia: Materia = req.body.materia;
+        this.db.one(`INSERT INTO materias (nombre, 'año', id_carrera, id_tipo) VALUES ($1, $2, $3, $4) RETURNING ID`, [materia.nombre, materia.año, materia.id_carrera, materia.id_tipo])
             .then((data) => {
                 res.status(200).json({
                     mensaje: "Se creó la materia " + materia.nombre,
@@ -135,9 +135,9 @@ export class MateriasController {
     }
     public modificar_materia(req: Request, res: Response) {
         const id = +req.params.id;
-        const materia: Materia = req.body.tipo_materia;
+        const materia: Materia = req.body.materia;
         if (id) {
-            this.db.none('UPDATE materias SET (nombre, año, id_carrera, id_tipo) VALUES ($1, $2, $3, $4) WHERE id = $5', [materia.nombre, materia.año, materia.id_carrera, materia.id_tipo, id])
+            this.db.none(`UPDATE materias SET (nombre, 'año', id_carrera, id_tipo) VALUES ($1, $2, $3, $4) WHERE id = $5`, [materia.nombre, materia.año, materia.id_carrera, materia.id_tipo, id])
                 .then( () => {
                     res.status(200).json({
                         mensaje: "Se modificó la materia",
@@ -185,10 +185,10 @@ export class MateriasController {
     public crear_correlativas(req: Request, res: Response) {
         const id_materia = req.body.id_materia
         const id_correlativa = req.body.id_correlativa
-        this.db.one(`SELECT id_carrera,año 
+        this.db.one(`SELECT id_carrera, 'año' 
             FROM materias WHERE id =$1`, [id_materia])
             .then(resultado1 => {
-                this.db.one(`SELECT id_carrera, año 
+                this.db.one(`SELECT id_carrera, 'año' 
                     FROM materias WHERE id =$2`, [id_correlativa])
                     .then(resultado2 => {
                         if (resultado1.id_carrera === resultado2.id_carrera) {
@@ -252,10 +252,10 @@ export class MateriasController {
     public ver_correlativas(req:Request, res: Response){
         const id_materia = req.params.id_materia
         this.db.manyOrNone(`
-            SELECT M.id, M.nombre, M.año, M.id_carrera, M.id_tipo
+            SELECT M.id, M.nombre, 'M.año', M.id_carrera, M.id_tipo
             FROM materias M 
             INNER JOIN correlativas C ON C.id_materia = M.id
-            WHERE C.id_materia = $1 ORDER BY año`, [id_materia])
+            WHERE C.id_materia = $1 ORDER BY 'año'`, [id_materia])
         .then((data) => {
             res.status(200).json({
                 mensaje: null,
