@@ -101,7 +101,7 @@ export class MateriasController {
         }
     }
     public ver_materias(req: Request, res: Response) {
-        this.db.manyOrNone(`SELECT id, nombre,  FROM materias ORDER BY nombre`)
+        this.db.manyOrNone(`SELECT id, nombre, anio FROM materias ORDER BY nombre`)
             .then((data) => {
                 res.status(200).json({
                     mensaje: null,
