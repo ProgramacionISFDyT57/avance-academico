@@ -25,6 +25,7 @@ app.get("/", (req, res) => {
     res.status(200).end("<h1>Backend Avance Academico</h1>")
 });
 // USUARIOS
+app.put("/usuarios", usuariosController.cambiar_contraseña);
 // app.post("/tipos_materia", usuariosController.crear_usuario);
 // LOGIN
 app.post("/login", seguridadController.login);
