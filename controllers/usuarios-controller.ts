@@ -11,6 +11,7 @@ export class UsuariosController {
         this.crear_usuario = this.crear_usuario.bind(this);
         this.ver_profesores = this.ver_profesores.bind(this);
         this.listar_alumnos = this.listar_alumnos.bind(this);
+        this.cambiar_contraseña = this.cambiar_contraseña.bind(this);
     }
     public cambiar_contraseña(req: Request, res:Response){
         const claveVieja: string = req.body.claveVieja;
