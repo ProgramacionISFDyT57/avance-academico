@@ -1,7 +1,7 @@
 import { IDatabase } from 'pg-promise';
 import { Request, Response } from 'express';
 import { Usuario } from '../modelos/modelo-usuario';
-import {Token } from '../modelos/modelo-token';
+import { Token } from '../modelos/modelo-token';
 import * as bcrypt from 'bcrypt';
 export class UsuariosController {
     private db: IDatabase<any>;
@@ -22,16 +22,16 @@ export class UsuariosController {
         this.db.one(`SELECT clave FROM usuarios WHERE id = $1`, [token.id_usuario])
         .then((data) => {
             bcrypt.compare(claveVieja, data.clave, (err, same) => {
-                if(err){
+                if (err) {
                     res.status(500).json({
                         mensaje: err,
                         datos: null
                     })
                 }
-                else if(same){
+                else if (same) {
                     bcrypt.hash(newPass, 10, (error, hash) => {
                         this.db.none(`UPDATE usuarios SET clave = $1 WHERE id =$2`, [hash, token.id_usuario])
-                        .then(()=>{
+                        .then( () => {
                             res.status(200).json({
                                 mensaje: "Modificación de contraseña exitosa",
                                 datos: true
