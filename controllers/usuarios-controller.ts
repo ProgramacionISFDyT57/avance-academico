@@ -1,6 +1,7 @@
 import { IDatabase } from 'pg-promise';
 import { Request, Response } from 'express';
 import { Usuario } from '../modelos/modelo-usuario';
+import { Token } from '../modelos/modelo-token';
 import * as bcrypt from 'bcrypt';
 export class UsuariosController {
     private db: IDatabase<any>;
@@ -11,7 +12,56 @@ export class UsuariosController {
         this.listar_usuarios = this.listar_usuarios.bind(this);
         this.ver_profesores = this.ver_profesores.bind(this);
         this.listar_alumnos = this.listar_alumnos.bind(this);
+        this.cambiar_contraseña = this.cambiar_contraseña.bind(this);
     }
+
+    public cambiar_contraseña(req: Request, res:Response){
+        const claveVieja: string = req.body.claveVieja;
+        const newPass: string = req.body.nuevaclave;
+        const token: Token = res.locals;
+        this.db.one(`SELECT clave FROM usuarios WHERE id = $1`, [token.id_usuario])
+        .then((data) => {
+            bcrypt.compare(claveVieja, data.clave, (err, same) => {
+                if (err) {
+                    res.status(500).json({
+                        mensaje: err,
+                        datos: null
+                    })
+                }
+                else if (same) {
+                    bcrypt.hash(newPass, 10, (error, hash) => {
+                        this.db.none(`UPDATE usuarios SET clave = $1 WHERE id =$2`, [hash, token.id_usuario])
+                        .then( () => {
+                            res.status(200).json({
+                                mensaje: "Modificación de contraseña exitosa",
+                                datos: true
+                            });
+                        })
+                        .catch( (err) => {
+                            res.status(500).json({
+                                mensaje: err,
+                                datos: null
+                            });
+                        })
+                    })
+                } else {
+                    res.status(400).json({
+                        mensaje: "La contraseña no coincide",
+                        datos: null
+                    });
+                }
+            })
+        })
+        .catch( (err) => {
+            res.status(500).json({
+                mensaje: err,
+                datos: null
+            });
+        })
+    }
+
+
+
 
     public crear_usuario(req: Request, res: Response) {
         const usuario: Usuario = req.body.usuario;
