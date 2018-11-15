@@ -30,14 +30,25 @@ export class UsuariosController {
                 }
                 else if(same){
                     bcrypt.hash(newPass, 10, (error, hash) => {
-                        this.db.one(`UPDATE usuarios SET clave = $1 WHERE id =$2`, [hash, token])
-                        .then((data)=>{
+                        this.db.none(`UPDATE usuarios SET clave = $1 WHERE id =$2`, [hash, token.id_usuario])
+                        .then(()=>{
                             res.status(200).json({
                                 mensaje: "Modificación de contraseña exitosa",
-                                datos: data
+                                datos: true
+                            });
+                        })
+                        .catch( (err) => {
+                            res.status(500).json({
+                                mensaje: err,
+                                datos: null
                             });
                         })
                     })
+                } else {
+                    res.status(400).json({
+                        mensaje: "La contraseña no coincide",
+                        datos: null
+                    });
                 }
             })
         })
