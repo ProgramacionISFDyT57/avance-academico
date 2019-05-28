@@ -37,10 +37,10 @@ app.post("/tipos_materia", materiasController.crear_tipo_materia);
 app.put("/tipos_materia/:id", materiasController.modificar_tipo_materia);
 app.delete("/tipos_materia/:id", materiasController.borrar_tipo_materia);
 // MATERIAS
-app.get("/materias", seguridadController.chequear_roles([1,2,3,4,5]), materiasController.ver_materias);
-app.post("/materias", seguridadController.chequear_roles([1,2]), materiasController.crear_materia);
-app.put("/materias/:id", seguridadController.chequear_roles([1,2]), materiasController.modificar_materia);
-app.delete("/materias/:id", seguridadController.chequear_roles([1,2]), materiasController.borrar_materia);
+app.get("/materias", materiasController.ver_materias);
+app.post("/materias", materiasController.crear_materia);
+app.put("/materias/:id", materiasController.modificar_materia);
+app.delete("/materias/:id", materiasController.borrar_materia);
 // CORRELATIVAS
 app.post('/correlativas', materiasController.crear_correlativas);
 app.delete('/correlativas', materiasController.borrar_correlativas);
@@ -59,7 +59,7 @@ app.post("/inscripciones_carreras", carrerasController.crear_inscripcion_carrera
 app.post("/cursadas", cursadasController.crear_cursada);
 app.get("/cursadas_abiertas/:id_alumno", cursadasController.cursadas_abiertas_alumno);
 // USUARIOS
-app.get("/usuarios", seguridadController.chequear_roles([1]), usuariosController.listar_usuarios);
+app.get("/usuarios", usuariosController.listar_usuarios);
 app.post("/usuarios", usuariosController.crear_usuario);
 // INSCRIPCIONES MESAS
 app.post("/inscripciones_mesas", mesasController.crear_inscripcion_mesa);
