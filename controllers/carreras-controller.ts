@@ -62,10 +62,7 @@ export class CarrerasController {
                                 this.db.one(`INSERT INTO inscripciones_carreras (id_alumno, id_carrera_abierta) 
                                     VALUES ($1, $2) RETURNING ID`, [ca.id_alumno, ca.id_carrera_abierta])
                                     .then((data) => {
-                                        res.status(200).json({
-                                            mensaje: null,
-                                            datos: data
-                                        });
+                                        res.status(200).json(data);
                                     })
                                     .catch((err) => {
                                         console.error(err);
@@ -94,10 +91,7 @@ export class CarrerasController {
     public ver_carreras(req: Request, res: Response) {
         this.db.manyOrNone('SELECT id, nombre, duracion, cantidad_materias FROM carreras ORDER BY nombre ASC;')
             .then(datos => {
-                res.json({
-                    mensaje: 'Listado de materias',
-                    datos: datos
-                })
+                res.json(datos);
             })
             .catch(err => {
                 console.error(err);
@@ -112,10 +106,7 @@ export class CarrerasController {
         this.db.one('INSERT INTO carreras (nombre, duracion, cantidad_materias) VALUES ($1, $2, $3) RETURNING ID;',
             [carrera.nombre, carrera.duracion, carrera.cantidad_materias])
             .then((data) => {
-                res.status(200).json({
-                    mensaje: null,
-                    datos: data
-                });
+                res.status(200).json(data);
             })
             .catch((err) => {
                 console.error(err);
@@ -130,10 +121,10 @@ export class CarrerasController {
         const carrera: Carrera = req.body.carrera;
         if (id) {
             this.db.none('UPDATE carreras SET nombre = $1, duracion = $2, cantidad_materias = $3 WHERE id = $4', [carrera.nombre, carrera.duracion, carrera.cantidad_materias, id])
-                .then((data) => {
+                .then(() => {
                     res.status(200).json({
                         mensaje: null,
-                        datos: data
+                        datos: null
                     });
                 })
                 .catch((err) => {
@@ -182,10 +173,7 @@ export class CarrerasController {
             WHERE current_timestamp BETWEEN CA.fecha_inicio AND CA.fecha_limite
             ORDER BY C.nombre`)
             .then((data) => {
-                res.status(200).json({
-                    mensaje: null,
-                    datos: data
-                });
+                res.status(200).json(data);
             })
             .catch((err) => {
                 console.error(err);
@@ -231,10 +219,7 @@ export class CarrerasController {
                                 this.db.one(`INSERT INTO carreras_abiertas (id_carrera, cohorte, fecha_inicio, fecha_limite) 
                                     VALUES ($1, $2, $3, $4) RETURNING ID`, [ca.id_carrera, ca.cohorte, ca.fecha_inicio, ca.fecha_limite])
                                     .then((data) => {
-                                        res.status(200).json({
-                                            mensaje: null,
-                                            datos: data
-                                        });
+                                        res.status(200).json(data);
                                     })
                                     .catch((err) => {
                                         console.error(err);

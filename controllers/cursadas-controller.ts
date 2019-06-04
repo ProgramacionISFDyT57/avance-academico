@@ -50,10 +50,7 @@ export class CursadasController {
                                 VALUES ($1, $2, $3, $4, $5) RETURNING ID`,
                                     [cursada.id_materia, cursada.id_profesor, cursada.año, cursada.fecha_inicio, cursada.fecha_limite])
                                     .then((data) => {
-                                        res.status(200).json({
-                                            mensaje: null,
-                                            datos: data
-                                        });
+                                        res.status(200).json(data);
                                     })
                                     .catch((err) => {
                                         console.error(err);
@@ -88,10 +85,7 @@ export class CursadasController {
             AND ((aa.nota_cuat_1 >=4 and aa.nota_cuat_2 >=4) OR (aa.nota_recuperatorio >=4))
             AND ((tm.id = 2 AND aa.asistencia >= 80) OR (tm.id != 2 AND aa.asistencia >= 60))`, [id])
             .then(resultado => {
-                res.status(200).json({
-                    mensaje: null,
-                    datos: resultado
-                });
+                res.status(200).json(resultado);
             })
             .catch(err => {
                 console.error(err);
@@ -138,10 +132,7 @@ export class CursadasController {
                 OR CO.id_correlativa IS NULL )
             ORDER BY M.nombre`, [id_alumno])
             .then( (data) => {
-                res.status(200).json({
-                          mensaje: null,
-                          datos: data
-                      });
+                res.status(200).json(data);
                 })
             .catch((err) => {
                 console.error(err);
@@ -178,10 +169,7 @@ export class CursadasController {
                 VALUES ($1, $2, $3, $4, $5) RETURNING ID`,
                 [avance.id_inscripcion_cursada, avance.nota_cuat_1, avance.nota_cuat_2, avance.nota_recuperatorio, avance.asistencia])
                 .then((data) => {
-                   res.status(200).json({
-                        mensaje: null,
-                        datos: data
-                    });
+                   res.status(200).json(data);
                 })
                 .catch((err) => {
                     console.error(err);
