@@ -122,10 +122,7 @@ export class UsuariosController {
             FROM usuarios U
             INNER JOIN roles R ON U.id_rol = R.id`)
             .then((data) => {
-                res.status(200).json({
-                    mensaje: null,
-                    datos: data
-                });
+                res.status(200).json(data);
             })
             .catch((err) => {
                 console.error(err);
@@ -140,10 +137,7 @@ export class UsuariosController {
             SELECT id, email, nombre, apellido, fecha_nacimiento, fecha_alta 
             FROM usuarios WHERE id_rol = 4`)
             .then((data) => {
-                res.status(200).json({
-                    mensaje: null,
-                    datos: data
-                });
+                res.status(200).json(data);
             })
             .catch((err) => {
                 console.error(err);
@@ -158,10 +152,7 @@ export class UsuariosController {
         SELECT alumnos.id, usuarios.nombre, usuarios.apellido FROM alumnos
         inner join usuarios on usuarios.id = alumnos.id_usuario`)
         .then((data) => {
-            res.status(200).json({
-                mensaje: null,
-                datos: data
-            });
+            res.status(200).json(data);
         })
         .catch((err) => {
             console.error(err);

@@ -21,10 +21,7 @@ export class MateriasController {
     public ver_tipos_materias(req: Request, res: Response) {
         this.db.manyOrNone('SELECT id, nombre FROM tipos_materias ORDER BY nombre')
             .then((data) => {
-                res.status(200).json({
-                    mensaje: null,
-                    datos: data
-                });
+                res.status(200).json(data);
             })
             .catch((err) => {
                 console.error(err);
@@ -103,10 +100,7 @@ export class MateriasController {
     public ver_materias(req: Request, res: Response) {
         this.db.manyOrNone(`SELECT id, nombre, anio FROM materias ORDER BY nombre`)
             .then((data) => {
-                res.status(200).json({
-                    mensaje: null,
-                    datos: data
-                });
+                res.status(200).json(data);
             })
             .catch((err) => {
                 console.error(err);
@@ -257,10 +251,7 @@ export class MateriasController {
             INNER JOIN correlativas C ON C.id_materia = M.id
             WHERE C.id_materia = $1 ORDER BY anio`, [id_materia])
         .then((data) => {
-            res.status(200).json({
-                mensaje: null,
-                datos: data
-            });
+            res.status(200).json(data);
         })
         .catch((err) => {
             console.error(err);
