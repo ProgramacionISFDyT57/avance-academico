@@ -2,6 +2,7 @@ import { IDatabase } from 'pg-promise';
 import { Request, Response } from 'express';
 import { TipoMateria } from "../modelos/modelo-tipomateria";
 import { Materia } from "../modelos/modelo-materia"
+import { resolve } from 'url';
 export class MateriasController {
     private db: IDatabase<any>;
 
@@ -89,10 +90,13 @@ export class MateriasController {
     // Materias    
     public ver_materias(req: Request, res: Response) {
         const query = `
-            SELECT m.id, m.nombre, m.anio, tm.nombre AS tipo_materia, c.nombre AS carrera
+            SELECT m.id, m.nombre, m.anio, tm.nombre AS tipo_materia, c.nombre AS carrera, json_agg(json_build_object( 'materia', mc.nombre) AS correlativas
             FROM materias m
             INNER JOIN tipos_materias tm ON tm.id = m.id_tipo
             INNER JOIN carreras c ON c.id = m.id_carrera
+            INNER JOIN correlativas co ON co.id_materia = m.id
+            INNER JOIN materias mc ON mc.id = co.id_correlativa
+            GROUP BY m.id, m.nombre, m.anio, tm.nombre AS tipo_materia, c.nombre AS carrera
             ORDER BY c.nombre, m.anio, m.nombre`;
         this.db.manyOrNone(query)
             .then((data) => {
@@ -120,14 +124,70 @@ export class MateriasController {
                 res.status(500).json(error);
             });
     }
+    private crear_correlativa(id_materia: number, id_correlativa: number) {
+        return new Promise((resolve, reject) => {
+            const query1 = `SELECT id_carrera, anio FROM materias WHERE id = $1`;
+            const query2 = `SELECT id_carrera, anio FROM materias WHERE id = $2`;
+            Promise.all([
+                this.db.one(query1, [id_materia]),
+                this.db.one(query2, [id_correlativa])
+            ]).then(resultados => {
+                const resultado1 = resultados[0];
+                const resultado2 = resultados[1];
+                // Comprueba que las materias sean de la misma carrera
+                if (resultado1.id_carrera === resultado2.id_carrera) {
+                    // Comprueba que la correlativa sea de un año inferior a la materia
+                    if (resultado2.año > resultado1.año) {
+                        this.db.none(`INSERT INTO correlativas (id_materia, id_correlativa) 
+                                    VALUES ($1, $2)`, [id_materia, id_correlativa])
+                            .then(() => {
+                                resolve();
+                            })
+                            .catch((error) => {
+                                reject(error);
+                            });
+                    } else {
+                        reject('Correlativa ilógica, la correlativa debe ser de un año anterior');
+                    }
+                }
+                else {
+                    reject('Materias de diferentes carreras');
+                }
+            })
+            .catch((error) => {
+                reject(error);
+            });
+        })
+    }
     public crear_materia(req: Request, res: Response) {
         const materia: Materia = req.body.materia;
         this.db.one(`INSERT INTO materias (nombre, anio, id_carrera, id_tipo) VALUES ($1, $2, $3, $4) RETURNING ID`, [materia.nombre, materia.año, materia.id_carrera, materia.id_tipo])
             .then((data) => {
-                res.status(200).json({
-                    mensaje: "Se creó la materia " + materia.nombre,
-                    datos: data
-                });
+                if (materia.correlativas && materia.correlativas.length) {
+                    const id_materia_creada = data.id;
+                    let creadas = 0;
+                    for (let correlativa of materia.correlativas) {
+                        this.crear_correlativa(id_materia_creada, correlativa)
+                            .then(() => {
+                                creadas++;
+                                if (creadas === materia.correlativas.length) {
+                                    res.status(200).json({
+                                        mensaje: "Se creó la materia " + materia.nombre + " con " + creadas + " materias correlativas",
+                                        datos: data
+                                    });
+                                }
+                            })
+                            .catch((error) => {
+                                console.error(error);
+                                res.status(500).json(error);
+                            });
+                    }
+                } else {
+                    res.status(200).json({
+                        mensaje: "Se creó la materia " + materia.nombre,
+                        datos: data
+                    });
+                }
             })
             .catch((error) => {
                 console.error(error);
