@@ -65,54 +65,45 @@ export class UsuariosController {
 
     public crear_usuario(req: Request, res: Response) {
         const usuario: Usuario = req.body.usuario;
-        bcrypt.hash(usuario.clave, 10, (error, hash) => {
-            this.db.one(`INSERT INTO usuarios ( email, clave, nombre, apellido, fecha_nacimiento, fecha_alta, id_rol) 
-            VALUES ($1, $2, $3, $4, $5, current_timestamp, $6) 
-            RETURNING ID`, [ usuario.email, hash, usuario.nombre, usuario.apellido, usuario.fecha_nacimiento , usuario.id_rol])
+        bcrypt.hash(usuario.dni, 10, (error, hash) => {
+            const query = `
+                INSERT INTO usuarios ( email, dni, clave, nombre, apellido, fecha_nacimiento, fecha_alta, id_rol, telefono) 
+                VALUES ($1, $2, $3, $4, $5,, $6, current_timestamp, $7, $8) 
+                RETURNING ID`;
+            this.db.one(query, [ usuario.email, usuario.dni, hash, usuario.nombre, 
+                usuario.apellido, usuario.fecha_nacimiento , usuario.id_rol, usuario.telefono])
             .then((data) => {
                 if (usuario.id_rol === 4) {
                     this.db.one('INSERT INTO profesores (id_usuario) VALUES ($1) RETURNING ID', [data.id])
                         .then((data) => {
                             res.status(200).json({
-                                mensaje: null,
                                 datos: data
                             });
                         })
                         .catch((err) => {
                             console.error(err);
-                            res.status(500).json({
-                                mensaje: err,
-                                datos: null
-                            });
-                        })
+                            res.status(500).json(err);
+                        });
                 } else if (usuario.id_rol === 5) {
                     this.db.one('INSERT INTO alumnos (id_usuario) VALUES ($1) RETURNING ID', [data.id])
                         .then((data) => {
                             res.status(200).json({
-                                mensaje: null,
                                 datos: data
                             });
                         })
                         .catch((err) => {
                             console.error(err);
-                            res.status(500).json({
-                                mensaje: err,
-                                datos: null
-                            });
+                            res.status(500).json(err);
                         });
                 } else {
                     res.status(200).json({
-                        mensaje: null,
                         datos: data
                     });
                 }
             })
             .catch((err) => {
                 console.error(err);
-                res.status(500).json({
-                    mensaje: err,
-                    datos: null
-                });
+                res.status(500).json(err);
             });
         });   
     }

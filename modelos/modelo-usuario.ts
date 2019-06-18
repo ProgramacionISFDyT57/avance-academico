@@ -1,10 +1,12 @@
 export class Usuario {
     id: number;
     email: string;
-    clave: string;
+    dni: string;
+    clave?: string;
     nombre: string;
     apellido: string;
     fecha_nacimiento: string;
     fecha_alta: string;
+    telefono: string;
     id_rol: number;
 }
