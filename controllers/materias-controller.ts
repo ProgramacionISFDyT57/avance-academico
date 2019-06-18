@@ -134,7 +134,7 @@ export class MateriasController {
                 // Comprueba que las materias sean de la misma carrera
                 if (resultado1.id_carrera === resultado2.id_carrera) {
                     // Comprueba que la correlativa sea de un año inferior a la materia
-                    if (resultado2.anio > resultado1.anio) {
+                    if (resultado2.anio < resultado1.anio) {
                         this.db.none(`INSERT INTO correlativas (id_materia, id_correlativa) 
                                     VALUES ($1, $2)`, [id_materia, id_correlativa])
                             .then(() => {
