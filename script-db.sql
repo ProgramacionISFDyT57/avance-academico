@@ -266,3 +266,11 @@ INSERT INTO tipos_materias (id, nombre) VALUES (4, 'Seminario');
 INSERT INTO usuarios (email, clave, nombre, apellido, fecha_nacimiento, fecha_alta, id_rol) VALUES
  ('admin', '$2a$10$lLMVdJxEQgwM5qPaXgwqoeuJO2j8mRaugwrhlBd7yo06ZuH83hrbW', 'Admin', 'Admin', current_timestamp, current_timestamp, 1); 
 
+ALTER TABLE usuarios ADD COLUMN dni text;
+UPDATE usuarios SET dni = '1234';
+ALTER TABLE usuarios ALTER COLUMN dni SET NOT NULL;
+ALTER TABLE usuarios ADD COLUMN telefono text;
+
+ALTER TABLE carreras ADD COLUMN descripcion text;
+ 
+
