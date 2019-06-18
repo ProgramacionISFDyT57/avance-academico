@@ -4,4 +4,5 @@ export class Materia {
     año: number;
     id_carrera: number;
     id_tipo: number;
+    correlativas?: number[];
 }
