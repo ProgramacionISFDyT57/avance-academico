@@ -124,18 +124,17 @@ export class MateriasController {
     }
     private crear_correlativa(id_materia: number, id_correlativa: number) {
         return new Promise((resolve, reject) => {
-            const query1 = `SELECT id_carrera, anio FROM materias WHERE id = $1`;
-            const query2 = `SELECT id_carrera, anio FROM materias WHERE id = $2`;
+            const query = `SELECT id_carrera, anio FROM materias WHERE id = $1`;
             Promise.all([
-                this.db.one(query1, [id_materia]),
-                this.db.one(query2, [id_correlativa])
+                this.db.one(query, [id_materia]),
+                this.db.one(query, [id_correlativa])
             ]).then(resultados => {
                 const resultado1 = resultados[0];
                 const resultado2 = resultados[1];
                 // Comprueba que las materias sean de la misma carrera
                 if (resultado1.id_carrera === resultado2.id_carrera) {
                     // Comprueba que la correlativa sea de un año inferior a la materia
-                    if (resultado2.año > resultado1.año) {
+                    if (resultado2.anio > resultado1.anio) {
                         this.db.none(`INSERT INTO correlativas (id_materia, id_correlativa) 
                                     VALUES ($1, $2)`, [id_materia, id_correlativa])
                             .then(() => {
