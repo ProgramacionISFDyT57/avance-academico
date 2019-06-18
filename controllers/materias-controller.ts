@@ -2,7 +2,7 @@ import { IDatabase } from 'pg-promise';
 import { Request, Response } from 'express';
 import { TipoMateria } from "../modelos/modelo-tipomateria";
 import { Materia } from "../modelos/modelo-materia"
-import { resolve } from 'url';
+
 export class MateriasController {
     private db: IDatabase<any>;
 
@@ -62,8 +62,7 @@ export class MateriasController {
                 });
         } else {
             res.status(400).json({
-                mensaje: 'ID Incorrecto',
-                datos: null
+                mensaje: 'ID Incorrecto'
             });
         }
     }
@@ -83,7 +82,6 @@ export class MateriasController {
         } else {
             res.status(400).json({
                 mensaje: 'ID Incorrecto',
-                datos: null
             });
         }
     }
