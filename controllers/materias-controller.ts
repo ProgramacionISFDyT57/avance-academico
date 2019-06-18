@@ -88,7 +88,7 @@ export class MateriasController {
     // Materias    
     public ver_materias(req: Request, res: Response) {
         const query = `
-            SELECT m.id, m.nombre, m.anio, tm.nombre AS tipo_materia, c.nombre AS carrera, json_agg(json_build_object( 'materia', mc.nombre) AS correlativas
+            SELECT m.id, m.nombre, m.anio, tm.nombre AS tipo_materia, c.nombre AS carrera, json_agg(json_build_object( 'materia', mc.nombre)) AS correlativas
             FROM materias m
             INNER JOIN tipos_materias tm ON tm.id = m.id_tipo
             INNER JOIN carreras c ON c.id = m.id_carrera
