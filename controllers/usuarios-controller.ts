@@ -68,7 +68,7 @@ export class UsuariosController {
         bcrypt.hash(usuario.dni, 10, (error, hash) => {
             const query = `
                 INSERT INTO usuarios ( email, dni, clave, nombre, apellido, fecha_nacimiento, fecha_alta, id_rol, telefono) 
-                VALUES ($1, $2, $3, $4, $5,, $6, current_timestamp, $7, $8) 
+                VALUES ($1, $2, $3, $4, $5, $6, current_timestamp, $7, $8) 
                 RETURNING ID`;
             this.db.one(query, [ usuario.email, usuario.dni, hash, usuario.nombre, 
                 usuario.apellido, usuario.fecha_nacimiento , usuario.id_rol, usuario.telefono])
