@@ -88,7 +88,7 @@ export class MateriasController {
     // Materias    
     public ver_materias(req: Request, res: Response) {
         const query = `
-            SELECT m.id, m.nombre, m.anio, tm.nombre AS tipo_materia, c.nombre AS carrera, json_agg(json_build_object( 'materia', mc.nombre)) AS correlativas
+            SELECT m.id, m.nombre, m.anio, tm.nombre AS tipo_materia, c.nombre AS carrera, array_agg(mc.nombre) AS correlativas
             FROM materias m
             INNER JOIN tipos_materias tm ON tm.id = m.id_tipo
             INNER JOIN carreras c ON c.id = m.id_carrera
@@ -122,7 +122,7 @@ export class MateriasController {
                 res.status(500).json(error);
             });
     }
-    private crear_correlativa(id_materia: number, id_correlativa: number) {
+    private async crear_correlativa(id_materia: number, id_correlativa: number) {
         return new Promise((resolve, reject) => {
             const query = `SELECT id_carrera, anio FROM materias WHERE id = $1`;
             Promise.all([
