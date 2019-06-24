@@ -109,7 +109,7 @@ export class UsuariosController {
     }
     public listar_usuarios(req: Request, res: Response) {
         this.db.manyOrNone(`
-            SELECT U.id, U.nombre, U.apellido, U.email, U.fecha_nacimiento, U.fecha_alta, R.nombre 
+            SELECT U.id, U.nombre, U.apellido, U.email, U.fecha_nacimiento, U.fecha_alta, R.nombre AS rol
             FROM usuarios U
             INNER JOIN roles R ON U.id_rol = R.id`)
             .then((data) => {
