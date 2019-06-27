@@ -286,12 +286,12 @@ export class MateriasController {
             });
     }
     public ver_correlativas(req: Request, res: Response) {
-        const id_materia = req.params.id_materia
+        const id_materia = +req.params.id_materia
         const query = `
-            SELECT M.id, M.nombre, M.anio, M.id_carrera, M.id_tipo
+            SELECT M.id, M.nombre, M.anio
             FROM materias M 
-            INNER JOIN correlativas C ON C.id_materia = M.id
-            WHERE C.id_materia = $1 ORDER BY anio`;
+            INNER JOIN correlativas C ON C.id_correlativa = M.id
+            WHERE C.id_materia = $1`;
         this.db.manyOrNone(query, [id_materia])
             .then((data) => {
                 res.status(200).json(data);
