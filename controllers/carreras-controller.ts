@@ -89,7 +89,13 @@ export class CarrerasController {
             })
     }
     public ver_carreras(req: Request, res: Response) {
-        this.db.manyOrNone('SELECT id, nombre, duracion, cantidad_materias FROM carreras ORDER BY nombre ASC;')
+        const query = `
+            SELECT c.id, c.nombre, c.duracion, c.cantidad_materias, COUNT(m.id) AS materias_cargadas
+            FROM carreras c
+            INNER JOIN materias m ON m.id_carrera = c.id
+            GROUP BY c.id, c.nombre, c.duracion, c.cantidad_materias
+            ORDER BY nombre ASC;`
+        this.db.manyOrNone(query)
             .then(datos => {
                 res.json(datos);
             })
