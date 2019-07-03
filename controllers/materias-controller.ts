@@ -97,8 +97,13 @@ export class MateriasController {
             GROUP BY m.id, m.nombre, m.anio, tm.nombre, c.nombre
             ORDER BY c.nombre, m.anio, m.nombre`;
         this.db.manyOrNone(query)
-            .then((data) => {
-                res.status(200).json(data);
+            .then((materias) => {
+                for (const materia of materias) {
+                    if (materia.correlativas[0] === null) {
+                        materia.correlativas = [];
+                    }
+                }
+                res.status(200).json(materias);
             })
             .catch((error) => {
                 console.error(error);
@@ -294,6 +299,7 @@ export class MateriasController {
             WHERE C.id_materia = $1`;
         this.db.manyOrNone(query, [id_materia])
             .then((data) => {
+
                 res.status(200).json(data);
             })
             .catch((error) => {
