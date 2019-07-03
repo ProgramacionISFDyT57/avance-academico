@@ -92,7 +92,7 @@ export class CarrerasController {
         const query = `
             SELECT c.id, c.nombre, c.duracion, c.cantidad_materias, COUNT(m.id) AS materias_cargadas
             FROM carreras c
-            INNER JOIN materias m ON m.id_carrera = c.id
+            LEFT JOIN materias m ON m.id_carrera = c.id
             GROUP BY c.id, c.nombre, c.duracion, c.cantidad_materias
             ORDER BY nombre ASC;`
         this.db.manyOrNone(query)
