@@ -13,22 +13,18 @@ export class MesasController {
     }
 
     public crear_inscripcion_mesa(req: Request, res: Response){
-        const id_mesa = +req.params.id_mesa;
-        const id_alumno = +req.params.id_alumno;
+        const id_mesa = +req.body.id_mesa;
+        const id_alumno = +req.body.id_alumno;
         this.db.none(`INSERT INTO inscripciones_mesa (id_mesa, id_alumno, fecha_inscripcion) 
             VALUES ($1, $2, current_timestamp);`, [id_mesa, id_alumno])
         .then(() => {
             res.status(200).json({
                 mensaje: 'Inscripción creada!',
-                datos: null
             });
         })
         .catch((err) => {
             console.error(err);
-            res.status(500).json({
-                mensaje: err,
-                datos: null
-            });
+            res.status(500).json(err);
         });
     }
     public lista_mesas(req: Request, res: Response){
@@ -46,10 +42,7 @@ export class MesasController {
         })
         .catch((err) => {
             console.error(err);
-            res.status(500).json({
-                mensaje: err,
-                datos: null
-            });
+            res.status(500).json(err);
         });
     }
     public crear_mesa(req: Request, res: Response){
@@ -58,16 +51,12 @@ export class MesasController {
             id_vocal1, id_vocal2) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id`, [mesa.id_materia, mesa.fecha_inicio, mesa.fecha_limite, mesa.fecha_examen, mesa.id_profesor, mesa.id_vocal1, mesa.id_vocal2])
             .then((data) => {
                 res.status(200).json({
-                    mensaje: null,
-                    datos: data
+                    mensaje: "Se creó la mesa correctamente"
                 });
             })
             .catch((err) => {
                 console.error(err);
-                res.status(500).json({
-                    mensaje: err,
-                    datos: null
-                });
+                res.status(500).json(err);
             });
     }
 }
