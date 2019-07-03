@@ -38,7 +38,7 @@ export class SeguridadController {
                                 res.status(500).json(err);
                             } else {
                                 res.status(200).json({
-                                    datos: jwt,
+                                    token: jwt,
                                     apellido: data.apellido,
                                     nombre: data.nombre,
                                     rol: data.rol
