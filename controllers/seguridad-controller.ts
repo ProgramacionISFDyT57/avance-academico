@@ -17,18 +17,17 @@ export class SeguridadController {
     public login(req: Request, res: Response) {
         const email: string =  req.body.mail;
         const clave: string =  req.body.clave;
-        this.db.oneOrNone(`
-            SELECT id, id_rol, clave FROM usuarios
-            WHERE email = $1
-            `, [email])
+        const query = `
+            SELECT u.clave, u.nombre, u.apellido, r.nombre AS rol
+            FROM usuarios u
+            INNER JOIN roles r ON r.id = u.id_rol  
+            WHERE u.email = $1`;
+        this.db.oneOrNone(query, [email])
         .then( (data) => {
             if (data) {
                 bcrypt.compare(clave, data.clave, (err, same) => {
                     if (err) {
-                        res.status(500).json({
-                            mensaje: err,
-                            datos: null
-                        });
+                        res.status(500).json(err);
                     } else if (same) {
                         const token: Token = {
                             id_usuario: data.id,
@@ -36,36 +35,30 @@ export class SeguridadController {
                         }
                         jwt.sign(token, process.env.JWT, (err, jwt) => {
                             if (err) {
-                                res.status(500).json({
-                                    mensaje: err,
-                                    datos: null
-                                });
+                                res.status(500).json(err);
                             } else {
                                 res.status(200).json({
-                                    mensaje: null,
-                                    datos: jwt
+                                    datos: jwt,
+                                    apellido: data.apellido,
+                                    nombre: data.nombre,
+                                    rol: data.rol
                                 });
                             }
                         });
                     } else {
                         res.status(401).json({
                             mensaje: 'Email o contraseña incorrectos',
-                            datos: null
                         });
                     }
                 });
             } else {
                 res.status(401).json({
                     mensaje: 'Email o contraseña incorrectos',
-                    datos: null
                 });
             }
         })
         .catch( (err) => {
-            res.status(500).json({
-                mensaje: err,
-                datos: null
-            });
+            res.status(500).json(err);
         })
     }
 
