@@ -41,6 +41,7 @@ app.put("/tipos_materia/:id", materiasController.modificar_tipo_materia);
 app.delete("/tipos_materia/:id", materiasController.borrar_tipo_materia);
 // MATERIAS
 app.get("/materias", materiasController.ver_materias);
+app.get("/materia/:id", materiasController.ver_materia);
 app.get("/materias_por_carrera/:id_carrera", materiasController.materias_por_carrera);
 app.post("/materias", materiasController.crear_materia);
 app.put("/materias/:id", materiasController.modificar_materia);

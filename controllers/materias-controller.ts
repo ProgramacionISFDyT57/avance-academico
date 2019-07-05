@@ -12,7 +12,9 @@ export class MateriasController {
         this.crear_tipo_materia = this.crear_tipo_materia.bind(this);
         this.modificar_tipo_materia = this.modificar_tipo_materia.bind(this);
         this.borrar_tipo_materia = this.borrar_tipo_materia.bind(this);
+        //
         this.ver_materias = this.ver_materias.bind(this);
+        this.ver_materia = this.ver_materia.bind(this);
         this.materias_por_carrera = this.materias_por_carrera.bind(this);
         this.crear_materia = this.crear_materia.bind(this);
         this.modificar_materia = this.modificar_materia.bind(this);
@@ -97,6 +99,31 @@ export class MateriasController {
             GROUP BY m.id, m.nombre, m.anio, tm.nombre, c.nombre
             ORDER BY c.nombre, m.anio, m.nombre`;
         this.db.manyOrNone(query)
+            .then((materias) => {
+                for (const materia of materias) {
+                    if (materia.correlativas[0] === null) {
+                        materia.correlativas = [];
+                    }
+                }
+                res.status(200).json(materias);
+            })
+            .catch((error) => {
+                console.error(error);
+                res.status(500).json(error);
+            });
+    }
+    public ver_materia(req: Request, res: Response) {
+        const id = req.params.id;
+        const query = `
+            SELECT m.id, m.nombre, m.anio, tm.nombre AS tipo_materia, c.nombre AS carrera, array_agg(mc.nombre) AS correlativas
+            FROM materias m
+            INNER JOIN tipos_materias tm ON tm.id = m.id_tipo
+            INNER JOIN carreras c ON c.id = m.id_carrera
+            LEFT JOIN correlativas co ON co.id_materia = m.id
+            LEFT JOIN materias mc ON mc.id = co.id_correlativa
+            WHERE m.id = $1
+            GROUP BY m.id, m.nombre, m.anio, tm.nombre, c.nombre`;
+        this.db.one(query, id)
             .then((materias) => {
                 for (const materia of materias) {
                     if (materia.correlativas[0] === null) {
