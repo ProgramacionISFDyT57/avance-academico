@@ -11,6 +11,7 @@ export class CarrerasController {
         this.borrar_inscripcion_carrera = this.borrar_inscripcion_carrera.bind(this);
         this.crear_inscripcion_carrera = this.crear_inscripcion_carrera.bind(this);
         this.ver_carreras = this.ver_carreras.bind(this);
+        this.ver_carrera = this.ver_carrera.bind(this);
         this.crear_carrera = this.crear_carrera.bind(this);
         this.modificar_carrera = this.modificar_carrera.bind(this);
         this.borrar_carrera = this.borrar_carrera.bind(this);
@@ -105,6 +106,18 @@ export class CarrerasController {
                     mensaje: err.detail,
                     datos: err
                 })
+            })
+    }
+    public ver_carrera(req: Request, res: Response) {
+        const id = req.params.id;
+        const query = 'SELECT id, nombre, duracion, cantidad_materias FROM carreras WHERE id = $1;'
+        this.db.one(query, id)
+            .then(datos => {
+                res.json(datos);
+            })
+            .catch((error) => {
+                console.error(error);
+                res.status(500).json(error);
             })
     }
     public crear_carrera(req: Request, res: Response) {
