@@ -260,6 +260,7 @@ export class MateriasController {
             });
         }
     }
+    // Correlativas
     public crear_correlativas(req: Request, res: Response) {
         const id_materia = req.body.id_materia
         const id_correlativa = req.body.id_correlativa

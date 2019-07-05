@@ -53,16 +53,9 @@ export class UsuariosController {
             })
         })
         .catch( (err) => {
-            res.status(500).json({
-                mensaje: err,
-                datos: null
-            });
+            res.status(500).json(err);
         })
     }
-
-
-
-
     public crear_usuario(req: Request, res: Response) {
         const usuario: Usuario = req.body.usuario;
         bcrypt.hash(usuario.dni, 10, (error, hash) => {
@@ -117,25 +110,22 @@ export class UsuariosController {
             })
             .catch((err) => {
                 console.error(err);
-                res.status(500).json({
-                    mensaje: err,
-                    datos: null
-                });
+                res.status(500).json(err);
             });
     }
     public ver_profesores(req: Request, res: Response) {
-        this.db.manyOrNone(`
-            SELECT id, email, nombre, apellido, fecha_nacimiento, fecha_alta 
-            FROM usuarios WHERE id_rol = 4`)
+        const query = `
+            SELECT p.id, u.email, u.nombre, u.apellido, u.fecha_nacimiento, u.fecha_alta 
+            FROM usuarios u
+            INNER JOIN profesores p on p.id_usuario = u.id
+            WHERE u.id_rol = 4`;
+        this.db.manyOrNone(query)
             .then((data) => {
                 res.status(200).json(data);
             })
             .catch((err) => {
                 console.error(err);
-                res.status(500).json({
-                    mensaje: err,
-                    datos: null
-                });
+                res.status(500).json(err);
             });
     }
     public listar_alumnos(req: Request, res: Response) {
@@ -147,10 +137,7 @@ export class UsuariosController {
         })
         .catch((err) => {
             console.error(err);
-            res.status(500).json({
-                mensaje: err,
-                datos: null
-            });
+            res.status(500).json(err);
         });
     }
 }

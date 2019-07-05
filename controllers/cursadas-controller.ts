@@ -34,7 +34,7 @@ export class CursadasController {
                         mensaje: 'La fecha límite no puede ser menor a la actual',
                     });
                 } else {
-                    const query1 = `SELECT id FROM cursadas WHERE id_materia = $1 AND anio = $2`;
+                    const query1 = `SELECT id FROM cursadas WHERE id_materia = $1 AND anio = $2;`;
                     this.db.oneOrNone(query1, [cursada.id_materia, cursada.año])
                         .then((data) => {
                             if (data) {
@@ -42,8 +42,9 @@ export class CursadasController {
                                     mensaje: 'La cursada ya se encuentra abierta para inscripción',
                                 });
                             } else {
-                                const query2 = `INSERT INTO cursadas (id_materia, id_profesor, anio, fecha_inicio, fecha_limite) 
-                                    VALUES ($1, $2, $3, $4, $5) RETURNING ID`
+                                const query2 = `
+                                    INSERT INTO cursadas (id_materia, id_profesor, anio, fecha_inicio, fecha_limite) 
+                                    VALUES ($1, $2, $3, $4, $5) RETURNING ID;`;
                                 this.db.one(query2, [cursada.id_materia, cursada.id_profesor, cursada.año, cursada.fecha_inicio, cursada.fecha_limite])
                                     .then((data) => {
                                         res.status(200).json(data);
