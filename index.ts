@@ -27,8 +27,11 @@ app.get("/", (req, res) => {
     res.status(200).end("<h1>Backend Avance Academico</h1>")
 });
 // USUARIOS
+app.get("/usuarios", usuariosController.listar_usuarios);
+app.post("/usuarios", usuariosController.crear_usuario);
 app.put("/usuarios", usuariosController.cambiar_contraseña);
-// app.post("/tipos_materia", usuariosController.crear_usuario);
+// PROFESORES
+app.get("/profesores", usuariosController.ver_profesores);
 // LOGIN
 app.post("/login", seguridadController.login);
 // TIPOS DE MATERIAS
@@ -46,33 +49,35 @@ app.delete("/materias/:id", materiasController.borrar_materia);
 app.post('/correlativas', materiasController.crear_correlativas);
 app.delete('/correlativas', materiasController.borrar_correlativas);
 app.get("/correlativas/:id_materia", materiasController.ver_correlativas);
-// CARRERA
+// CARRERAS
 app.get('/carreras', carrerasController.ver_carreras);
 app.get('/carrera/:id', carrerasController.ver_carrera);
 app.post("/carreras", carrerasController.crear_carrera);
 app.put("/carreras/:id", carrerasController.modificar_carrera);
 app.delete("/carreras/:id", carrerasController.borrar_carrera);
+//////////////////////////////////////////////////////////////////////////////////////
 // CARRERAS ABIERTAS
+//////////////////////////////////////////////////////////////////////////////////////
 app.get("/carreras_abiertas", carrerasController.ver_carreras_abiertas);
 app.post("/carreras_abiertas", carrerasController.crear_carreras_abiertas);
 // INSCRIPCIONES A CARRERAS
 app.post("/inscripciones_carreras", carrerasController.crear_inscripcion_carrera);
+//////////////////////////////////////////////////////////////////////////////////////
 // CURSADAS ABIERTAS
+//////////////////////////////////////////////////////////////////////////////////////
 app.post("/cursadas", cursadasController.crear_cursada);
 app.get("/cursadas_abiertas/:id_alumno", cursadasController.cursadas_abiertas_alumno);
-// USUARIOS
-app.get("/usuarios", usuariosController.listar_usuarios);
-app.post("/usuarios", usuariosController.crear_usuario);
-// INSCRIPCIONES MESAS
-app.post("/inscripciones_mesas", mesasController.crear_inscripcion_mesa);
-// PROFESORES
-app.get("/profesores", usuariosController.ver_profesores);
-// MESAS
-app.post("/crear_mesa", mesasController.crear_mesa);
-app.get("/lista_mesas", mesasController.lista_mesas);
 // LISTAR CURSADAS APROBADAS
 app.get("/listar_cursadas_aprobadas", cursadasController.listar_cursadas_aprobadas);
+//////////////////////////////////////////////////////////////////////////////////////
+// MESAS
+//////////////////////////////////////////////////////////////////////////////////////
+app.post("/crear_mesa", mesasController.crear_mesa);
+app.get("/lista_mesas", mesasController.lista_mesas);
+// INSCRIPCIONES MESAS
+app.post("/inscripciones_mesas", mesasController.crear_inscripcion_mesa);
 // 
+//////////////////////////////////////////////////////////////////////////////////////
 app.listen(port, () => {
     console.log("Servidor escuchando en le puerto ", + port);
 });
