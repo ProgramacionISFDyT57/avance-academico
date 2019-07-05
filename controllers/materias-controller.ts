@@ -124,13 +124,11 @@ export class MateriasController {
             WHERE m.id = $1
             GROUP BY m.id, m.nombre, m.anio, tm.nombre, c.nombre`;
         this.db.one(query, id)
-            .then((materias) => {
-                for (const materia of materias) {
-                    if (materia.correlativas[0] === null) {
-                        materia.correlativas = [];
-                    }
+            .then((materia) => {
+                if (materia.correlativas[0] === null) {
+                    materia.correlativas = [];
                 }
-                res.status(200).json(materias);
+                res.status(200).json(materia);
             })
             .catch((error) => {
                 console.error(error);
@@ -183,9 +181,9 @@ export class MateriasController {
                     reject('Materias de diferentes carreras');
                 }
             })
-            .catch((error) => {
-                reject(error);
-            });
+                .catch((error) => {
+                    reject(error);
+                });
         })
     }
     public crear_materia(req: Request, res: Response) {
