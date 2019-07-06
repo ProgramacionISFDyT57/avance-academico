@@ -110,7 +110,12 @@ export class CarrerasController {
     }
     public ver_carrera(req: Request, res: Response) {
         const id = req.params.id;
-        const query = 'SELECT id, nombre, duracion, cantidad_materias FROM carreras WHERE id = $1;'
+        const query = `
+            SELECT c.id, c.nombre, c.duracion, c.cantidad_materias, COUNT(m.id) AS materias_cargadas
+            FROM carreras c
+            LEFT JOIN materias m ON m.id_carrera = c.id
+            WHERE c.id = $1
+            GROUP BY c.id, c.nombre, c.duracion, c.cantidad_materias;`
         this.db.one(query, id)
             .then(datos => {
                 res.json(datos);
