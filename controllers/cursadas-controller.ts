@@ -81,10 +81,7 @@ export class CursadasController {
             })
             .catch(err => {
                 console.error(err);
-                res.status(200).json({
-                    mensaje: err,
-                    datos: null
-                });
+                res.status(200).json(err);
             });
     }
     public ver_cursadas_abiertas_alumno(req: Request, res: Response) {
@@ -128,17 +125,14 @@ export class CursadasController {
                 })
             .catch((err) => {
                 console.error(err);
-                res.status(500).json({
-                    mensaje: err,
-                    datos: null
-                });
+                res.status(500).json(err);
             });
     }
     public ver_cursadas_abiertas(req: Request, res: Response) {
         const query = `
             SELECT C.id, C.anio AS año_cursada, C.fecha_inicio, C.fecha_limite, 
                 M.nombre AS materia, M.anio AS año_materia,
-                CONCAT(U.apellido, ', ', U.nombre) AS profesor
+                CONCAT_WS(', ', U.apellido, U.nombre) AS profesor
             FROM cursadas C
             INNER JOIN materias M ON M.id = C.id_materia
             LEFT JOIN profesores P ON P.id = C.id_profesor
@@ -146,6 +140,7 @@ export class CursadasController {
             ORDER BY C.anio DESC, M.nombre`;
         this.db.manyOrNone(query)
             .then( (data) => {
+
                 res.status(200).json(data);
             })
             .catch((err) => {
@@ -157,23 +152,19 @@ export class CursadasController {
         const avance: Avance = req.body.avance_academico;
         if (avance.nota_cuat_1 > 4 && avance.nota_cuat_2 > 4 && avance.nota_recuperatorio != null) {
             res.status(400).json({
-                mensaje: 'No es posible tener nota de recuperatorio con los dos cuatrimestres aprobados',
-                datos: null
+                mensaje: 'No es posible tener nota de recuperatorio con los dos cuatrimestres aprobados'
             })
         } else if (avance.nota_cuat_1 < 4 && avance.nota_cuat_2 < 4 && avance.nota_recuperatorio != null) {
             res.status(400).json({
-                mensaje: 'No es posible tener nota de recuperatorio con los dos cuatrimestres desaprobados',
-                datos: null
+                mensaje: 'No es posible tener nota de recuperatorio con los dos cuatrimestres desaprobados'
             })
         } else if (avance.nota_cuat_1 % 1 !== 0 || avance.nota_cuat_2 % 1 !== 0 || avance.nota_recuperatorio % 1 !== 0) {
             res.status(400).json({
-                mensaje: 'Las notas deben ser números enteros',
-                datos:null
+                mensaje: 'Las notas deben ser números enteros'
             })
         } else if (avance.nota_cuat_1 < 1 || avance.nota_cuat_2 < 1 || avance.nota_recuperatorio < 1 || avance.nota_recuperatorio > 10 || avance.nota_cuat_1 > 10 || avance.nota_cuat_2 > 10) {
             res.status(400).json({
-                mensaje: 'Las notas deben ser entre 1 y 10',
-                datos:null
+                mensaje: 'Las notas deben ser entre 1 y 10'
             })
         } else {
             this.db.one(`INSERT INTO avance_academico (id_inscripcion_cursada, nota_cuat_1, nota_cuat_2, nota_recuperatorio, asistencia) 
@@ -184,10 +175,7 @@ export class CursadasController {
                 })
                 .catch((err) => {
                     console.error(err);
-                    res.status(500).json({
-                        mensaje: err,
-                        datos: null
-                    });
+                    res.status(500).json(err);
                 });
         }
     }
