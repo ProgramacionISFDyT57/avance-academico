@@ -192,7 +192,7 @@ export class CarrerasController {
     }
     public ver_carreras_abiertas(req: Request, res: Response) {
         const query = `
-            SELECT CA.id, C.nombre, C.duracion, CA.cohorte
+            SELECT CA.id, C.nombre, C.duracion, CA.cohorte, CA.fecha_inicio, CA.fecha_limite
             FROM carreras_abiertas CA
             INNER JOIN carreras C ON C.id = CA.id_carrera
             ORDER BY CA.cohorte DESC, C.nombre`;
@@ -207,7 +207,7 @@ export class CarrerasController {
     }
     public ver_carreras_abiertas_hoy(req: Request, res: Response) {
         const query = `
-            SELECT CA.id, C.nombre, C.duracion, CA.cohorte
+            SELECT CA.id, C.nombre, C.duracion, CA.cohorte, CA.fecha_inicio, CA.fecha_limite
             FROM carreras_abiertas CA
             INNER JOIN carreras C ON C.id = CA.id_carrera
             WHERE current_timestamp BETWEEN CA.fecha_inicio AND CA.fecha_limite
