@@ -16,6 +16,7 @@ export class CarrerasController {
         this.modificar_carrera = this.modificar_carrera.bind(this);
         this.borrar_carrera = this.borrar_carrera.bind(this);
         this.ver_carreras_abiertas = this.ver_carreras_abiertas.bind(this);
+        this.ver_carreras_abiertas_hoy = this.ver_carreras_abiertas_hoy.bind(this);
         this.crear_carreras_abiertas = this.crear_carreras_abiertas.bind(this);
     }
 
@@ -190,21 +191,34 @@ export class CarrerasController {
         }
     }
     public ver_carreras_abiertas(req: Request, res: Response) {
-        this.db.manyOrNone(`
-            SELECT CA.id, C.nombre, C.duracion
+        const query = `
+            SELECT CA.id, C.nombre, C.duracion, CA.cohorte
             FROM carreras_abiertas CA
             INNER JOIN carreras C ON C.id = CA.id_carrera
-            WHERE current_timestamp BETWEEN CA.fecha_inicio AND CA.fecha_limite
-            ORDER BY C.nombre`)
+            ORDER BY CA.cohorte DESC, C.nombre`;
+        this.db.manyOrNone(query)
             .then((data) => {
                 res.status(200).json(data);
             })
             .catch((err) => {
                 console.error(err);
-                res.status(500).json({
-                    mensaje: err,
-                    datos: null
-                });
+                res.status(500).json(err);
+            });
+    }
+    public ver_carreras_abiertas_hoy(req: Request, res: Response) {
+        const query = `
+            SELECT CA.id, C.nombre, C.duracion, CA.cohorte
+            FROM carreras_abiertas CA
+            INNER JOIN carreras C ON C.id = CA.id_carrera
+            WHERE current_timestamp BETWEEN CA.fecha_inicio AND CA.fecha_limite
+            ORDER BY C.nombre`;
+        this.db.manyOrNone(query)
+            .then((data) => {
+                res.status(200).json(data);
+            })
+            .catch((err) => {
+                console.error(err);
+                res.status(500).json(err);
             });
     }
     public crear_carreras_abiertas(req: Request, res: Response) {

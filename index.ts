@@ -60,6 +60,7 @@ app.delete("/carreras/:id", carrerasController.borrar_carrera);
 // CARRERAS ABIERTAS
 //////////////////////////////////////////////////////////////////////////////////////
 app.get("/carreras_abiertas", carrerasController.ver_carreras_abiertas);
+app.get("/carreras_abiertas_hoy", carrerasController.ver_carreras_abiertas);
 app.post("/carreras_abiertas", carrerasController.crear_carreras_abiertas);
 // INSCRIPCIONES A CARRERAS
 app.post("/inscripciones_carreras", carrerasController.crear_inscripcion_carrera);
