@@ -68,7 +68,8 @@ app.post("/inscripciones_carreras", carrerasController.crear_inscripcion_carrera
 // CURSADAS ABIERTAS
 //////////////////////////////////////////////////////////////////////////////////////
 app.post("/cursadas", cursadasController.crear_cursada);
-app.get("/cursadas_abiertas/:id_alumno", cursadasController.cursadas_abiertas_alumno);
+app.get("/cursadas_abiertas", cursadasController.ver_cursadas_abiertas);
+app.get("/cursadas_abiertas/:id_alumno", cursadasController.ver_cursadas_abiertas_alumno);
 // LISTAR CURSADAS APROBADAS
 app.get("/listar_cursadas_aprobadas", cursadasController.listar_cursadas_aprobadas);
 //////////////////////////////////////////////////////////////////////////////////////

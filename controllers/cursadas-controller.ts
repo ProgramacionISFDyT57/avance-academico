@@ -10,7 +10,8 @@ export class CursadasController {
         this.db = db;
         this.crear_cursada = this.crear_cursada.bind(this);
         this.listar_cursadas_aprobadas = this.listar_cursadas_aprobadas.bind(this);
-        this.cursadas_abiertas_alumno = this.cursadas_abiertas_alumno.bind(this);
+        this.ver_cursadas_abiertas_alumno = this.ver_cursadas_abiertas_alumno.bind(this);
+        this.ver_cursadas_abiertas = this.ver_cursadas_abiertas.bind(this);
         this.crear_avance = this.crear_avance.bind(this);
     }
     public crear_cursada(req: Request, res: Response) {
@@ -86,7 +87,7 @@ export class CursadasController {
                 });
             });
     }
-    public cursadas_abiertas_alumno(req: Request, res: Response) {
+    public ver_cursadas_abiertas_alumno(req: Request, res: Response) {
         const id_alumno: number = req.params.id_alumno;
         // Buscar las cursadas abiertas de las carreras donde esta inscripto el alumno 
         // y no la tiene aprobada y si tiene las correlativas o no tiene correlativas
@@ -131,6 +132,25 @@ export class CursadasController {
                     mensaje: err,
                     datos: null
                 });
+            });
+    }
+    public ver_cursadas_abiertas(req: Request, res: Response) {
+        const query = `
+            SELECT C.id, C.anio AS año_cursada, C.fecha_inicio, C.fecha_limite, 
+                M.nombre AS materia, M.anio AS año_materia,
+                CONCAT(U.apellido, ', ', U.nombre) AS profesor
+            FROM cursadas C
+            INNER JOIN materias M ON M.id = C.id_materia
+            LEFT JOIN profesores P ON P.id = C.id_profesor
+            LEFT JOIN usuarios U ON U.id = P.id_usuario
+            ORDER BY C.anio DESC, M.nombre`;
+        this.db.manyOrNone(query)
+            .then( (data) => {
+                res.status(200).json(data);
+            })
+            .catch((err) => {
+                console.error(err);
+                res.status(500).json(err);
             });
     }
     public crear_avance(req: Request, res: Response) {
