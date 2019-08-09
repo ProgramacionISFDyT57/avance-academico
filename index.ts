@@ -71,7 +71,7 @@ app.post("/cursadas", cursadasController.crear_cursada);
 app.get("/cursadas_abiertas", cursadasController.ver_cursadas_abiertas);
 app.get("/cursadas_abiertas/:id_alumno", cursadasController.ver_cursadas_abiertas_alumno);
 // LISTAR CURSADAS APROBADAS
-app.get("/listar_cursadas_aprobadas", cursadasController.listar_cursadas_aprobadas);
+app.get("/listar_cursadas_aprobadas/:id", cursadasController.listar_cursadas_aprobadas);
 //////////////////////////////////////////////////////////////////////////////////////
 // MESAS
 //////////////////////////////////////////////////////////////////////////////////////
