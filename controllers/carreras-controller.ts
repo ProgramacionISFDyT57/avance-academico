@@ -45,47 +45,42 @@ export class CarrerasController {
     }
     public crear_inscripcion_carrera(req: Request, res: Response) {
         const ca: InscripcionCarrera = req.body.inscripcion_carrera;
-        this.db.oneOrNone(`SELECT id FROM inscripciones_carreras 
-                    WHERE id_alumno = $1 AND id_carrera_abierta = $2`, [ca.id_alumno, ca.id_carrera_abierta])
+        const query = `SELECT id FROM inscripciones_carreras WHERE id_alumno = $1 AND id_carrera_abierta = $2`;
+        this.db.oneOrNone(query , [ca.id_alumno, ca.id_carrera_abierta])
             .then((data) => {
                 if (data) {
                     res.status(400).json({
                         mensaje: 'Ya se encuentra inscripto en la carrera',
-                        datos: null
                     });
                 } else {
-                    this.db.oneOrNone(`
-                                SELECT id FROM carreras_abiertas
-                                FROM carreras_abiertas CA
-                                WHERE CURRENT_TIMESTAMP BETWEEN CA.fecha_inicio AND CA.fecha_limite
-                                AND id = $1`, [ca.id_carrera_abierta])
+                    const query2 = `
+                        SELECT id 
+                        FROM carreras_abiertas
+                        WHERE CURRENT_TIMESTAMP BETWEEN fecha_inicio AND fecha_limite
+                        AND id = $1`;
+                    this.db.oneOrNone(query2, [ca.id_carrera_abierta])
                         .then((data) => {
                             if (data) {
-                                this.db.one(`INSERT INTO inscripciones_carreras (id_alumno, id_carrera_abierta) 
-                                    VALUES ($1, $2) RETURNING ID`, [ca.id_alumno, ca.id_carrera_abierta])
+                                const query3 = `
+                                    INSERT INTO inscripciones_carreras (id_alumno, id_carrera_abierta) 
+                                    VALUES ($1, $2) RETURNING ID`;
+                                this.db.one(query3, [ca.id_alumno, ca.id_carrera_abierta])
                                     .then((data) => {
                                         res.status(200).json(data);
                                     })
                                     .catch((err) => {
                                         console.error(err);
-                                        res.status(500).json({
-                                            mensaje: err,
-                                            datos: null
-                                        });
+                                        res.status(500).json(err);
                                     });
                             } else {
                                 res.status(400).json({
-                                    mensaje: 'La carrera no se encuentra abierta',
-                                    datos: null
+                                    mensaje: 'La carrera no se encuentra abierta en este momento',
                                 });
                             }
                         })
                         .catch((err) => {
                             console.error(err);
-                            res.status(500).json({
-                                mensaje: err,
-                                datos: null
-                            });
+                            res.status(500).json(err);
                         });
                 }
             })

@@ -39,20 +39,20 @@ app.get("/tipos_materia", materiasController.ver_tipos_materias);
 app.post("/tipos_materia", materiasController.crear_tipo_materia);
 app.put("/tipos_materia/:id", materiasController.modificar_tipo_materia);
 app.delete("/tipos_materia/:id", materiasController.borrar_tipo_materia);
-// MATERIAS
-app.get("/materias", materiasController.ver_materias);
-app.get("/materia/:id", materiasController.ver_materia);
-app.get("/materias_por_carrera/:id_carrera", materiasController.materias_por_carrera);
-app.post("/materias", materiasController.crear_materia);
-app.put("/materias/:id", materiasController.modificar_materia);
-app.delete("/materias/:id", materiasController.borrar_materia);
 // CORRELATIVAS
 app.post('/correlativas', materiasController.crear_correlativas);
 app.delete('/correlativas', materiasController.borrar_correlativas);
 app.get("/correlativas/:id_materia", materiasController.ver_correlativas);
+// MATERIAS
+app.get("/materias", materiasController.ver_materias);
+app.get("/materia/:id", materiasController.ver_materia); //borrar
+app.get("/materias_por_carrera/:id_carrera", materiasController.materias_por_carrera);
+app.post("/materias", materiasController.crear_materia);
+app.put("/materias/:id", materiasController.modificar_materia);
+app.delete("/materias/:id", materiasController.borrar_materia);
 // CARRERAS
 app.get('/carreras', carrerasController.ver_carreras);
-app.get('/carrera/:id', carrerasController.ver_carrera);
+app.get('/carrera/:id', carrerasController.ver_carrera); // mmmm
 app.post("/carreras", carrerasController.crear_carrera);
 app.put("/carreras/:id", carrerasController.modificar_carrera);
 app.delete("/carreras/:id", carrerasController.borrar_carrera);
