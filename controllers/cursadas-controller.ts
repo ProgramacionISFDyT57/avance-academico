@@ -140,7 +140,6 @@ export class CursadasController {
             ORDER BY C.anio DESC, M.nombre`;
         this.db.manyOrNone(query)
             .then( (data) => {
-
                 res.status(200).json(data);
             })
             .catch((err) => {

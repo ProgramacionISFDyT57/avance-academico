@@ -17,16 +17,17 @@ export class UsuariosController {
 
     public cambiar_contraseña(req: Request, res:Response){
         const claveVieja: string = req.body.claveVieja;
-        const newPass: string = req.body.nuevaclave;
+        const newPass: string = req.body.claveNueva;
         const token: Token = res.locals;
-        this.db.one(`SELECT clave FROM usuarios WHERE id = $1`, [token.id_usuario])
+        const query = `SELECT clave FROM usuarios WHERE id = $1`;
+        this.db.one(query, [token.id_usuario])
         .then((data) => {
             bcrypt.compare(claveVieja, data.clave, (err, same) => {
                 if (err) {
                     res.status(500).json({
-                        mensaje: err,
-                        datos: null
-                    })
+                        error: err,
+                        mensaje: "Ocurrio un error al comparar las claves"
+                    });
                 }
                 else if (same) {
                     bcrypt.hash(newPass, 10, (error, hash) => {
@@ -34,20 +35,15 @@ export class UsuariosController {
                         .then( () => {
                             res.status(200).json({
                                 mensaje: "Modificación de contraseña exitosa",
-                                datos: true
                             });
                         })
                         .catch( (err) => {
-                            res.status(500).json({
-                                mensaje: err,
-                                datos: null
-                            });
+                            res.status(500).json(err);
                         })
                     })
                 } else {
                     res.status(400).json({
                         mensaje: "La contraseña no coincide",
-                        datos: null
                     });
                 }
             })
