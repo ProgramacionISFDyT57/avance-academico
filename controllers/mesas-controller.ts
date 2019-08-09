@@ -29,20 +29,20 @@ export class MesasController {
     }
     public lista_mesas(req: Request, res: Response){
         const query = `
-            SELECT me.id, ma.nombre AS materia, me.fecha_limite, me.fecha_examen, us.nombre AS Profesor
+            SELECT me.id, ma.nombre AS materia, me.fecha_inicio, me.fecha_limite, me.fecha_examen, 
+                CONCAT_WS(', ', us.apellido, us.nombre) AS profesor
             FROM mesas me 
             INNER JOIN materias ma ON ma.id = me.id_materia
             INNER JOIN profesores pf ON pf.id = me.id_profesor
-            INNER JOIN usuarios us ON us.id = pf.id_usuario
-            WHERE me.fecha_limite >= curren_timestamp;`;
+            INNER JOIN usuarios us ON us.id = pf.id_usuario`;
         this.db.manyOrNone(query)
-        .then((data) => {
-            res.status(200).json(data);
-        })
-        .catch((err) => {
-            console.error(err);
-            res.status(500).json(err);
-        });
+            .then((data) => {
+                res.status(200).json(data);
+            })
+            .catch((err) => {
+                console.error(err);
+                res.status(500).json(err);
+            });
     }
     public crear_mesa(req: Request, res: Response){
         const mesa: Mesa = req.body.mesa;
