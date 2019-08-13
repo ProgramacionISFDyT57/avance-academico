@@ -32,13 +32,13 @@ export class MesasController {
             SELECT me.id, ma.nombre AS materia, me.fecha_inicio, me.fecha_limite, me.fecha_examen, 
                 CONCAT_WS(', ', us.apellido, us.nombre) AS profesor,
                 CONCAT_WS(', ', us1.apellido, us1.nombre) AS vocal1,
-                CONCAT_WS(', ', us1.apellido, us1.nombre) AS vocal2
+                CONCAT_WS(', ', us2.apellido, us2.nombre) AS vocal2
             FROM mesas me 
             INNER JOIN materias ma ON ma.id = me.id_materia
             LEFT JOIN profesores pf ON pf.id = me.id_profesor
             LEFT JOIN usuarios us ON us.id = pf.id_usuario
             LEFT JOIN profesores v1 ON v1.id = me.id_vocal1
-            LEFT JOIN usuarios us1 ON us21id = v1.id_usuario
+            LEFT JOIN usuarios us1 ON us1.id = v1.id_usuario
             LEFT JOIN profesores v2 ON v2.id = me.id_vocal2
             LEFT JOIN usuarios us2 ON us2.id = v2.id_usuario`;
         this.db.manyOrNone(query)
