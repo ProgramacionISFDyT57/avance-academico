@@ -187,9 +187,12 @@ export class CarrerasController {
     }
     public ver_carreras_abiertas(req: Request, res: Response) {
         const query = `
-            SELECT CA.id, C.nombre, C.duracion, CA.cohorte, CA.fecha_inicio, CA.fecha_limite
+            SELECT CA.id, C.nombre, C.duracion, CA.cohorte, CA.fecha_inicio, CA.fecha_limite,
+                COUNT(ic.id) AS cant_inscriptos
             FROM carreras_abiertas CA
             INNER JOIN carreras C ON C.id = CA.id_carrera
+            LEFT JOIN inscripciones_carreras ic ON ic.id_carrera_abierta = CA.id
+            GROUP BY CA.id, C.nombre, C.duracion, CA.cohorte, CA.fecha_inicio, CA.fecha_limite
             ORDER BY CA.cohorte DESC, C.nombre`;
         this.db.manyOrNone(query)
             .then((data) => {
