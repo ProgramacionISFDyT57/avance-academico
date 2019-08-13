@@ -144,7 +144,8 @@ export class CursadasController {
             LEFT JOIN usuarios U ON U.id = P.id_usuario
             LEFT JOIN inscripciones_cursadas ic ON ic.id_cursada = C.id
             GROUP BY C.id, C.anio, C.fecha_inicio, C.fecha_limite, 
-                M.nombre, M.anio, ca.nombre, CONCAT_WS(', ', U.apellido, U.nombre)
+                M.nombre, M.anio, ca.nombre, 
+                CONCAT_WS(', ', U.apellido, U.nombre)
             ORDER BY C.anio DESC, ca.nombre, M.anio, M.nombre`;
         this.db.manyOrNone(query)
             .then( (data) => {
