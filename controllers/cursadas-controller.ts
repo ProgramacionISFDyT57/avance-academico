@@ -133,13 +133,18 @@ export class CursadasController {
     }
     public ver_cursadas_abiertas(req: Request, res: Response) {
         const query = `
-            SELECT C.id, C.anio AS año_cursada, C.fecha_inicio, C.fecha_limite, 
-                M.nombre AS materia, M.anio AS año_materia,
-                CONCAT_WS(', ', U.apellido, U.nombre) AS profesor
+            SELECT C.id, C.anio AS anio_cursada, C.fecha_inicio, C.fecha_limite, 
+                M.nombre AS materia, M.anio AS anio_materia, ca.nombre AS carrera,
+                CONCAT_WS(', ', U.apellido, U.nombre) AS profesor,
+                COUNT(ic.id) AS cant_inscriptos
             FROM cursadas C
             INNER JOIN materias M ON M.id = C.id_materia
+            INNER JOIN carreras ca ON ca.id = M.id_carrera
             LEFT JOIN profesores P ON P.id = C.id_profesor
             LEFT JOIN usuarios U ON U.id = P.id_usuario
+            LEFT JOIN inscripciones_cursadas ic ON ic.id_cursada = C.id
+            GROUP BY C.id, C.anio, C.fecha_inicio, C.fecha_limite, 
+                M.nombre, M.anio, ca.nombre, CONCAT_WS(', ', U.apellido, U.nombre)
             ORDER BY C.anio DESC, M.nombre`;
         this.db.manyOrNone(query)
             .then( (data) => {
