@@ -57,6 +57,17 @@ Dentro de los objetivos y alcances de este sistema encontrarán:
 }
 ```
 
+## Autenticación
+
+Todas las rutas (excepto /login) deben recibir el siguiente header:
+
+#### Header
+```json 
+{
+	"x-access-token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
+}
+```
+
 ## Login
 
 ### `POST /login`
