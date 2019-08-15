@@ -90,3 +90,24 @@ Devuelve token de autenticación requerido para el resto de los Requests
 }
 
 ```
+
+## Usuarios
+
+### `GET /usuarios`
+
+Devuelve el listado de todos los usuarios
+#### Requiere rol de acceso
+- Directivo
+#### Formato de respuesta
+```array
+[
+	{ 
+		"id": 1,
+		"nombre": "",
+		"apellido": "",
+		"email": "",
+		"fecha_nacimiento": "",
+		"fecha_alta": "",
+		"rol": ""
+	}
+]
