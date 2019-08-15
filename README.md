@@ -149,3 +149,24 @@ Devuelve el listado de todos los profesores
 	}
 ]
 ```
+
+## Materias
+
+### `GET /materias_por_carrera/:id_carrera`
+Devuelve el listado de materias de la carrera solicitada
+#### Parametro de ruta
+```
+:id_carrera = 1
+```
+#### Formato de respuesta
+```array
+[
+	{
+		"id": 1,
+		"anio": "",
+		"tipo_materia": ""
+	}
+]
+
+```
+
