@@ -66,7 +66,7 @@ export class UsuariosController {
                     this.db.one('INSERT INTO profesores (id_usuario) VALUES ($1) RETURNING ID', [data.id])
                         .then((data) => {
                             res.status(200).json({
-                                datos: data
+                                mensaje: "El usuario se creo correctamente",
                             });
                         })
                         .catch((err) => {
@@ -77,7 +77,7 @@ export class UsuariosController {
                     this.db.one('INSERT INTO alumnos (id_usuario) VALUES ($1) RETURNING ID', [data.id])
                         .then((data) => {
                             res.status(200).json({
-                                datos: data
+                                mensaje: "El usuario se creo correctamente",
                             });
                         })
                         .catch((err) => {
@@ -86,7 +86,7 @@ export class UsuariosController {
                         });
                 } else {
                     res.status(200).json({
-                        datos: data
+                        mensaje: "El usuario se creo correctamente",
                     });
                 }
             })

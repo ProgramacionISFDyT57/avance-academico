@@ -58,9 +58,7 @@ Dentro de los objetivos y alcances de este sistema encontrarán:
 ```
 
 ## Autenticación
-
 Todas las rutas (excepto /login) deben recibir el siguiente header:
-
 #### Header
 ```json 
 {
@@ -71,16 +69,13 @@ Todas las rutas (excepto /login) deben recibir el siguiente header:
 ## Login
 
 ### `POST /login`
-
 Devuelve token de autenticación requerido para el resto de los Requests
-
 #### Request body
 ```json
 {
 	"email": "usuario@mail.com",
 	"clave": "1234"
 }
-
 ```
 #### Formato de respuesta
 ```json
@@ -88,13 +83,11 @@ Devuelve token de autenticación requerido para el resto de los Requests
 	"mensaje": "Sesión iniciada con éxito!",
 	"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6I"
 }
-
 ```
 
 ## Usuarios
 
 ### `GET /usuarios`
-
 Devuelve el listado de todos los usuarios
 #### Requiere rol de acceso
 - Directivo
@@ -111,3 +104,30 @@ Devuelve el listado de todos los usuarios
 		"rol": ""
 	}
 ]
+```
+
+### `POST /usuarios`
+Crea un usuario
+#### Requiere rol de acceso
+- Directivo
+#### Request body
+```json
+{
+	"usuario": {
+		"email": "",
+		"dni": "",
+		"nombre":  "",
+		"apellido":  "",
+		"fecha_nacimiento": "",
+		"fecha_alta": "",
+		"telefono": "",
+		"id_rol": 1,
+	}
+}
+```
+#### Formato de respuesta
+```json
+{
+    "mensaje": "El usuario se creo correctamente"
+}
+```
