@@ -92,7 +92,7 @@ Devuelve el listado de todos los usuarios
 #### Requiere rol de acceso
 - Directivo
 #### Formato de respuesta
-```array
+```json
 [
 	{ 
 		"id": 1,
@@ -130,4 +130,22 @@ Crea un usuario
 {
     "mensaje": "El usuario se creo correctamente"
 }
+```
+
+### `GET /profesores`
+Devuelve el listado de todos los profesores
+#### Formato de respuesta
+```json
+[
+	{
+		"id": 1,
+		"id_usuario":"",
+		"nombre": "",
+		"apellido": "",
+		"email": "",
+		"fecha_nacimiento": "",
+		"fecha_alta": "",
+		"rol": ""
+	}
+]
 ```
