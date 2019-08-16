@@ -272,5 +272,10 @@ ALTER TABLE usuarios ALTER COLUMN dni SET NOT NULL;
 ALTER TABLE usuarios ADD COLUMN telefono text;
 
 ALTER TABLE carreras ADD COLUMN descripcion text;
- 
 
+-- Agregar CASCADE al borrar materias con correlativas
+ 
+alter table correlativas drop constraint id_materia_fk;
+alter table correlativas drop constraint id_materia_necesaria_fk;
+alter table correlativas add constraint id_materia_fk foreign key (id_materia) references materias (id) on delete cascade;
+alter table correlativas add constraint id_materia_necesaria_fk foreign key (id_correlativa) references materias (id) on delete cascade;
