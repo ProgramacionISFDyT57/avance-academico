@@ -16,7 +16,8 @@ export class CursadasController {
         this.listar_cursadas_aprobadas = this.listar_cursadas_aprobadas.bind(this);
         this.ver_cursadas_abiertas_alumno = this.ver_cursadas_abiertas_alumno.bind(this);
         this.ver_cursadas_abiertas = this.ver_cursadas_abiertas.bind(this);
-        this.crear_avance = this.crear_avance.bind(this);
+        this.cargar_notas_cursada = this.cargar_notas_cursada.bind(this);
+        this.eliminar_notas_cursada = this.eliminar_notas_cursada.bind(this);
         this.crear_inscripcion_cursada = this.crear_inscripcion_cursada.bind(this);
         this.listar_inscriptos = this.listar_inscriptos.bind(this);
     }
@@ -73,7 +74,8 @@ export class CursadasController {
 
     }
     public listar_cursadas_aprobadas(req: Request, res: Response) {
-        const id = req.params.id;
+        const token: Token = res.locals.token;
+        const id_alumno = token.id_alumno;
         const query = `
             SELECT m.nombre
             FROM avance_academico aa
@@ -84,7 +86,7 @@ export class CursadasController {
             WHERE ic.id_alumno = $1
             AND ((aa.nota_cuat_1 >=4 and aa.nota_cuat_2 >=4) OR (aa.nota_recuperatorio >=4))
             AND ((tm.id = 2 AND aa.asistencia >= 80) OR (tm.id != 2 AND aa.asistencia >= 60))`;
-        this.db.manyOrNone(query, [id])
+        this.db.manyOrNone(query, [id_alumno])
             .then(resultado => {
                 res.status(200).json(resultado);
             })
@@ -162,7 +164,7 @@ export class CursadasController {
                 res.status(500).json(err);
             });
     }
-    public crear_avance(req: Request, res: Response) {
+    public cargar_notas_cursada(req: Request, res: Response) {
         const avance: Avance = req.body.avance_academico;
         if (avance.nota_cuat_1 > 4 && avance.nota_cuat_2 > 4 && avance.nota_recuperatorio != null) {
             res.status(400).json({
@@ -185,12 +187,30 @@ export class CursadasController {
                 VALUES ($1, $2, $3, $4, $5) RETURNING ID`,
                 [avance.id_inscripcion_cursada, avance.nota_cuat_1, avance.nota_cuat_2, avance.nota_recuperatorio, avance.asistencia])
                 .then((data) => {
-                   res.status(200).json(data);
+                   res.status(200).json({
+                       mensaje: 'Se cargaron correctamente las notas de la cursada'
+                   });
                 })
                 .catch((err) => {
                     console.error(err);
                     res.status(500).json(err);
                 });
+        }
+    }
+    public async eliminar_notas_cursada(req: Request, res: Response) {
+        try {
+            const id_inscripcion_cursada = +req.params.id_inscripcion_cursada;
+            const query = 'DELETE FROM avance_academico WHERE id_inscripcion_cursada = $1;'
+            await this.db.none(query, [id_inscripcion_cursada]);
+            res.status(200).json({
+                mensaje: 'Se eliminaron las notas de la cursada',
+            });
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({
+                mensaje: 'Ocurrio un error al eliminar las notas de la cursada',
+                error
+            });
         }
     }
 

@@ -2,6 +2,7 @@ import { IDatabase } from 'pg-promise';
 import { Request, Response } from 'express';
 import { Mesa } from "../modelos/modelo-mesa"
 import { Token } from '../modelos/modelo-token';
+import { Final } from '../modelos/modelo-final';
 import { HelperService } from '../servicios/helper';
 
 export class MesasController {
@@ -15,6 +16,8 @@ export class MesasController {
         this.lista_mesas = this.lista_mesas.bind(this);
         this.crear_mesa = this.crear_mesa.bind(this);
         this.listar_inscriptos = this.listar_inscriptos.bind(this);
+        this.cargar_notas_final = this.cargar_notas_final.bind(this);
+        this.eliminar_notas_final = this.eliminar_notas_final.bind(this);
     }
 
     private async get_id_materia(id_mesa: number): Promise<number> {
@@ -170,6 +173,40 @@ export class MesasController {
             console.error(error);
             res.status(500).json({
                 mensaje: 'Ocurrio un error al listar los inscriptos a la mesa',
+                error
+            });
+        }
+    }
+
+    public async cargar_notas_final(req: Request, res: Response) {
+        try {
+            const final: Final = req.body.final;
+            const query = `INSERT INTO finales (id_inscripcion_mesa, nota, libro, folio) 
+                VALUES ($1, $2, $3, $4, $5) RETURNING ID;`;
+            await this.db.one(query, [final.id_inscripcion_mesa, final.nota, final.libro, final.folio]);
+            res.status(200).json({
+                mensaje: 'Se cargo la nota correctamente'
+            });
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({
+                mensaje: 'Ocurrio un error al eliminar las notas del final',
+                error
+            });
+        }
+    }
+    public async eliminar_notas_final(req: Request, res: Response) {
+        try {
+            const id_inscripcion_final = +req.params.id_inscripcion_final;
+            const query = 'DELETE FROM finales WHERE id_inscripcion_mesa = $1;'
+            await this.db.none(query, [id_inscripcion_final]);
+            res.status(200).json({
+                mensaje: 'Se eliminaron las notas del final',
+            });
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({
+                mensaje: 'Ocurrio un error al eliminar las notas del final',
                 error
             });
         }
