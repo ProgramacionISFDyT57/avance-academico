@@ -57,17 +57,20 @@ export class MesasController {
                     FROM mesas
                     WHERE id = $1;`
                 const mesa = await this.db.one(query, id_mesa);
-                const fecha_actual = new Date().toLocaleDateString();
-                const fecha_inicio = new Date(mesa.fecha_inicio).toLocaleDateString();
-                const fecha_limite = new Date(mesa.fecha_limite).toLocaleDateString();
+                const fecha_actual = new Date().getTime();
+                const fecha_inicio = new Date(mesa.fecha_inicio).getTime();
+                const fecha_limite = new Date(mesa.fecha_limite).getTime();
+                const fecha_actual_texto = new Date().toLocaleDateString();
+                const fecha_inicio_texto = new Date(mesa.fecha_inicio).toLocaleDateString();
+                const fecha_limite_texto = new Date(mesa.fecha_limite).toLocaleDateString();
                 if (fecha_inicio <= fecha_actual) {
                     if (fecha_limite >= fecha_actual) {
                         resolve(true);
                     } else {
-                        resolve('Ya finalizó la inscripción a la mesa, fecha límite: ' + fecha_limite + ' // Fecha actual: ' + fecha_actual);    
+                        resolve('Ya finalizó la inscripción a la mesa, fecha límite: ' + fecha_limite_texto + ' // Fecha actual: ' + fecha_actual_texto);    
                     }
                 } else {
-                    resolve('Aun no inició la inscripción a la mesa, fecha de inicio: ' + fecha_inicio + ' // Fecha actual: ' + fecha_actual);    
+                    resolve('Aun no inició la inscripción a la mesa, fecha de inicio: ' + fecha_inicio_texto + ' // Fecha actual: ' + fecha_actual_texto);    
                 }
             } catch (error) {
                 reject(error);
