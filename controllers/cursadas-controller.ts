@@ -13,9 +13,12 @@ export class CursadasController {
         this.db = db;
         this.helper = new HelperService(db);
         this.crear_cursada = this.crear_cursada.bind(this);
-        this.listar_cursadas_aprobadas = this.listar_cursadas_aprobadas.bind(this);
-        this.ver_cursadas_abiertas_alumno = this.ver_cursadas_abiertas_alumno.bind(this);
         this.ver_cursadas_abiertas = this.ver_cursadas_abiertas.bind(this);
+        this.eliminar_cursada = this.eliminar_cursada.bind(this);
+        
+        this.ver_cursadas_abiertas_alumno = this.ver_cursadas_abiertas_alumno.bind(this);
+        this.listar_cursadas_aprobadas = this.listar_cursadas_aprobadas.bind(this);
+        
         this.cargar_notas_cursada = this.cargar_notas_cursada.bind(this);
         this.eliminar_notas_cursada = this.eliminar_notas_cursada.bind(this);
         this.crear_inscripcion_cursada = this.crear_inscripcion_cursada.bind(this);
@@ -164,6 +167,23 @@ export class CursadasController {
                 res.status(500).json(err);
             });
     }
+    public async eliminar_cursada(req: Request, res: Response) {
+        try {
+            const id_cursada = +req.params.id_cursada;
+            const query = 'DELETE FROM cursadas WHERE id = $1;'
+            await this.db.none(query, [id_cursada]);
+            res.status(200).json({
+                mensaje: 'Se eliminó la cursada',
+            });
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({
+                mensaje: 'Ocurrio un error al eliminar la cursada',
+                error
+            });
+        }
+    }
+
     public cargar_notas_cursada(req: Request, res: Response) {
         const avance: Avance = req.body.avance_academico;
         if (avance.nota_cuat_1 > 4 && avance.nota_cuat_2 > 4 && avance.nota_recuperatorio != null) {

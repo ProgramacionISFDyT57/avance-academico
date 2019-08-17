@@ -71,6 +71,7 @@ app.delete("/inscripciones_carreras/:id_inscripcion", carrerasController.borrar_
 //////////////////////////////////////////////////////////////////////////////////////
 app.post("/cursadas", cursadasController.crear_cursada);
 app.get("/cursadas_abiertas", cursadasController.ver_cursadas_abiertas);
+app.delete("/cursadas/:id_cursada", cursadasController.eliminar_cursada);
 // INCRIPCIONES CURSADAS
 app.get("/inscriptos_cursada/:id_cursada", cursadasController.listar_inscriptos);
 app.post("/inscripcion_cursada", seguridadController.chequear_roles(['alumno']), cursadasController.crear_inscripcion_cursada);
