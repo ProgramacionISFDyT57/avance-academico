@@ -1,6 +1,7 @@
 import { IDatabase } from 'pg-promise';
 import { Request, Response } from 'express';
 import { Mesa } from "../modelos/modelo-mesa"
+import { Token } from '../modelos/modelo-token';
 
 export class MesasController {
     private db: IDatabase<any>;
@@ -12,21 +13,62 @@ export class MesasController {
         this.crear_mesa = this.crear_mesa.bind(this);
     }
 
-    public crear_inscripcion_mesa(req: Request, res: Response) {
-        const id_mesa = +req.body.id_mesa;
-        const id_alumno = +req.body.id_alumno;
-        this.db.none(`INSERT INTO inscripciones_mesa (id_mesa, id_alumno, fecha_inscripcion) 
-            VALUES ($1, $2, current_timestamp);`, [id_mesa, id_alumno])
-            .then(() => {
-                res.status(200).json({
-                    mensaje: 'Inscripción creada!',
-                });
-            })
-            .catch((err) => {
-                console.error(err);
-                res.status(500).json(err);
-            });
+    private async mesa_abierta(id_mesa: number): Promise<boolean> {
+        return new Promise(async (resolve, reject) => {
+            try {
+                const query = `
+                    SELECT fecha_inicio, fecha_limite
+                    FROM mesas
+                    WHERE id = $1;`
+                const mesa = await this.db.one(query, id_mesa);
+                const fecha_actual = new Date().toISOString();
+                if (mesa.fecha_inicio < fecha_actual && mesa.fecha_limite > fecha_actual) {
+                    resolve(true);
+                } else {
+                    resolve(false);
+                }
+            } catch (error) {
+                reject(error);
+            }
+        });
     }
+
+    public async crear_inscripcion_mesa(req: Request, res: Response) {
+        try {
+            const id_mesa = +req.body.id_mesa;
+            const token: Token = res.locals.token;
+            const id_alumno = token.id_alumno;
+            if (id_alumno) {
+                if (id_mesa) {
+                    const mesa_abierta = await this.mesa_abierta(id_mesa);
+                    if (mesa_abierta) {
+                        const query = `INSERT INTO inscripciones_mesa (id_mesa, id_alumno, fecha_inscripcion) 
+                                        VALUES ($1, $2, current_timestamp);`
+                        await this.db.none(query, [id_mesa, id_alumno])
+                        res.status(200).json({
+                            mensaje: 'Inscripción creada!',
+                        });
+                    } else {
+                        res.status(400).json({
+                            mensaje: 'La mesa no se encuentra abierta para inscripción en este momento',
+                        });
+                    }
+                } else {
+                    res.status(400).json({
+                        mensaje: 'ID de mesa invalido',
+                    });
+                }
+            } else {
+                res.status(400).json({
+                    mensaje: 'El usuario no es un alumno',
+                });
+            }
+        } catch (error) {
+            console.error(error);
+            res.status(500).json(error);
+        }
+    }
+
     public lista_mesas(req: Request, res: Response) {
         const query = `
             SELECT me.id, ma.nombre AS materia, ma.anio AS anio_materia, me.fecha_inicio, me.fecha_limite, 
@@ -60,6 +102,7 @@ export class MesasController {
                 res.status(500).json(err);
             });
     }
+    
     public crear_mesa(req: Request, res: Response) {
         const mesa: Mesa = req.body.mesa;
         const query = `

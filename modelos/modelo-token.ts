@@ -1,4 +1,5 @@
 export class Token {
     id_usuario: number;
-    id_rol: number;
+    id_alumno?: number;
+    rol: string;
 }

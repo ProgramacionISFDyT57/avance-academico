@@ -31,7 +31,8 @@ export class SeguridadController {
                     } else if (same) {
                         const token: Token = {
                             id_usuario: data.id,
-                            id_rol: data.id_rol
+                            id_alumno: data.id_alumno,
+                            rol: data.rol,
                         }
                         jwt.sign(token, process.env.JWT, (err, jwt) => {
                             if (err) {
@@ -62,24 +63,22 @@ export class SeguridadController {
         })
     }
 
-    public chequear_roles(id_roles: number[]) {
+    public chequear_roles(roles: string[]) {
         return (req: Request, res: Response, next: NextFunction) => {
             const token = req.get('x-access-token');
             jwt.verify(token, process.env.JWT, (err, decoded: Token) => {
                 if (err) {
                     res.status(401).json({
                         mensaje: 'Token inválido',
-                        datos: null
                     })
                 } else {
-                    if (id_roles.indexOf(decoded.id_rol) != -1){
-                    // if (id_roles.includes(decoded.id_rol)){
-                        res.locals = decoded;
+                    // if (roles.indexOf(decoded.rol) != -1){
+                    if (roles.includes(decoded.rol)){
+                        res.locals.token = decoded;
                         next();
                     } else {
                         res.status(403).json({
                             mensaje: 'Acceso no permitido',
-                            datos: null
                         })
                     }
                 }
