@@ -18,9 +18,10 @@ export class SeguridadController {
         const email: string =  req.body.mail;
         const clave: string =  req.body.clave;
         const query = `
-            SELECT u.clave, u.nombre, u.apellido, r.nombre AS rol
+            SELECT u.id, u.clave, u.nombre, u.apellido, r.nombre AS rol, a.id AS id_alumno
             FROM usuarios u
             INNER JOIN roles r ON r.id = u.id_rol  
+            LEFT JOIN alumnos a ON a.id_usuario = u.id
             WHERE u.email = $1`;
         this.db.oneOrNone(query, [email])
         .then( (data) => {

@@ -33,6 +33,16 @@ export class MesasController {
         });
     }
 
+    private async cursada_aprobada(id_mesa: number): Promise<boolean> {
+        return new Promise(async (resolve, reject) => {
+            try {
+                resolve(true);
+            } catch (error) {
+                reject(error);
+            }
+        });
+    }
+
     public async crear_inscripcion_mesa(req: Request, res: Response) {
         try {
             const id_mesa = +req.body.id_mesa;
@@ -42,12 +52,19 @@ export class MesasController {
                 if (id_mesa) {
                     const mesa_abierta = await this.mesa_abierta(id_mesa);
                     if (mesa_abierta) {
-                        const query = `INSERT INTO inscripciones_mesa (id_mesa, id_alumno, fecha_inscripcion) 
-                                        VALUES ($1, $2, current_timestamp);`
-                        await this.db.none(query, [id_mesa, id_alumno])
-                        res.status(200).json({
-                            mensaje: 'Inscripción creada!',
-                        });
+                        const cursada_aprobada = await this.cursada_aprobada(id_mesa);
+                        if (cursada_aprobada) {
+                            const query = `INSERT INTO inscripciones_mesa (id_mesa, id_alumno, fecha_inscripcion) 
+                                            VALUES ($1, $2, current_timestamp);`
+                            await this.db.none(query, [id_mesa, id_alumno])
+                            res.status(200).json({
+                                mensaje: 'Inscripción creada!',
+                            });
+                        } else {
+                            res.status(400).json({
+                                mensaje: 'No posee la cursada aprobada',
+                            });
+                        }
                     } else {
                         res.status(400).json({
                             mensaje: 'La mesa no se encuentra abierta para inscripción en este momento',
@@ -65,7 +82,10 @@ export class MesasController {
             }
         } catch (error) {
             console.error(error);
-            res.status(500).json(error);
+            res.status(500).json({
+                mensaje: 'Ocurrio un error al crear la inscripción',
+                error
+            });
         }
     }
 
@@ -102,7 +122,7 @@ export class MesasController {
                 res.status(500).json(err);
             });
     }
-    
+
     public crear_mesa(req: Request, res: Response) {
         const mesa: Mesa = req.body.mesa;
         const query = `
