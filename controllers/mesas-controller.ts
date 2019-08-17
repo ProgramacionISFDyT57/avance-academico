@@ -60,10 +60,14 @@ export class MesasController {
                 const fecha_actual = new Date().toLocaleDateString();
                 const fecha_inicio = new Date(mesa.fecha_inicio).toLocaleDateString();
                 const fecha_limite = new Date(mesa.fecha_limite).toLocaleDateString();
-                if (fecha_inicio <= fecha_actual && fecha_limite >= fecha_actual) {
-                    resolve(true);
+                if (fecha_inicio <= fecha_actual) {
+                    if (fecha_limite >= fecha_actual) {
+                        resolve(true);
+                    } else {
+                        resolve('Ya finalizó la inscripción a la mesa, fecha límite: ' + fecha_limite + ' // Fecha actual: ' + fecha_actual);    
+                    }
                 } else {
-                    resolve('La mesa no se encuetra abierta en este momento // Inicio de inscripción: ' + mesa.fecha_inicio + ' // Fin de inscripción: ' + mesa.fecha_limite + ' // Fecha actual: ' + fecha_actual);
+                    resolve('Aun no inició la inscripción a la mesa, fecha de inicio: ' + fecha_inicio + ' // Fecha actual: ' + fecha_actual);    
                 }
             } catch (error) {
                 reject(error);
