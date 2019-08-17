@@ -78,7 +78,7 @@ app.get("/listar_cursadas_aprobadas/:id", cursadasController.listar_cursadas_apr
 app.post("/crear_mesa", mesasController.crear_mesa);
 app.get("/lista_mesas", mesasController.lista_mesas);
 // INSCRIPCIONES MESAS
-app.post("/inscripciones_mesas", seguridadController.chequear_roles(['Alumno']), mesasController.crear_inscripcion_mesa);
+app.post("/inscripciones_mesas", seguridadController.chequear_roles(['alumno']), mesasController.crear_inscripcion_mesa);
 // 
 //////////////////////////////////////////////////////////////////////////////////////
 app.listen(port, () => {
