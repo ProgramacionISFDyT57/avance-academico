@@ -86,7 +86,7 @@ export class MesasController {
                     FROM materias ma
                     INNER JOIN tipos_materias tm ON tm.id = ma.id_tipo
                     INNER JOIN cursadas cu ON cu.id_materia = ma.id
-                    INNER JOIN inscripciones_cursada ic ON ic.id_cursada = cu.id
+                    INNER JOIN inscripciones_cursadas ic ON ic.id_cursada = cu.id
                     INNER JOIN avance_academico aa ON aa.id_inscripcion_cursada = ic.id
                     WHERE ma.id = $1
                     AND ic.id_alumno = $2
