@@ -213,5 +213,25 @@ export class HelperService {
             }
         });
     }
+
+    public async permite_inscripcion_libre(id_materia: number): Promise<boolean> {
+        return new Promise(async (resolve, reject) => {
+            try {
+                const query = `
+                    SELECT tm.nombre AS tipo_materia
+                    FROM materias ma
+                    INNER JOIN tipos_materias tm ON tm.id = ma.id_tipo
+                    WHERE ma.id = $1;`
+                const respuesta = await this.db.one(query, [id_materia]);
+                if (respuesta.tipo_materia.toLowerCase() === 'curricular') {
+                    resolve(true);
+                } else {
+                    resolve(false);
+                }
+            } catch (error) {
+                reject(error);
+            }
+        });
+    }
     
 }

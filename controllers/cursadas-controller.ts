@@ -15,10 +15,10 @@ export class CursadasController {
         this.crear_cursada = this.crear_cursada.bind(this);
         this.ver_cursadas_abiertas = this.ver_cursadas_abiertas.bind(this);
         this.eliminar_cursada = this.eliminar_cursada.bind(this);
-        
+
         this.ver_cursadas_abiertas_alumno = this.ver_cursadas_abiertas_alumno.bind(this);
         this.listar_cursadas_aprobadas = this.listar_cursadas_aprobadas.bind(this);
-        
+
         this.cargar_notas_cursada = this.cargar_notas_cursada.bind(this);
         this.eliminar_notas_cursada = this.eliminar_notas_cursada.bind(this);
         this.crear_inscripcion_cursada = this.crear_inscripcion_cursada.bind(this);
@@ -134,9 +134,9 @@ export class CursadasController {
                 ) 
                 OR CO.id_correlativa IS NULL )
             ORDER BY M.nombre`, [id_alumno])
-            .then( (data) => {
+            .then((data) => {
                 res.status(200).json(data);
-                })
+            })
             .catch((err) => {
                 console.error(err);
                 res.status(500).json(err);
@@ -159,7 +159,7 @@ export class CursadasController {
                 CONCAT_WS(', ', U.apellido, U.nombre)
             ORDER BY C.anio DESC, ca.nombre, M.anio, M.nombre`;
         this.db.manyOrNone(query)
-            .then( (data) => {
+            .then((data) => {
                 res.status(200).json(data);
             })
             .catch((err) => {
@@ -207,9 +207,9 @@ export class CursadasController {
                 VALUES ($1, $2, $3, $4, $5) RETURNING ID`,
                 [avance.id_inscripcion_cursada, avance.nota_cuat_1, avance.nota_cuat_2, avance.nota_recuperatorio, avance.asistencia])
                 .then((data) => {
-                   res.status(200).json({
-                       mensaje: 'Se cargaron correctamente las notas de la cursada'
-                   });
+                    res.status(200).json({
+                        mensaje: 'Se cargaron correctamente las notas de la cursada'
+                    });
                 })
                 .catch((err) => {
                     console.error(err);
@@ -250,6 +250,19 @@ export class CursadasController {
         });
     }
 
+    private async realizar_inscripcion_cursada(id_alumno: number, id_cursada: number, cursa: boolean, equivalencia: boolean) {
+        return new Promise(async (resolve, reject) => {
+            try {
+                const query = `INSERT INTO inscripciones_cursadas (id_alumno, id_cursada, cursa, equivalencia, fecha_inscripcion) 
+                                VALUES ($1, $2, $3, $4, current_timestamp);`
+                await this.db.none(query, [id_alumno, id_cursada, cursa, equivalencia]);
+                resolve();
+            } catch (error) {
+                reject(error);
+            }
+        })
+    }
+
     public async crear_inscripcion_cursada(req: Request, res: Response) {
         try {
             const id_cursada = +req.body.id_cursada;
@@ -264,12 +277,20 @@ export class CursadasController {
                         const id_materia = await this.get_id_materia(id_cursada);
                         const correlativas_aprobadas = await this.helper.cursadas_correlativas_aprobadas(id_materia, id_alumno);
                         if (correlativas_aprobadas) {
-                            const query = `INSERT INTO inscripciones_cursadas (id_alumno, id_cursada, cursa, equivalencia, fecha_inscripcion) 
-                                                        VALUES ($1, $2, $3, $4, current_timestamp);`
-                            await this.db.none(query, [id_alumno, id_cursada, cursa, equivalencia])
-                            res.status(200).json({
-                                mensaje: 'Inscripción a cursada creada!',
-                            });
+                            if (!cursa) {
+                                const permite_libre = await this.helper.permite_inscripcion_libre(id_materia);
+                                if (permite_libre) {
+                                    await this.realizar_inscripcion_cursada(id_alumno, id_cursada, cursa, equivalencia);
+                                    res.status(200).json({
+                                        mensaje: 'Inscripción a cursada creada!',
+                                    });
+                                }
+                            } else {
+                                await this.realizar_inscripcion_cursada(id_alumno, id_cursada, cursa, equivalencia);
+                                res.status(200).json({
+                                    mensaje: 'Inscripción a cursada creada!',
+                                });
+                            }
                         } else {
                             res.status(400).json({
                                 mensaje: 'No posee las correlativas aprobadas',
