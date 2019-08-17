@@ -57,8 +57,10 @@ export class MesasController {
                     FROM mesas
                     WHERE id = $1;`
                 const mesa = await this.db.one(query, id_mesa);
-                const fecha_actual = new Date().toISOString();
-                if (mesa.fecha_inicio < fecha_actual && mesa.fecha_limite > fecha_actual) {
+                const fecha_actual = new Date().toLocaleDateString();
+                const fecha_inicio = new Date(mesa.fecha_inicio).toLocaleDateString();
+                const fecha_limite = new Date(mesa.fecha_limite).toLocaleDateString();
+                if (fecha_inicio <= fecha_actual && fecha_limite >= fecha_actual) {
                     resolve(true);
                 } else {
                     resolve('La mesa no se encuetra abierta en este momento // Inicio de inscripción: ' + mesa.fecha_inicio + ' // Fin de inscripción: ' + mesa.fecha_limite + ' // Fecha actual: ' + fecha_actual);
