@@ -2,15 +2,19 @@ import { IDatabase } from 'pg-promise';
 import { Request, Response } from 'express';
 import { Mesa } from "../modelos/modelo-mesa"
 import { Token } from '../modelos/modelo-token';
+import { HelperService } from '../servicios/helper';
 
 export class MesasController {
     private db: IDatabase<any>;
+    private helper: HelperService;
 
     constructor(db: IDatabase<any>) {
         this.db = db;
+        this.helper = new HelperService(db);
         this.crear_inscripcion_mesa = this.crear_inscripcion_mesa.bind(this);
         this.lista_mesas = this.lista_mesas.bind(this);
         this.crear_mesa = this.crear_mesa.bind(this);
+        this.listar_inscriptos = this.listar_inscriptos.bind(this);
     }
 
     private async get_id_materia(id_mesa: number): Promise<number> {
@@ -29,130 +33,6 @@ export class MesasController {
         });
     }
 
-    private async get_id_materias_correlativas(id_materia: number): Promise<number[]> {
-        return new Promise(async (resolve, reject) => {
-            try {
-                const query = `
-                    SELECT co.id_correlativa
-                    FROM materias ma
-                    INNER JOIN correlativas co ON co.id_materia = ma.id
-                    WHERE me.id = $1`;
-                const correlativas = await this.db.manyOrNone(query, [id_materia]);
-                const ids = [];
-                for (const correlativa of correlativas) {
-                    ids.push(correlativa.id_correlativa);
-                }
-                resolve(ids);
-            } catch (error) {
-                reject(error);
-            }
-        });
-    }
-
-    private async mesa_abierta(id_mesa: number): Promise<true|string> {
-        return new Promise(async (resolve, reject) => {
-            try {
-                const query = `
-                    SELECT fecha_inicio, fecha_limite
-                    FROM mesas
-                    WHERE id = $1;`
-                const mesa = await this.db.one(query, id_mesa);
-                const fecha_actual = new Date().getTime();
-                const fecha_inicio = new Date(mesa.fecha_inicio).getTime();
-                const fecha_limite = new Date(mesa.fecha_limite).getTime();
-                const fecha_actual_texto = new Date().toLocaleDateString();
-                const fecha_inicio_texto = new Date(mesa.fecha_inicio).toLocaleDateString();
-                const fecha_limite_texto = new Date(mesa.fecha_limite).toLocaleDateString();
-                if (fecha_inicio <= fecha_actual) {
-                    if (fecha_limite >= fecha_actual) {
-                        resolve(true);
-                    } else {
-                        resolve('Ya finalizó la inscripción a la mesa, fecha límite: ' + fecha_limite_texto + ' // Fecha actual: ' + fecha_actual_texto);    
-                    }
-                } else {
-                    resolve('Aun no inició la inscripción a la mesa, fecha de inicio: ' + fecha_inicio_texto + ' // Fecha actual: ' + fecha_actual_texto);    
-                }
-            } catch (error) {
-                reject(error);
-            }
-        });
-    }
-
-    private async cursada_aprobada(id_materia: number, id_alumno: number): Promise<boolean> {
-        return new Promise(async (resolve, reject) => {
-            try {
-                const query = `
-                    SELECT ma.id
-                    FROM materias ma
-                    INNER JOIN tipos_materias tm ON tm.id = ma.id_tipo
-                    INNER JOIN cursadas cu ON cu.id_materia = ma.id
-                    INNER JOIN inscripciones_cursadas ic ON ic.id_cursada = cu.id
-                    INNER JOIN avance_academico aa ON aa.id_inscripcion_cursada = ic.id
-                    WHERE ma.id = $1
-                    AND ic.id_alumno = $2
-                    AND ((aa.nota_cuat_1 >=4 and aa.nota_cuat_2 >=4) OR (aa.nota_recuperatorio >=4))
-                    AND ((tm.id = 2 AND aa.asistencia >= 80) OR (tm.id != 2 AND aa.asistencia >= 60))`;
-                const resultados = await this.db.manyOrNone(query, [id_materia, id_alumno]);
-                if (resultados.length) {
-                    resolve(true);
-                } else {
-                    resolve(false);
-                }
-            } catch (error) {
-                reject(error);
-            }
-        });
-    }
-
-    private async finales_correlativos_aprobados(id_materia: number, id_alumno: number): Promise<boolean> {
-        return new Promise(async (resolve, reject) => {
-            try {                
-                const correlativas = await this.get_id_materias_correlativas(id_materia);
-                if (!correlativas.length) {
-                    resolve(true);
-                } else {
-                    let aprobada = true;
-                    let i = 0;
-                    while (aprobada && i < correlativas.length) {
-                        aprobada = await this.final_aprobado(correlativas[i], id_alumno);
-                        i++;
-                    }
-                    if (aprobada) {
-                        resolve(true);
-                    } else {
-                        resolve(false);
-                    }
-                }
-            } catch (error) {
-                reject(error);
-            }
-        });
-    }
-
-    private async final_aprobado(id_materia: number, id_alumno: number): Promise<boolean> {
-        return new Promise(async (resolve, reject) => {
-            try {
-                const query = `
-                    SELECT fi.nota
-                    FROM materias ma
-                    INNER JOIN mesas me ON me.id_materia = ma.id
-                    INNER JOIN inscripciones_mesa im ON im.id_mesa = me.id
-                    INNER JOIN finales fi ON fi.id_inscripcion_mesa = im.id
-                    WHERE ma.id = $1
-                    AND im.id_alumno = $2
-                    AND fi.nota >= 4`;
-                const result = await this.db.manyOrNone(query, [id_materia, id_alumno]);
-                if (result.length) {
-                    resolve(true);
-                } else {
-                    resolve(false);
-                }
-            } catch (error) {
-                reject(error);
-            }
-        });
-    }
-
     public async crear_inscripcion_mesa(req: Request, res: Response) {
         try {
             const id_mesa = +req.body.id_mesa;
@@ -160,20 +40,20 @@ export class MesasController {
             const id_alumno = token.id_alumno;
             if (id_alumno) {
                 if (id_mesa) {
-                    const mesa_abierta = await this.mesa_abierta(id_mesa);
+                    const mesa_abierta = await this.helper.mesa_abierta(id_mesa);
                     if (mesa_abierta === true) {
                         const id_materia = await this.get_id_materia(id_mesa);
-                        const cursada_aprobada = await this.cursada_aprobada(id_materia, id_alumno);
+                        const cursada_aprobada = await this.helper.cursada_aprobada(id_materia, id_alumno);
                         if (cursada_aprobada) {
-                            const correlativas_aprobadas = await this.finales_correlativos_aprobados(id_materia, id_alumno);
+                            const correlativas_aprobadas = await this.helper.finales_correlativos_aprobados(id_materia, id_alumno);
                             if (correlativas_aprobadas) {
-                                const final_aprobado = await this.final_aprobado(id_materia, id_alumno);
+                                const final_aprobado = await this.helper.final_aprobado(id_materia, id_alumno);
                                 if (!final_aprobado) {
                                     const query = `INSERT INTO inscripciones_mesa (id_mesa, id_alumno, fecha_inscripcion) 
                                                     VALUES ($1, $2, current_timestamp);`
                                     await this.db.none(query, [id_mesa, id_alumno])
                                     res.status(200).json({
-                                        mensaje: 'Inscripción creada!',
+                                        mensaje: 'Inscripción a final creada!',
                                     });
                                 } else {
                                     res.status(400).json({
@@ -197,7 +77,7 @@ export class MesasController {
                     }
                 } else {
                     res.status(400).json({
-                        mensaje: 'ID de mesa invalido',
+                        mensaje: 'ID de mesa inválido',
                     });
                 }
             } else {

@@ -70,6 +70,9 @@ app.post("/inscripciones_carreras", carrerasController.crear_inscripcion_carrera
 app.post("/cursadas", cursadasController.crear_cursada);
 app.get("/cursadas_abiertas", cursadasController.ver_cursadas_abiertas);
 app.get("/cursadas_abiertas/:id_alumno", cursadasController.ver_cursadas_abiertas_alumno);
+// INCRIPCIONES CURSADAS
+app.get("/inscriptos_cursada/:id_cursada", cursadasController.listar_inscriptos);
+app.post("/inscripcion_cursada", seguridadController.chequear_roles(['alumno']), cursadasController.crear_inscripcion_cursada);
 // LISTAR CURSADAS APROBADAS
 app.get("/listar_cursadas_aprobadas/:id", cursadasController.listar_cursadas_aprobadas);
 //////////////////////////////////////////////////////////////////////////////////////
