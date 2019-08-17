@@ -62,6 +62,7 @@ app.delete("/carreras/:id", carrerasController.borrar_carrera);
 app.get("/carreras_abiertas", carrerasController.ver_carreras_abiertas);
 app.get("/carreras_abiertas_hoy", carrerasController.ver_carreras_abiertas_hoy);
 app.post("/carreras_abiertas", carrerasController.crear_carreras_abiertas);
+app.delete("/carreras_abiertas/:id_carrera_abierta", carrerasController.eliminar_carrera_abierta);
 // INSCRIPCIONES A CARRERAS
 app.get("/inscriptos_carrera/:id_carrera_abierta", carrerasController.listar_inscriptos_carrera);
 app.post("/inscripciones_carreras", carrerasController.crear_inscripcion_carrera);
@@ -85,6 +86,7 @@ app.get("/listar_cursadas_aprobadas", seguridadController.chequear_roles(['alumn
 //////////////////////////////////////////////////////////////////////////////////////
 app.post("/crear_mesa", mesasController.crear_mesa);
 app.get("/lista_mesas", mesasController.lista_mesas);
+app.delete("/mesas/:id_mesa", mesasController.eliminar_mesa);
 // INSCRIPCIONES MESAS
 app.get("/inscriptos_mesa/:id_mesa", mesasController.listar_inscriptos);
 app.post("/inscripciones_mesas", seguridadController.chequear_roles(['alumno']), mesasController.crear_inscripcion_mesa);

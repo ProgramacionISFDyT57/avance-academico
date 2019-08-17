@@ -15,6 +15,7 @@ export class MesasController {
         this.crear_inscripcion_mesa = this.crear_inscripcion_mesa.bind(this);
         this.lista_mesas = this.lista_mesas.bind(this);
         this.crear_mesa = this.crear_mesa.bind(this);
+        this.eliminar_mesa = this.eliminar_mesa.bind(this);
         this.listar_inscriptos = this.listar_inscriptos.bind(this);
         this.cargar_notas_final = this.cargar_notas_final.bind(this);
         this.eliminar_notas_final = this.eliminar_notas_final.bind(this);
@@ -147,6 +148,23 @@ export class MesasController {
                 console.error(err);
                 res.status(500).json(err);
             });
+    }
+
+    public async eliminar_mesa(req: Request, res: Response) {
+        try {
+            const id_mesa = +req.params.id_mesa;
+            const query = 'DELETE FROM mesas WHERE id = $1;'
+            await this.db.none(query, [id_mesa]);
+            res.status(200).json({
+                mensaje: 'Se eliminó la mesa',
+            });
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({
+                mensaje: 'Ocurrio un error al eliminar la mesa',
+                error
+            });
+        }
     }
 
     public async listar_inscriptos(req: Request, res: Response) {

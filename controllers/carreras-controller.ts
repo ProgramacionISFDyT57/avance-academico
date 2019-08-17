@@ -22,6 +22,7 @@ export class CarrerasController {
         this.ver_carreras_abiertas = this.ver_carreras_abiertas.bind(this);
         this.ver_carreras_abiertas_hoy = this.ver_carreras_abiertas_hoy.bind(this);
         this.crear_carreras_abiertas = this.crear_carreras_abiertas.bind(this);
+        this.eliminar_carrera_abierta = this.eliminar_carrera_abierta.bind(this);
     }
 
     public async borrar_inscripcion_carrera(req: Request, res: Response) {
@@ -297,6 +298,22 @@ export class CarrerasController {
                         });
                 }
             }
+        }
+    }
+    public async eliminar_carrera_abierta(req: Request, res: Response) {
+        try {
+            const id_carrera_abierta = +req.params.id_carrera_abierta;
+            const query = 'DELETE FROM carreras_abiertas WHERE id = $1;'
+            await this.db.none(query, [id_carrera_abierta]);
+            res.status(200).json({
+                mensaje: 'Se eliminó la carrera abierta',
+            });
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({
+                mensaje: 'Ocurrio un error al eliminar la carrera abierta',
+                error
+            });
         }
     }
 }
