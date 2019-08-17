@@ -79,6 +79,8 @@ export class SeguridadController {
                     } else {
                         res.status(403).json({
                             mensaje: 'Acceso no permitido',
+                            rolesAceptados: roles,
+                            su_rol: decoded.rol
                         })
                     }
                 }
