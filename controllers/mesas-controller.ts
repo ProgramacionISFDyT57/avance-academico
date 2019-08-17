@@ -49,7 +49,7 @@ export class MesasController {
         });
     }
 
-    private async mesa_abierta(id_mesa: number): Promise<boolean> {
+    private async mesa_abierta(id_mesa: number): Promise<true|string> {
         return new Promise(async (resolve, reject) => {
             try {
                 const query = `
@@ -61,7 +61,7 @@ export class MesasController {
                 if (mesa.fecha_inicio < fecha_actual && mesa.fecha_limite > fecha_actual) {
                     resolve(true);
                 } else {
-                    resolve(false);
+                    resolve('La mesa no se encuetra abierta en este momento // Inicio de inscripción: ' + mesa.fecha_inicio + ' // Fin de inscripción: ' + mesa.fecha_limite + ' // Fecha actual: ' + fecha_actual);
                 }
             } catch (error) {
                 reject(error);
@@ -152,7 +152,7 @@ export class MesasController {
             if (id_alumno) {
                 if (id_mesa) {
                     const mesa_abierta = await this.mesa_abierta(id_mesa);
-                    if (mesa_abierta) {
+                    if (mesa_abierta === true) {
                         const id_materia = await this.get_id_materia(id_mesa);
                         const cursada_aprobada = await this.cursada_aprobada(id_materia, id_alumno);
                         if (cursada_aprobada) {
@@ -183,7 +183,7 @@ export class MesasController {
                         }
                     } else {
                         res.status(400).json({
-                            mensaje: 'La mesa no se encuentra abierta para inscripción en este momento',
+                            mensaje: mesa_abierta,
                         });
                     }
                 } else {
