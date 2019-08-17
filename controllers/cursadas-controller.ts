@@ -284,6 +284,10 @@ export class CursadasController {
                                     res.status(200).json({
                                         mensaje: 'Inscripción a cursada creada!',
                                     });
+                                } else {
+                                    res.status(400).json({
+                                        mensaje: 'La materia no permite inscripción libre',
+                                    });
                                 }
                             } else {
                                 await this.realizar_inscripcion_cursada(id_alumno, id_cursada, cursa, equivalencia);
