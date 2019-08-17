@@ -256,4 +256,34 @@ export class MesasController {
                 res.status(500).json(err);
             });
     }
+
+    public async listar_inscriptos(req: Request, res: Response) {
+        try {
+            const id_mesa = +req.params.id_mesa;
+            if (id_mesa) {
+                const query = `
+                    SELECT us.apellido, us.nombre, us.dni, im.fecha_inscripcion, ma.nombre AS materia, me.fecha_examen
+                    FROM mesas me
+                    INNER JOIN materias ma ON ma.id = me.id_materia
+                    INNER JOIN inscripciones_mes im ON im.id_mesa = me.id
+                    INNER JOIN alumnos al ON al.id = im.id_alumno
+                    INNER JOIN usuarios us ON un.id = al.id_usuario
+                    WHERE me.id = $1;
+                    ORDER BY us.apellido, us.nombre`;
+                const inscriptos = await this.db.manyOrNone(query, [id_mesa]);
+                res.status(200).json(inscriptos);
+            } else {
+                res.status(400).json({
+                    mensaje: 'ID de mesa invalido'
+                });
+            }
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({
+                mensaje: 'Ocurrio un error al listar los inscriptos a la mesa',
+                error
+            });
+        }
+    }
+
 }
