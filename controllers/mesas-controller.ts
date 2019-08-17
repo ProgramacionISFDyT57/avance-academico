@@ -268,8 +268,8 @@ export class MesasController {
                     INNER JOIN inscripciones_mesa im ON im.id_mesa = me.id
                     INNER JOIN alumnos al ON al.id = im.id_alumno
                     INNER JOIN usuarios us ON us.id = al.id_usuario
-                    WHERE me.id = $1;
-                    ORDER BY us.apellido, us.nombre`;
+                    WHERE me.id = $1
+                    ORDER BY us.apellido, us.nombre;`;
                 const inscriptos = await this.db.manyOrNone(query, [id_mesa]);
                 res.status(200).json(inscriptos);
             } else {
