@@ -257,7 +257,7 @@ export class CursadasController {
             const id_cursada = +req.params.id_cursada;
             if (id_cursada) {
                 const query = `
-                    SELECT us.apellido, us.nombre, us.dni, im.fecha_inscripcion, ma.nombre AS materia, me.fecha_examen
+                    SELECT us.apellido, us.nombre, us.dni, ic.fecha_inscripcion, ma.nombre AS materia, cu.año AS anio_cursada
                     FROM cursadas cu
                     INNER JOIN materias ma ON ma.id = cu.id_materia
                     INNER JOIN inscripciones_cursadas ic ON ic.id_cursada = cu.id
