@@ -27,6 +27,35 @@ export class HelperService {
         });
     }
 
+    public async carrera_abierta(id_carrera_abierta: number): Promise<true|string> {
+        return new Promise(async (resolve, reject) => {
+            try {
+                const query = `
+                    SELECT fecha_inicio, fecha_limite
+                    FROM carreras_abiertas
+                    WHERE id = $1;`
+                const carrera_abierta = await this.db.one(query, id_carrera_abierta);
+                const fecha_actual = new Date().getTime();
+                const fecha_inicio = new Date(carrera_abierta.fecha_inicio).getTime();
+                const fecha_limite = new Date(carrera_abierta.fecha_limite).getTime();
+                const fecha_actual_texto = new Date().toLocaleDateString();
+                const fecha_inicio_texto = new Date(carrera_abierta.fecha_inicio).toLocaleDateString();
+                const fecha_limite_texto = new Date(carrera_abierta.fecha_limite).toLocaleDateString();
+                if (fecha_inicio <= fecha_actual) {
+                    if (fecha_limite >= fecha_actual) {
+                        resolve(true);
+                    } else {
+                        resolve('Ya finalizó la inscripción a la carrera, fecha límite: ' + fecha_limite_texto + ' // Fecha actual: ' + fecha_actual_texto);    
+                    }
+                } else {
+                    resolve('Aun no inició la inscripción a la carrera, fecha de inicio: ' + fecha_inicio_texto + ' // Fecha actual: ' + fecha_actual_texto);    
+                }
+            } catch (error) {
+                reject(error);
+            }
+        });
+    }
+
     public async mesa_abierta(id_mesa: number): Promise<true|string> {
         return new Promise(async (resolve, reject) => {
             try {
@@ -49,6 +78,59 @@ export class HelperService {
                     }
                 } else {
                     resolve('Aun no inició la inscripción a la mesa, fecha de inicio: ' + fecha_inicio_texto + ' // Fecha actual: ' + fecha_actual_texto);    
+                }
+            } catch (error) {
+                reject(error);
+            }
+        });
+    }
+
+    public async cursada_abierta(id_cursada: number): Promise<true|string> {
+        return new Promise(async (resolve, reject) => {
+            try {
+                const query = `
+                    SELECT fecha_inicio, fecha_limite
+                    FROM cursadas
+                    WHERE id = $1;`
+                const cursada = await this.db.one(query, id_cursada);
+                const fecha_actual = new Date().getTime();
+                const fecha_inicio = new Date(cursada.fecha_inicio).getTime();
+                const fecha_limite = new Date(cursada.fecha_limite).getTime();
+                const fecha_actual_texto = new Date().toLocaleDateString();
+                const fecha_inicio_texto = new Date(cursada.fecha_inicio).toLocaleDateString();
+                const fecha_limite_texto = new Date(cursada.fecha_limite).toLocaleDateString();
+                if (fecha_inicio <= fecha_actual) {
+                    if (fecha_limite >= fecha_actual) {
+                        resolve(true);
+                    } else {
+                        resolve('Ya finalizó la inscripción a la cursada, fecha límite: ' + fecha_limite_texto + ' // Fecha actual: ' + fecha_actual_texto);    
+                    }
+                } else {
+                    resolve('Aun no inició la inscripción a la cursada, fecha de inicio: ' + fecha_inicio_texto + ' // Fecha actual: ' + fecha_actual_texto);    
+                }
+            } catch (error) {
+                reject(error);
+            }
+        });
+    }
+
+    public async final_aprobado(id_materia: number, id_alumno: number): Promise<boolean> {
+        return new Promise(async (resolve, reject) => {
+            try {
+                const query = `
+                    SELECT fi.nota
+                    FROM materias ma
+                    INNER JOIN mesas me ON me.id_materia = ma.id
+                    INNER JOIN inscripciones_mesa im ON im.id_mesa = me.id
+                    INNER JOIN finales fi ON fi.id_inscripcion_mesa = im.id
+                    WHERE ma.id = $1
+                    AND im.id_alumno = $2
+                    AND fi.nota >= 4`;
+                const result = await this.db.manyOrNone(query, [id_materia, id_alumno]);
+                if (result.length) {
+                    resolve(true);
+                } else {
+                    resolve(false);
                 }
             } catch (error) {
                 reject(error);
@@ -131,28 +213,5 @@ export class HelperService {
             }
         });
     }
-
-    public async final_aprobado(id_materia: number, id_alumno: number): Promise<boolean> {
-        return new Promise(async (resolve, reject) => {
-            try {
-                const query = `
-                    SELECT fi.nota
-                    FROM materias ma
-                    INNER JOIN mesas me ON me.id_materia = ma.id
-                    INNER JOIN inscripciones_mesa im ON im.id_mesa = me.id
-                    INNER JOIN finales fi ON fi.id_inscripcion_mesa = im.id
-                    WHERE ma.id = $1
-                    AND im.id_alumno = $2
-                    AND fi.nota >= 4`;
-                const result = await this.db.manyOrNone(query, [id_materia, id_alumno]);
-                if (result.length) {
-                    resolve(true);
-                } else {
-                    resolve(false);
-                }
-            } catch (error) {
-                reject(error);
-            }
-        });
-    }
+    
 }

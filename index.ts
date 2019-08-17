@@ -63,7 +63,9 @@ app.get("/carreras_abiertas", carrerasController.ver_carreras_abiertas);
 app.get("/carreras_abiertas_hoy", carrerasController.ver_carreras_abiertas_hoy);
 app.post("/carreras_abiertas", carrerasController.crear_carreras_abiertas);
 // INSCRIPCIONES A CARRERAS
+app.get("/inscriptos_carrera/:id_carrera_abierta", carrerasController.listar_inscriptos_carrera);
 app.post("/inscripciones_carreras", carrerasController.crear_inscripcion_carrera);
+app.delete("/inscripciones_carreras/:id_inscripcion", carrerasController.borrar_inscripcion_carrera);
 //////////////////////////////////////////////////////////////////////////////////////
 // CURSADAS ABIERTAS
 //////////////////////////////////////////////////////////////////////////////////////

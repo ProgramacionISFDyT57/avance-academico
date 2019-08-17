@@ -2,14 +2,18 @@ import { IDatabase } from 'pg-promise';
 import { Request, Response } from 'express';
 import { Carrera } from '../modelos/modelo-carrera';
 import { CarreraAbierta } from '../modelos/modelo-carreraabierta';
-import { InscripcionCarrera } from '../modelos/modelo-inscripcioncarrera';
+import { HelperService } from '../servicios/helper';
+
 export class CarrerasController {
     private db: IDatabase<any>;
+    private helper: HelperService;
 
     constructor(db: IDatabase<any>) {
         this.db = db;
+        this.helper = new HelperService(db);
         this.borrar_inscripcion_carrera = this.borrar_inscripcion_carrera.bind(this);
         this.crear_inscripcion_carrera = this.crear_inscripcion_carrera.bind(this);
+        this.listar_inscriptos_carrera = this.listar_inscriptos_carrera.bind(this);
         this.ver_carreras = this.ver_carreras.bind(this);
         this.ver_carrera = this.ver_carrera.bind(this);
         this.crear_carrera = this.crear_carrera.bind(this);
@@ -20,71 +24,95 @@ export class CarrerasController {
         this.crear_carreras_abiertas = this.crear_carreras_abiertas.bind(this);
     }
 
-    public borrar_inscripcion_carrera(req: Request, res: Response) {
-        if (+req.params.id_inscripcion) {
-            this.db.none(`DELETE FROM inscripciones_carreras WHERE id = $1`, req.params.id_inscripcion)
-                .then(() => {
-                    res.json({
-                        mensaje: 'Inscripción borrada correctamente',
-                        datos: null
-                    })
-                })
-                .catch(err => {
-                    console.error(err);
-                    res.status(500).json({
-                        mensaje: err.detail,
-                        datos: err
-                    })
-                })
-        } else {
-            res.status(400).json({
-                mensaje: 'Faltan datos',
-                datos: null
-            })
+    public async borrar_inscripcion_carrera(req: Request, res: Response) {
+        try {
+            const id_inscripcion = +req.params.id_inscripcion;
+            if (id_inscripcion) {
+                const query = `DELETE FROM inscripciones_carreras WHERE id = $1;`;
+                await this.db.none(query, id_inscripcion);
+                res.json({
+                    mensaje: 'Inscripción a carrera borrada correctamente',
+                });
+            } else {
+                res.status(400).json({
+                    mensaje: 'ID de inscripción inválido',
+                });
+            }
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({
+                mensaje: 'Ocurrio un error al eliminar la inscripción de la carrera',
+                error
+            });
         }
     }
-    public crear_inscripcion_carrera(req: Request, res: Response) {
-        const ca: InscripcionCarrera = req.body.inscripcion_carrera;
-        const query = `SELECT id FROM inscripciones_carreras WHERE id_alumno = $1 AND id_carrera_abierta = $2`;
-        this.db.oneOrNone(query , [ca.id_alumno, ca.id_carrera_abierta])
-            .then((data) => {
-                if (data) {
-                    res.status(400).json({
-                        mensaje: 'Ya se encuentra inscripto en la carrera',
-                    });
-                } else {
-                    const query2 = `
-                        SELECT id 
-                        FROM carreras_abiertas
-                        WHERE CURRENT_TIMESTAMP BETWEEN fecha_inicio AND fecha_limite
-                        AND id = $1`;
-                    this.db.oneOrNone(query2, [ca.id_carrera_abierta])
-                        .then((data) => {
-                            if (data) {
-                                const query3 = `
-                                    INSERT INTO inscripciones_carreras (id_alumno, id_carrera_abierta) 
-                                    VALUES ($1, $2) RETURNING ID`;
-                                this.db.one(query3, [ca.id_alumno, ca.id_carrera_abierta])
-                                    .then((data) => {
-                                        res.status(200).json(data);
-                                    })
-                                    .catch((err) => {
-                                        console.error(err);
-                                        res.status(500).json(err);
-                                    });
-                            } else {
-                                res.status(400).json({
-                                    mensaje: 'La carrera no se encuentra abierta en este momento',
-                                });
-                            }
-                        })
-                        .catch((err) => {
-                            console.error(err);
-                            res.status(500).json(err);
+    public async crear_inscripcion_carrera(req: Request, res: Response) {
+        try {
+            const id_carrera_abierta = +req.body.id_carrera_abierta;
+            const id_alumno = +req.body.id_alumno;
+            if (id_alumno) {
+                if (id_carrera_abierta) {
+                    const carrera_abierta = await this.helper.carrera_abierta(id_carrera_abierta);
+                    if (carrera_abierta === true) {
+                        const query = `INSERT INTO inscripciones_carreras (id_alumno, id_carrera_abierta, fecha_inscripcion) 
+                            VALUES ($1, $2, current_timestamp) RETURNING ID`;
+                        await this.db.one(query, [id_alumno, id_carrera_abierta]);
+                        res.status(200).json({
+                            mensaje: 'Se inscribio correctamente el alumno a la carrera'
                         });
+                    } else {
+                        res.status(400).json({
+                            mensaje: carrera_abierta,
+                        });    
+                    }
+                } else {
+                    res.status(400).json({
+                        mensaje: 'ID de carrera abierta inválido, se espera id_carrera_abierta',
+                    });
                 }
-            })
+            } else {
+                res.status(400).json({
+                    mensaje: 'ID de alumno, se espera id_alumno',
+                });
+            }
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({
+                mensaje: 'Ocurrio un error al crear la inscripcion a la cursada',
+                error
+            });
+        }
     }
+    public async listar_inscriptos_carrera(req: Request, res: Response) {
+        try {
+            const id_carrera_abierta = +req.params.id_carrera_abierta;
+            if (id_carrera_abierta) {
+                const query = `
+                    SELECT us.apellido, us.nombre, us.dni, ic.fecha_inscripcion, ma.nombre AS materia, cu.anio AS anio_cursada
+                    FROM carreras_abiertas ca
+                    INNER JOIN carreras c ON c.id = ca.id_carrera
+                    INNER JOIN inscripciones_carreras ic ON ic.id_carrera_abierta = ca.id
+                    INNER JOIN alumnos al ON al.id = ic.id_alumno
+                    INNER JOIN usuarios us ON us.id = al.id_usuario
+                    WHERE ca.id = $1
+                    ORDER BY us.apellido, us.nombre;`;
+                const inscriptos = await this.db.manyOrNone(query, [id_carrera_abierta]);
+                res.status(200).json(inscriptos);
+            } else {
+                res.status(400).json({
+                    mensaje: 'ID de carrera abierta inválido',
+                });
+            }
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({
+                mensaje: 'Ocurrio un error al listar los inscriptos a la carrera',
+                error
+            });
+        }
+    }
+
+
     public ver_carreras(req: Request, res: Response) {
         const query = `
             SELECT c.id, c.nombre, c.duracion, c.cantidad_materias, COUNT(m.id) AS materias_cargadas

@@ -239,18 +239,25 @@ export class CursadasController {
             const id_alumno = token.id_alumno;
             if (id_alumno) {
                 if (id_cursada) {
-                    const id_materia = await this.get_id_materia(id_cursada);
-                    const correlativas_aprobadas = await this.helper.cursadas_correlativas_aprobadas(id_materia, id_alumno);
-                    if (correlativas_aprobadas) {
-                        const query = `INSERT INTO inscripciones_cursadas (id_alumno, id_cursada, cursa, equivalencia, fecha_inscripcion) 
-                                                    VALUES ($1, $2, $3, $4, current_timestamp);`
-                        await this.db.none(query, [id_alumno, id_cursada, cursa, equivalencia])
-                        res.status(200).json({
-                            mensaje: 'Inscripción a cursada creada!',
-                        });
+                    const cursada_abierta = await this.helper.cursada_abierta(id_cursada);
+                    if (cursada_abierta === true) {
+                        const id_materia = await this.get_id_materia(id_cursada);
+                        const correlativas_aprobadas = await this.helper.cursadas_correlativas_aprobadas(id_materia, id_alumno);
+                        if (correlativas_aprobadas) {
+                            const query = `INSERT INTO inscripciones_cursadas (id_alumno, id_cursada, cursa, equivalencia, fecha_inscripcion) 
+                                                        VALUES ($1, $2, $3, $4, current_timestamp);`
+                            await this.db.none(query, [id_alumno, id_cursada, cursa, equivalencia])
+                            res.status(200).json({
+                                mensaje: 'Inscripción a cursada creada!',
+                            });
+                        } else {
+                            res.status(400).json({
+                                mensaje: 'No posee las correlativas aprobadas',
+                            });
+                        }
                     } else {
                         res.status(400).json({
-                            mensaje: 'No posee las correlativas aprobadas',
+                            mensaje: cursada_abierta,
                         });
                     }
                 } else {
