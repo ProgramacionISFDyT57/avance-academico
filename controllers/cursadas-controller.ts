@@ -204,10 +204,17 @@ export class CursadasController {
                 mensaje: 'Las notas deben ser entre 1 y 10'
             })
         } else {
-            this.db.one(`INSERT INTO avance_academico (id_inscripcion_cursada, nota_cuat_1, nota_cuat_2, nota_recuperatorio, asistencia) 
-                VALUES ($1, $2, $3, $4, $5) RETURNING ID`,
-                [avance.id_inscripcion_cursada, avance.nota_cuat_1, avance.nota_cuat_2, avance.nota_recuperatorio, avance.asistencia])
-                .then((data) => {
+            const query =
+                `INSERT INTO avance_academico (id_inscripcion_cursada, nota_cuat_1, nota_cuat_2, nota_recuperatorio, asistencia) 
+                VALUES ($1, $2, $3, $4, $5)
+                ON CONFLICT (id_inscripcion_cursada) 
+                DO UPDATE 
+                    SET nota_cuat_1 = EXCLUDED.nota_cuat_1,
+                        nota_cuat_2 = EXCLUDED.nota_cuat_2,
+                        nota_recuperatorio = EXCLUDED.nota_recuperatorio,
+                        asistencia = EXCLUDED.asistencia;`;
+            this.db.none(query, [avance.id_inscripcion_cursada, avance.nota_cuat_1, avance.nota_cuat_2, avance.nota_recuperatorio, avance.asistencia])
+                .then(() => {
                     res.status(200).json({
                         mensaje: 'Se cargaron correctamente las notas de la cursada'
                     });
