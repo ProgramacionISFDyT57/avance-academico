@@ -186,44 +186,54 @@ export class CursadasController {
         }
     }
 
-    public cargar_notas_cursada(req: Request, res: Response) {
-        const avance: Avance = req.body.avance_academico;
+    private notas_validas(avance: Avance) {
+
         if (avance.nota_cuat_1 > 4 && avance.nota_cuat_2 > 4 && avance.nota_recuperatorio != null) {
-            res.status(400).json({
-                mensaje: 'No es posible tener nota de recuperatorio con los dos cuatrimestres aprobados'
-            })
+            return 'No es posible tener nota de recuperatorio con los dos cuatrimestres aprobados';
         } else if (avance.nota_cuat_1 < 4 && avance.nota_cuat_2 < 4 && avance.nota_recuperatorio != null) {
-            res.status(400).json({
-                mensaje: 'No es posible tener nota de recuperatorio con los dos cuatrimestres desaprobados'
-            })
+            return 'No es posible tener nota de recuperatorio con los dos cuatrimestres desaprobados';
         } else if (avance.nota_cuat_1 % 1 !== 0 || avance.nota_cuat_2 % 1 !== 0 || avance.nota_recuperatorio % 1 !== 0) {
-            res.status(400).json({
-                mensaje: 'Las notas deben ser números enteros'
-            })
-        } else if (avance.nota_cuat_1 < 1 || avance.nota_cuat_2 < 1 || avance.nota_recuperatorio < 1 || avance.nota_recuperatorio > 10 || avance.nota_cuat_1 > 10 || avance.nota_cuat_2 > 10) {
-            res.status(400).json({
-                mensaje: 'Las notas deben ser entre 1 y 10'
-            })
+            return 'Las notas deben ser números enteros';
+        } else if ( 
+            ((avance.nota_cuat_1) && (avance.nota_cuat_1 < 1 || avance.nota_cuat_1 > 10)) ||
+            ((avance.nota_cuat_2) && (avance.nota_cuat_2 < 1 || avance.nota_cuat_2 > 10)) ||
+            ((avance.nota_recuperatorio) && (avance.nota_recuperatorio < 1 || avance.nota_recuperatorio > 10)) 
+        ) {
+            return 'Las notas deben ser entre 1 y 10';
         } else {
-            const query =
-                `INSERT INTO avance_academico (id_inscripcion_cursada, nota_cuat_1, nota_cuat_2, nota_recuperatorio, asistencia) 
-                VALUES ($1, $2, $3, $4, $5)
-                ON CONFLICT (id_inscripcion_cursada) 
-                DO UPDATE 
-                    SET nota_cuat_1 = EXCLUDED.nota_cuat_1,
-                        nota_cuat_2 = EXCLUDED.nota_cuat_2,
-                        nota_recuperatorio = EXCLUDED.nota_recuperatorio,
-                        asistencia = EXCLUDED.asistencia;`;
-            this.db.none(query, [avance.id_inscripcion_cursada, avance.nota_cuat_1, avance.nota_cuat_2, avance.nota_recuperatorio, avance.asistencia])
-                .then(() => {
-                    res.status(200).json({
-                        mensaje: 'Se cargaron correctamente las notas de la cursada'
-                    });
-                })
-                .catch((err) => {
-                    console.error(err);
-                    res.status(500).json(err);
+            return true;
+        }
+    }
+
+    public async cargar_notas_cursada(req: Request, res: Response) {
+        try {
+            const avance: Avance = req.body.avance_academico;
+            const notas_validas = this.notas_validas(avance);
+            if (notas_validas) {
+                const query =
+                    `INSERT INTO avance_academico (id_inscripcion_cursada, nota_cuat_1, nota_cuat_2, nota_recuperatorio, asistencia) 
+                    VALUES ($1, $2, $3, $4, $5)
+                    ON CONFLICT (id_inscripcion_cursada) 
+                    DO UPDATE 
+                        SET nota_cuat_1 = EXCLUDED.nota_cuat_1,
+                            nota_cuat_2 = EXCLUDED.nota_cuat_2,
+                            nota_recuperatorio = EXCLUDED.nota_recuperatorio,
+                            asistencia = EXCLUDED.asistencia;`;
+                await this.db.none(query, [avance.id_inscripcion_cursada, avance.nota_cuat_1, avance.nota_cuat_2, avance.nota_recuperatorio, avance.asistencia])
+                res.status(200).json({
+                    mensaje: 'Se cargaron correctamente las notas de la cursada'
                 });
+            } else {
+                res.status(400).json({
+                    mensaje: notas_validas
+                });
+            }
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({
+                mensaje: 'Ocurrio un error al eliminar la cursada',
+                error
+            });
         }
     }
     public async eliminar_notas_cursada(req: Request, res: Response) {
