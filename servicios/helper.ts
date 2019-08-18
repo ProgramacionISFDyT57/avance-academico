@@ -14,7 +14,7 @@ export class HelperService {
                     SELECT co.id_correlativa
                     FROM materias ma
                     INNER JOIN correlativas co ON co.id_materia = ma.id
-                    WHERE me.id = $1`;
+                    WHERE ma.id = $1`;
                 const correlativas = await this.db.manyOrNone(query, [id_materia]);
                 const ids = [];
                 for (const correlativa of correlativas) {

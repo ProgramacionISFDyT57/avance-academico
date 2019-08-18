@@ -9,6 +9,7 @@ export class CursadasController {
     private db: IDatabase<any>;
     private helper: HelperService;
     private log: string = '';
+
     constructor(db: IDatabase<any>) {
         this.db = db;
         this.helper = new HelperService(db);
@@ -281,10 +282,8 @@ export class CursadasController {
             if (id_alumno) {
                 if (id_cursada) {
                     const cursada_abierta = await this.helper.cursada_abierta(id_cursada);
-                    this.log = 'cursada abierta'
                     if (cursada_abierta === true) {
                         const id_materia = await this.get_id_materia(id_cursada);
-                        this.log = 'get id materia';
                         const correlativas_aprobadas = await this.helper.cursadas_correlativas_aprobadas(id_materia, id_alumno);
                         this.log = 'cursadas correlativas aprobadas';
                         if (correlativas_aprobadas) {
