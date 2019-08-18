@@ -34,6 +34,8 @@ app.put("/usuarios", usuariosController.cambiar_contraseña);
 app.get("/profesores", usuariosController.ver_profesores);
 // LOGIN
 app.post("/login", seguridadController.login);
+// ROLES
+app.get("/roles", usuariosController.listar_roles);
 // TIPOS DE MATERIAS
 app.get("/tipos_materia", materiasController.ver_tipos_materias);
 app.post("/tipos_materia", materiasController.crear_tipo_materia);
