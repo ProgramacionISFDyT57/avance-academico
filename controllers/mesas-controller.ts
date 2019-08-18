@@ -13,6 +13,7 @@ export class MesasController {
         this.db = db;
         this.helper = new HelperService(db);
         this.crear_inscripcion_mesa = this.crear_inscripcion_mesa.bind(this);
+        this.eliminar_inscripcion_mesa = this.eliminar_inscripcion_mesa.bind(this);
         this.lista_mesas = this.lista_mesas.bind(this);
         this.crear_mesa = this.crear_mesa.bind(this);
         this.eliminar_mesa = this.eliminar_mesa.bind(this);
@@ -93,6 +94,25 @@ export class MesasController {
             console.error(error);
             res.status(500).json({
                 mensaje: 'Ocurrio un error al crear la inscripción',
+                error
+            });
+        }
+    }
+
+    public async eliminar_inscripcion_mesa(req: Request, res: Response) {
+        try {
+            const token: Token = res.locals.token;
+            const id_alumno = token.id_alumno;
+            const id_inscripcion_mesa = +req.params.id_inscripcion_mesa;
+            const query = 'DELETE FROM inscripciones_mesa WHERE id = $1 AND id_alumno = $2;'
+            await this.db.none(query, [id_inscripcion_mesa, id_alumno]);
+            res.status(200).json({
+                mensaje: 'Se eliminó la inscripción a la mesa',
+            });
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({
+                mensaje: 'Ocurrio un error al eliminar las inscripción a la mesa',
                 error
             });
         }

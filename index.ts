@@ -76,6 +76,7 @@ app.delete("/cursadas/:id_cursada", cursadasController.eliminar_cursada);
 // INCRIPCIONES CURSADAS
 app.get("/inscriptos_cursada/:id_cursada", cursadasController.listar_inscriptos);
 app.post("/inscripcion_cursada", seguridadController.chequear_roles(['alumno']), cursadasController.crear_inscripcion_cursada);
+app.delete("/inscripcion_cursada/:id_inscripcion_cursada", seguridadController.chequear_roles(['alumno']), cursadasController.eliminar_inscripcion_cursada);
 // NOTAS CURSADA (AVANCE ACADEMICO)
 app.post("/notas_cursada", cursadasController.cargar_notas_cursada);
 app.delete("/notas_cursada/:id_inscripcion_cursada", cursadasController.eliminar_notas_cursada);
@@ -90,6 +91,7 @@ app.delete("/mesas/:id_mesa", mesasController.eliminar_mesa);
 // INSCRIPCIONES MESAS
 app.get("/inscriptos_mesa/:id_mesa", mesasController.listar_inscriptos);
 app.post("/inscripciones_mesas", seguridadController.chequear_roles(['alumno']), mesasController.crear_inscripcion_mesa);
+app.delete("/inscripciones_mesas/:id_inscripcion_mesa", seguridadController.chequear_roles(['alumno']), mesasController.eliminar_inscripcion_mesa);
 // NOTAS FINALES (AVANCE ACADEMICO)
 app.post("/notas_final", mesasController.cargar_notas_final);
 app.delete("/notas_final/:id_inscripcion_mesa", mesasController.eliminar_notas_final);
