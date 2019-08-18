@@ -8,7 +8,7 @@ import { HelperService } from '../servicios/helper';
 export class CursadasController {
     private db: IDatabase<any>;
     private helper: HelperService;
-
+    private log: string = '';
     constructor(db: IDatabase<any>) {
         this.db = db;
         this.helper = new HelperService(db);
@@ -281,12 +281,16 @@ export class CursadasController {
             if (id_alumno) {
                 if (id_cursada) {
                     const cursada_abierta = await this.helper.cursada_abierta(id_cursada);
+                    this.log = 'cursada abierta'
                     if (cursada_abierta === true) {
                         const id_materia = await this.get_id_materia(id_cursada);
+                        this.log = 'get id materia';
                         const correlativas_aprobadas = await this.helper.cursadas_correlativas_aprobadas(id_materia, id_alumno);
+                        this.log = 'cursadas correlativas aprobadas';
                         if (correlativas_aprobadas) {
                             if (!cursa) {
                                 const permite_libre = await this.helper.permite_inscripcion_libre(id_materia);
+                                this.log = 'permite inscripcion libre';
                                 if (permite_libre) {
                                     await this.realizar_inscripcion_cursada(id_alumno, id_cursada, cursa, equivalencia);
                                     res.status(200).json({
@@ -327,7 +331,8 @@ export class CursadasController {
             console.error(error);
             res.status(500).json({
                 mensaje: 'Ocurrio un error al crear la inscripcion a la cursada',
-                error
+                error,
+                log: this.log
             });
         }
     }
