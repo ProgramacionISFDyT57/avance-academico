@@ -219,9 +219,15 @@ export class MesasController {
     public async cargar_notas_final(req: Request, res: Response) {
         try {
             const final: Final = req.body.final;
-            const query = `INSERT INTO finales (id_inscripcion_mesa, nota, libro, folio) 
-                VALUES ($1, $2, $3, $4, $5) RETURNING ID;`;
-            await this.db.one(query, [final.id_inscripcion_mesa, final.nota, final.libro, final.folio]);
+            const query = `
+                INSERT INTO finales (id_inscripcion_mesa, nota, libro, folio) 
+                VALUES ($1, $2, $3, $4, $5) 
+                ON CONFLICT (id_inscripcion_mesa) 
+                DO UPDATE 
+                    SET nota = EXCLUDED.nota,
+                        libro = EXCLUDED.libro,
+                        folio = EXCLUDED.folio;`;
+            await this.db.none(query, [final.id_inscripcion_mesa, final.nota, final.libro, final.folio]);
             res.status(200).json({
                 mensaje: 'Se cargo la nota correctamente'
             });
