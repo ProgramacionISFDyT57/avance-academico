@@ -79,7 +79,7 @@ app.post("/cursadas", cursadasController.crear_cursada);
 app.get("/cursadas_abiertas", cursadasController.ver_cursadas_abiertas);
 app.delete("/cursadas/:id_cursada", cursadasController.eliminar_cursada);
 // INCRIPCIONES CURSADAS
-app.get("/inscriptos_cursada/:id_cursada", cursadasController.listar_inscriptos);
+app.get("/inscriptos_cursada/:id_cursada", cursadasController.listar_inscriptos_cursada);
 app.post("/inscripcion_cursada", seguridadController.chequear_roles(['alumno']), cursadasController.crear_inscripcion_cursada);
 app.delete("/inscripcion_cursada/:id_inscripcion_cursada", seguridadController.chequear_roles(['alumno']), cursadasController.eliminar_inscripcion_cursada);
 // NOTAS CURSADA (AVANCE ACADEMICO)

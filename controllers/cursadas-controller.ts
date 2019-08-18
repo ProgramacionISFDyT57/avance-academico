@@ -24,7 +24,7 @@ export class CursadasController {
         this.eliminar_notas_cursada = this.eliminar_notas_cursada.bind(this);
         this.crear_inscripcion_cursada = this.crear_inscripcion_cursada.bind(this);
         this.eliminar_inscripcion_cursada = this.eliminar_inscripcion_cursada.bind(this);
-        this.listar_inscriptos = this.listar_inscriptos.bind(this);
+        this.listar_inscriptos_cursada = this.listar_inscriptos_cursada.bind(this);
     }
     public crear_cursada(req: Request, res: Response) {
         const cursada: Cursada = req.body.cursada;
@@ -355,17 +355,19 @@ export class CursadasController {
         }
     }
 
-    public async listar_inscriptos(req: Request, res: Response) {
+    public async listar_inscriptos_cursada(req: Request, res: Response) {
         try {
             const id_cursada = +req.params.id_cursada;
             if (id_cursada) {
                 const query = `
-                    SELECT us.apellido, us.nombre, us.dni, ic.fecha_inscripcion, ma.nombre AS materia, cu.anio AS anio_cursada
+                    SELECT us.apellido, us.nombre, us.dni, ic.fecha_inscripcion, ma.nombre AS materia, cu.anio AS anio_cursada,
+                        aa.nota_cuat_1, aa.nota_cuat_2, aa.nota_recuperatorio, aa.asistencia
                     FROM cursadas cu
                     INNER JOIN materias ma ON ma.id = cu.id_materia
                     INNER JOIN inscripciones_cursadas ic ON ic.id_cursada = cu.id
                     INNER JOIN alumnos al ON al.id = ic.id_alumno
                     INNER JOIN usuarios us ON us.id = al.id_usuario
+                    INNER JOIN avance_academico aa ON aa.id_inscripcion_cursada = ic.id
                     WHERE cu.id = $1
                     ORDER BY us.apellido, us.nombre;`;
                 const inscriptos = await this.db.manyOrNone(query, [id_cursada]);
