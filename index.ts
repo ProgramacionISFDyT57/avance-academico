@@ -30,6 +30,7 @@ app.get("/", (req, res) => {
 app.get("/usuarios", usuariosController.listar_usuarios);
 app.post("/usuarios", usuariosController.crear_usuario);
 app.put("/usuarios", usuariosController.cambiar_contraseña);
+app.delete("/usuarios/:id_usuario", usuariosController.eliminar_usuario);
 // PROFESORES
 app.get("/profesores", usuariosController.ver_profesores);
 // LOGIN

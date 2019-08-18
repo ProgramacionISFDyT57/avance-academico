@@ -14,6 +14,7 @@ export class UsuariosController {
         this.listar_alumnos = this.listar_alumnos.bind(this);
         this.cambiar_contraseña = this.cambiar_contraseña.bind(this);
         this.listar_roles = this.listar_roles.bind(this);
+        this.eliminar_usuario = this.eliminar_usuario.bind(this);
     }
 
     public cambiar_contraseña(req: Request, res: Response) {
@@ -136,6 +137,22 @@ export class UsuariosController {
                 console.error(err);
                 res.status(500).json(err);
             });
+    }
+    public async eliminar_usuario(req: Request, res: Response) {
+        try {
+            const id_usuario = req.params.id_usuario;
+            const query = `DELETE FROM usuarios WHERE id = $1`;
+            await this.db.none(query, [id_usuario]);
+            res.json({
+                mensaje: 'Se eliminó el usuario'
+            })
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({
+                mensaje: 'Ocurrio un error al eliminar el usuario',
+                error
+            });
+        }
     }
 
     public async listar_roles(req: Request, res: Response) {
