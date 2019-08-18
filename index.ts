@@ -26,15 +26,17 @@ const seguridadController = new SeguridadController(db);
 app.get("/", (req, res) => {
     res.status(200).end("<h1>Backend Avance Academico</h1>")
 });
+// LOGIN
+app.post("/login", seguridadController.login);
 // USUARIOS
 app.get("/usuarios", usuariosController.listar_usuarios);
 app.post("/usuarios", usuariosController.crear_usuario);
 app.put("/usuarios", usuariosController.cambiar_contraseña);
 app.delete("/usuarios/:id_usuario", usuariosController.eliminar_usuario);
 // PROFESORES
-app.get("/profesores", usuariosController.ver_profesores);
-// LOGIN
-app.post("/login", seguridadController.login);
+app.get("/profesores", usuariosController.listar_profesores);
+// ALUMNOS
+app.get("/alumnos", usuariosController.listar_alumnos);
 // ROLES
 app.get("/roles", usuariosController.listar_roles);
 // TIPOS DE MATERIAS

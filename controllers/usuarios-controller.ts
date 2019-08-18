@@ -10,7 +10,7 @@ export class UsuariosController {
         this.db = db;
         this.crear_usuario = this.crear_usuario.bind(this);
         this.listar_usuarios = this.listar_usuarios.bind(this);
-        this.ver_profesores = this.ver_profesores.bind(this);
+        this.listar_profesores = this.listar_profesores.bind(this);
         this.listar_alumnos = this.listar_alumnos.bind(this);
         this.cambiar_contraseña = this.cambiar_contraseña.bind(this);
         this.listar_roles = this.listar_roles.bind(this);
@@ -98,45 +98,58 @@ export class UsuariosController {
                 });
         });
     }
-    public listar_usuarios(req: Request, res: Response) {
-        this.db.manyOrNone(`
-            SELECT U.id, U.nombre, U.apellido, U.email, U.fecha_nacimiento, U.fecha_alta, R.nombre AS rol
-            FROM usuarios U
-            INNER JOIN roles R ON U.id_rol = R.id`)
-            .then((data) => {
-                res.status(200).json(data);
-            })
-            .catch((err) => {
-                console.error(err);
-                res.status(500).json(err);
+    public async listar_usuarios(req: Request, res: Response) {
+        try {
+            const query = `
+                SELECT U.id, U.nombre, U.apellido, U.email, U.fecha_nacimiento, U.fecha_alta, R.nombre AS rol
+                FROM usuarios U
+                INNER JOIN roles R ON U.id_rol = R.id`;
+            const usuarios = await this.db.manyOrNone(query);
+            res.json(usuarios);
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({
+                mensaje: 'Ocurrio un error al eliminar el usuario',
+                error
             });
+        }
     }
-    public ver_profesores(req: Request, res: Response) {
-        const query = `
-            SELECT p.id, u.email, u.nombre, u.apellido, u.fecha_nacimiento, u.fecha_alta 
-            FROM usuarios u
-            INNER JOIN profesores p on p.id_usuario = u.id
-            WHERE u.id_rol = 4`;
-        this.db.manyOrNone(query)
-            .then((data) => {
-                res.status(200).json(data);
-            })
-            .catch((err) => {
-                console.error(err);
-                res.status(500).json(err);
+    public async listar_profesores(req: Request, res: Response) {
+        try {
+            const query = `
+                SELECT p.id, u.email, u.nombre, u.apellido, u.fecha_nacimiento, u.dni, u.fecha_alta 
+                FROM usuarios u
+                INNER JOIN profesores p on p.id_usuario = u.id
+                WHERE u.id_rol = 4`;
+            const profesores = await this.db.manyOrNone(query);
+            res.json(profesores);
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({
+                mensaje: 'Ocurrio un error al eliminar el usuario',
+                error
             });
+        }
     }
-    public listar_alumnos(req: Request, res: Response) {
-        this.db.manyOrNone(`
-        SELECT alumnos.id, usuarios.nombre, usuarios.apellido FROM alumnos
-        inner join usuarios on usuarios.id = alumnos.id_usuario`)
-            .then((data) => {
-                res.status(200).json(data);
-            })
-            .catch((err) => {
-                console.error(err);
-                res.status(500).json(err);
+    public async listar_alumnos(req: Request, res: Response) {
+        try {
+            const query = `
+                SELECT a.id, u.nombre, u.apellido, u.dni, u.fecha_nacimiento, u.email, ca.cohorte, c.nombre AS carrera
+                FROM alumnos a
+                INNER JOIN usuarios u ON u.id = a.id_usuario
+                LEFT JOIN inscripciones_carreras ic ON ic.id_alumno = a.id
+                LEFT JOIN carreras_abiertas ca ON ca.id = ic.id_carrera_abierta
+                LEFT JOIN carreras c ON c.id = ca.id_carrera
+                ORDER BY u.apellido, u.nombre;`
+            const alumnos = await this.db.manyOrNone(query);
+            res.json(alumnos);
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({
+                mensaje: 'Ocurrio un error al eliminar el usuario',
+                error
             });
+        }
     }
     public async eliminar_usuario(req: Request, res: Response) {
         try {
