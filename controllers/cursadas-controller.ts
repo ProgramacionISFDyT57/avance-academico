@@ -204,24 +204,42 @@ export class CursadasController {
         }
     }
 
+    private asistencia_valida(avance: Avance) {
+        if (avance.asistencia) {
+            if (avance.asistencia < 0 || avance.asistencia > 100) {
+                return 'La asistencia debe ser un número entero entre 0 y 100';
+            } else if (avance.asistencia % 1 !== 0 || avance.asistencia % 1 !== 0) {
+                return 'La asistencia debe ser un número entero entre 0 y 100';
+            }
+        }
+        return true;
+    }
+
     public async cargar_notas_cursada(req: Request, res: Response) {
         try {
             const avance: Avance = req.body.avance_academico;
             const notas_validas = this.notas_validas(avance);
             if (notas_validas === true) {
-                const query =
-                    `INSERT INTO avance_academico (id_inscripcion_cursada, nota_cuat_1, nota_cuat_2, nota_recuperatorio, asistencia) 
-                    VALUES ($1, $2, $3, $4, $5)
-                    ON CONFLICT (id_inscripcion_cursada) 
-                    DO UPDATE 
-                        SET nota_cuat_1 = EXCLUDED.nota_cuat_1,
-                            nota_cuat_2 = EXCLUDED.nota_cuat_2,
-                            nota_recuperatorio = EXCLUDED.nota_recuperatorio,
-                            asistencia = EXCLUDED.asistencia;`;
-                await this.db.none(query, [avance.id_inscripcion_cursada, avance.nota_cuat_1, avance.nota_cuat_2, avance.nota_recuperatorio, avance.asistencia])
-                res.status(200).json({
-                    mensaje: 'Se cargaron correctamente las notas de la cursada'
-                });
+                const asistencia_valida = this.asistencia_valida(avance);
+                if (asistencia_valida === true) {
+                    const query =
+                        `INSERT INTO avance_academico (id_inscripcion_cursada, nota_cuat_1, nota_cuat_2, nota_recuperatorio, asistencia) 
+                        VALUES ($1, $2, $3, $4, $5)
+                        ON CONFLICT (id_inscripcion_cursada) 
+                        DO UPDATE 
+                            SET nota_cuat_1 = EXCLUDED.nota_cuat_1,
+                                nota_cuat_2 = EXCLUDED.nota_cuat_2,
+                                nota_recuperatorio = EXCLUDED.nota_recuperatorio,
+                                asistencia = EXCLUDED.asistencia;`;
+                    await this.db.none(query, [avance.id_inscripcion_cursada, avance.nota_cuat_1, avance.nota_cuat_2, avance.nota_recuperatorio, avance.asistencia])
+                    res.status(200).json({
+                        mensaje: 'Se cargaron correctamente las notas de la cursada'
+                    });
+                } else {
+                    res.status(400).json({
+                        mensaje: asistencia_valida
+                    });    
+                }
             } else {
                 res.status(400).json({
                     mensaje: notas_validas
