@@ -221,7 +221,7 @@ export class MesasController {
             const final: Final = req.body.final;
             const query = `
                 INSERT INTO finales (id_inscripcion_mesa, nota, libro, folio) 
-                VALUES ($1, $2, $3, $4, $5) 
+                VALUES ($1, $2, $3, $4) 
                 ON CONFLICT (id_inscripcion_mesa) 
                 DO UPDATE 
                     SET nota = EXCLUDED.nota,
@@ -234,7 +234,7 @@ export class MesasController {
         } catch (error) {
             console.error(error);
             res.status(500).json({
-                mensaje: 'Ocurrio un error al eliminar las notas del final',
+                mensaje: 'Ocurrio un error al cargar las notas del final',
                 error
             });
         }
