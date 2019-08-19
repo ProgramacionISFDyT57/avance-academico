@@ -14,7 +14,7 @@ export class CursadasController {
         this.db = db;
         this.helper = new HelperService(db);
         this.crear_cursada = this.crear_cursada.bind(this);
-        this.ver_cursadas_abiertas = this.ver_cursadas_abiertas.bind(this);
+        this.listar_cursadas_abiertas = this.listar_cursadas_abiertas.bind(this);
         this.eliminar_cursada = this.eliminar_cursada.bind(this);
 
         this.ver_cursadas_abiertas_alumno = this.ver_cursadas_abiertas_alumno.bind(this);
@@ -144,30 +144,61 @@ export class CursadasController {
                 res.status(500).json(err);
             });
     }
-    public ver_cursadas_abiertas(req: Request, res: Response) {
-        const query = `
-            SELECT C.id, C.anio AS anio_cursada, C.fecha_inicio, C.fecha_limite, 
-                M.nombre AS materia, M.anio AS anio_materia, ca.nombre AS carrera,
-                CONCAT_WS(', ', U.apellido, U.nombre) AS profesor,
-                COUNT(ic.id) AS cant_inscriptos
-            FROM cursadas C
-            INNER JOIN materias M ON M.id = C.id_materia
-            INNER JOIN carreras ca ON ca.id = M.id_carrera
-            LEFT JOIN profesores P ON P.id = C.id_profesor
-            LEFT JOIN usuarios U ON U.id = P.id_usuario
-            LEFT JOIN inscripciones_cursadas ic ON ic.id_cursada = C.id
-            GROUP BY C.id, C.anio, C.fecha_inicio, C.fecha_limite, 
-                M.nombre, M.anio, ca.nombre, 
-                CONCAT_WS(', ', U.apellido, U.nombre)
-            ORDER BY C.anio DESC, ca.nombre, M.anio, M.nombre`;
-        this.db.manyOrNone(query)
-            .then((data) => {
-                res.status(200).json(data);
-            })
-            .catch((err) => {
-                console.error(err);
-                res.status(500).json(err);
+    public async listar_cursadas_abiertas(req: Request, res: Response) {
+        try {
+            const token: Token = res.locals.token;
+            const id_alumno = +token.id_alumno;
+            let query;
+            let cursadas;
+            if (id_alumno) {
+                // Muestra las cursadas de la/s carreras del alumno
+                query = `
+                    SELECT C.id, C.anio AS anio_cursada, C.fecha_inicio, C.fecha_limite, 
+                        M.nombre AS materia, M.anio AS anio_materia, c.nombre AS carrera,
+                        CONCAT_WS(', ', U.apellido, U.nombre) AS profesor,
+                        COUNT(ic.id) AS cant_inscriptos
+                    FROM cursadas C
+                    INNER JOIN materias M ON M.id = C.id_materia
+                    INNER JOIN carreras c ON c.id = M.id_carrera
+                    INNER JOIN carreras_abiertas ca ON ca.id_carrera = c.id
+                    INNER JOIN inscripciones_carreras ic ON ic.id_carrera_abierta = ca.id
+                    LEFT JOIN profesores P ON P.id = C.id_profesor
+                    LEFT JOIN usuarios U ON U.id = P.id_usuario
+                    LEFT JOIN inscripciones_cursadas ic ON ic.id_cursada = C.id
+                    WHERE ic.id_alumno = $1
+                    AND C.año >= ca.cohorte
+                    GROUP BY C.id, C.anio, C.fecha_inicio, C.fecha_limite, 
+                        M.nombre, M.anio, c.nombre, 
+                        CONCAT_WS(', ', U.apellido, U.nombre)
+                    ORDER BY C.anio DESC, c.nombre, M.anio, M.nombre`;
+                    cursadas = await this.db.manyOrNone(query, [id_alumno]);
+            } else {
+                // Muestra todas las cursadas
+                query = `
+                    SELECT C.id, C.anio AS anio_cursada, C.fecha_inicio, C.fecha_limite, 
+                        M.nombre AS materia, M.anio AS anio_materia, ca.nombre AS carrera,
+                        CONCAT_WS(', ', U.apellido, U.nombre) AS profesor,
+                        COUNT(ic.id) AS cant_inscriptos
+                    FROM cursadas C
+                    INNER JOIN materias M ON M.id = C.id_materia
+                    INNER JOIN carreras ca ON ca.id = M.id_carrera
+                    LEFT JOIN profesores P ON P.id = C.id_profesor
+                    LEFT JOIN usuarios U ON U.id = P.id_usuario
+                    LEFT JOIN inscripciones_cursadas ic ON ic.id_cursada = C.id
+                    GROUP BY C.id, C.anio, C.fecha_inicio, C.fecha_limite, 
+                        M.nombre, M.anio, ca.nombre, 
+                        CONCAT_WS(', ', U.apellido, U.nombre)
+                    ORDER BY C.anio DESC, ca.nombre, M.anio, M.nombre`;
+                cursadas = await this.db.manyOrNone(query);
+            }
+            res.status(200).json(cursadas);
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({
+                mensaje: 'Ocurrio un error al listar las cursada',
+                error
             });
+        }
     }
     public async eliminar_cursada(req: Request, res: Response) {
         try {

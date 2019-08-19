@@ -105,11 +105,11 @@ export class UsuariosController {
                 VALUES ($1, $2, $3, $4, $5, $6, current_timestamp, $7, $8) 
                 RETURNING ID`;
             let result = await this.db.one(query, [usuario.email, usuario.dni, hash, usuario.nombre,
-                    usuario.apellido, usuario.fecha_nacimiento, usuario.id_rol, usuario.telefono]);
+            usuario.apellido, usuario.fecha_nacimiento, usuario.id_rol, usuario.telefono]);
             const id_usuario = result.id;
             query = 'INSERT INTO alumnos (id_usuario) VALUES ($1) RETURNING ID';
             result = await this.db.one(query, [id_usuario]);
-            const id_alumno = result.id;    
+            const id_alumno = result.id;
             if (id_carrera_abierta) {
                 const carrera_abierta = await this.helper.carrera_abierta(id_carrera_abierta);
                 if (carrera_abierta === true) {
@@ -174,7 +174,7 @@ export class UsuariosController {
     public async listar_alumnos(req: Request, res: Response) {
         try {
             const query = `
-                SELECT a.id, u.nombre, u.apellido, u.dni, u.fecha_nacimiento, u.email, ca.cohorte, c.nombre AS carrera
+                SELECT a.id, u.nombre, u.apellido, u.dni, u.fecha_nacimiento, u.email, u.telefono, ca.cohorte, c.nombre AS carrera
                 FROM alumnos a
                 INNER JOIN usuarios u ON u.id = a.id_usuario
                 LEFT JOIN inscripciones_carreras ic ON ic.id_alumno = a.id

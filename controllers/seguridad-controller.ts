@@ -15,8 +15,8 @@ export class SeguridadController {
     }
 
     public login(req: Request, res: Response) {
-        const email: string =  req.body.mail;
-        const clave: string =  req.body.clave;
+        const email: string = req.body.mail;
+        const clave: string = req.body.clave;
         const query = `
             SELECT u.id, u.clave, u.nombre, u.apellido, r.nombre AS rol, a.id AS id_alumno
             FROM usuarios u
@@ -24,57 +24,56 @@ export class SeguridadController {
             LEFT JOIN alumnos a ON a.id_usuario = u.id
             WHERE u.email = $1`;
         this.db.oneOrNone(query, [email])
-        .then( (data) => {
-            if (data) {
-                bcrypt.compare(clave, data.clave, (err, same) => {
-                    if (err) {
-                        res.status(500).json(err);
-                    } else if (same) {
-                        const token: Token = {
-                            id_usuario: data.id,
-                            id_alumno: data.id_alumno,
-                            rol: data.rol,
-                        }
-                        jwt.sign(token, process.env.JWT, (err, jwt) => {
-                            if (err) {
-                                res.status(500).json(err);
-                            } else {
-                                res.status(200).json({
-                                    token: jwt,
-                                    apellido: data.apellido,
-                                    nombre: data.nombre,
-                                    rol: data.rol
-                                });
+            .then((data) => {
+                if (data) {
+                    bcrypt.compare(clave, data.clave, (err, same) => {
+                        if (err) {
+                            res.status(500).json(err);
+                        } else if (same) {
+                            const token: Token = {
+                                id_usuario: data.id,
+                                id_alumno: data.id_alumno,
+                                rol: data.rol,
                             }
-                        });
-                    } else {
-                        res.status(401).json({
-                            mensaje: 'Email o contraseña incorrectos',
-                        });
-                    }
-                });
-            } else {
-                res.status(401).json({
-                    mensaje: 'Email o contraseña incorrectos',
-                });
-            }
-        })
-        .catch( (err) => {
-            res.status(500).json(err);
-        })
+                            jwt.sign(token, process.env.JWT, (err, jwt) => {
+                                if (err) {
+                                    res.status(500).json(err);
+                                } else {
+                                    res.status(200).json({
+                                        token: jwt,
+                                        apellido: data.apellido,
+                                        nombre: data.nombre,
+                                        rol: data.rol
+                                    });
+                                }
+                            });
+                        } else {
+                            res.status(401).json({
+                                mensaje: 'Email o contraseña incorrectos',
+                            });
+                        }
+                    });
+                } else {
+                    res.status(401).json({
+                        mensaje: 'Email o contraseña incorrectos',
+                    });
+                }
+            })
+            .catch((err) => {
+                res.status(500).json(err);
+            })
     }
 
-    public chequear_roles(roles: string[]) {
+    public chequear_roles(roles?: string[]) {
         return (req: Request, res: Response, next: NextFunction) => {
             const token = req.get('x-access-token');
             jwt.verify(token, process.env.JWT, (err, decoded: Token) => {
                 if (err) {
                     res.status(401).json({
                         mensaje: 'Token inválido',
-                    })
+                    });
                 } else {
-                    // if (roles.indexOf(decoded.rol) != -1){
-                    if (roles.includes(decoded.rol)){
+                    if (!roles || roles.includes(decoded.rol)) {
                         res.locals.token = decoded;
                         next();
                     } else {
@@ -82,7 +81,7 @@ export class SeguridadController {
                             mensaje: 'Acceso no permitido',
                             rolesAceptados: roles,
                             su_rol: decoded.rol
-                        })
+                        });
                     }
                 }
             });
