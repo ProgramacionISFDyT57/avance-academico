@@ -125,6 +125,8 @@ export class MesasController {
             let query;
             let mesas;
             if (id_alumno) {
+                // AND date_part('year', TIMESTAMP me.fecha_examen) >= caa.cohorte
+                // AND EXTRACT(YEAR FROM TIMESTAMP me.fecha_examen)  >= caa.cohorte
                 query = `
                     SELECT me.id, ma.nombre AS materia, ma.anio AS anio_materia, me.fecha_inicio, me.fecha_limite, 
                         me.fecha_examen, ca.nombre AS carrera,
@@ -145,7 +147,7 @@ export class MesasController {
                     LEFT JOIN profesores v2 ON v2.id = me.id_vocal2
                     LEFT JOIN usuarios us2 ON us2.id = v2.id_usuario
                     WHERE ica.id_alumno = $1
-                    AND date_part('year', TIMESTAMP me.fecha_examen) >= caa.cohorte
+                    AND date_part('year', me.fecha_examen) >= caa.cohorte
                     GROUP BY me.id, ma.nombre, ma.anio, me.fecha_inicio, me.fecha_limite,
                         me.fecha_examen, ca.nombre,
                         CONCAT_WS(', ', us.apellido, us.nombre),
