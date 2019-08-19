@@ -218,21 +218,39 @@ export class MesasController {
         }
     }
 
+    private nota_valida(nota: number) {
+        if (nota) {
+            if (nota % 1 !== 0) {
+                return 'La nota debe ser un número entero entre 0 y 10';
+            } else if (nota < 0 || nota > 10) {
+                return 'La nota debe ser un número entero entre 0 y 10';
+            }
+        }
+        return true;
+    }
+
     public async cargar_notas_final(req: Request, res: Response) {
         try {
             const final: Final = req.body.final;
-            const query = `
-                INSERT INTO finales (id_inscripcion_mesa, nota, libro, folio) 
-                VALUES ($1, $2, $3, $4) 
-                ON CONFLICT (id_inscripcion_mesa) 
-                DO UPDATE 
-                    SET nota = EXCLUDED.nota,
-                        libro = EXCLUDED.libro,
-                        folio = EXCLUDED.folio;`;
-            await this.db.none(query, [final.id_inscripcion_mesa, final.nota, final.libro, final.folio]);
-            res.status(200).json({
-                mensaje: 'Se cargo la nota correctamente'
-            });
+            const nota_valida = this.nota_valida(final.nota);
+            if (nota_valida === true) {
+                const query = `
+                    INSERT INTO finales (id_inscripcion_mesa, nota, libro, folio) 
+                    VALUES ($1, $2, $3, $4) 
+                    ON CONFLICT (id_inscripcion_mesa) 
+                    DO UPDATE 
+                        SET nota = EXCLUDED.nota,
+                            libro = EXCLUDED.libro,
+                            folio = EXCLUDED.folio;`;
+                await this.db.none(query, [final.id_inscripcion_mesa, final.nota, final.libro, final.folio]);
+                res.status(200).json({
+                    mensaje: 'Se cargo la nota correctamente'
+                });
+            } else {
+                res.status(400).json({
+                    mensaje: nota_valida
+                });
+            }
         } catch (error) {
             console.error(error);
             res.status(500).json({
