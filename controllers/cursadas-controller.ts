@@ -388,7 +388,8 @@ export class CursadasController {
             if (id_cursada) {
                 const query = `
                     SELECT us.apellido, us.nombre, us.dni, ic.fecha_inscripcion, ma.nombre AS materia, cu.anio AS anio_cursada,
-                        aa.nota_cuat_1, aa.nota_cuat_2, aa.nota_recuperatorio, aa.asistencia, ic.id AS id_inscripcion_cursada
+                        aa.nota_cuat_1, aa.nota_cuat_2, aa.nota_recuperatorio, aa.asistencia, ic.id AS id_inscripcion_cursada,
+                        ic.cursa, ic.equivalencia
                     FROM cursadas cu
                     INNER JOIN materias ma ON ma.id = cu.id_materia
                     INNER JOIN inscripciones_cursadas ic ON ic.id_cursada = cu.id
