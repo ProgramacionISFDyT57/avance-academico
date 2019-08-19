@@ -141,7 +141,7 @@ export class UsuariosController {
     public async listar_usuarios(req: Request, res: Response) {
         try {
             const query = `
-                SELECT U.*, R.nombre AS rol
+                SELECT U.id, U.nombre, U.apellido, U.email, U.fecha_nacimiento, U.fecha_alta, U.telefono, U.dni, R.nombre AS rol
                 FROM usuarios U
                 INNER JOIN roles R ON U.id_rol = R.id`;
             const usuarios = await this.db.manyOrNone(query);
