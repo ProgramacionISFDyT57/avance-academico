@@ -155,7 +155,7 @@ export class CursadasController {
                 query = `
                     SELECT cu.id, cu.anio AS anio_cursada, cu.fecha_inicio, cu.fecha_limite, 
                         M.nombre AS materia, M.anio AS anio_materia, c.nombre AS carrera,
-                        CONCAT_WS(', ', U.apellido, U.nombre) AS profesor,
+                        CONCAT_WS(', ', U.apellido, U.nombre) AS profesor, ic2.id AS id_inscripcion_cursada,
                         COUNT(ic.id) AS cant_inscriptos
                     FROM cursadas cu
                     INNER JOIN materias M ON M.id = cu.id_materia
@@ -165,11 +165,12 @@ export class CursadasController {
                     LEFT JOIN profesores P ON P.id = cu.id_profesor
                     LEFT JOIN usuarios U ON U.id = P.id_usuario
                     LEFT JOIN inscripciones_cursadas ic ON ic.id_cursada = cu.id
+                    LEFT JOIN inscripciones_cursadas ic2 ON ic2.id_alumno = $1
                     WHERE ica.id_alumno = $1
                     AND cu.anio >= ca.cohorte
                     GROUP BY cu.id, cu.anio, cu.fecha_inicio, cu.fecha_limite, 
                         M.nombre, M.anio, c.nombre, 
-                        CONCAT_WS(', ', U.apellido, U.nombre)
+                        CONCAT_WS(', ', U.apellido, U.nombre), ic2.id
                     ORDER BY cu.anio DESC, c.nombre, M.anio, M.nombre`;
                     cursadas = await this.db.manyOrNone(query, [id_alumno]);
             } else {

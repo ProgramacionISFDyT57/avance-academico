@@ -125,8 +125,6 @@ export class MesasController {
             let query;
             let mesas;
             if (id_alumno) {
-                // AND date_part('year', TIMESTAMP me.fecha_examen) >= caa.cohorte
-                // AND EXTRACT(YEAR FROM TIMESTAMP me.fecha_examen)  >= caa.cohorte
                 query = `
                     SELECT me.id, ma.nombre AS materia, ma.anio AS anio_materia, me.fecha_inicio, me.fecha_limite, 
                         me.fecha_examen, ca.nombre AS carrera,
