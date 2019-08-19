@@ -127,13 +127,14 @@ export class MesasController {
             if (id_alumno) {
                 query = `
                     SELECT me.id, ma.nombre AS materia, ma.anio AS anio_materia, me.fecha_inicio, me.fecha_limite, 
-                        me.fecha_examen, ca.nombre AS carrera,
+                        me.fecha_examen, ca.nombre AS carrera, im2.id AS id_inscripcion_mesa,
                         CONCAT_WS(', ', us.apellido, us.nombre) AS profesor,
                         CONCAT_WS(', ', us1.apellido, us1.nombre) AS vocal1,
                         CONCAT_WS(', ', us2.apellido, us2.nombre) AS vocal2,
-                        COUNT(ic.id) AS cant_inscriptos
+                        COUNT(im.id) AS cant_inscriptos
                     FROM mesas me 
-                    LEFT JOIN inscripciones_mesa ic ON ic.id_mesa = me.id
+                    LEFT JOIN inscripciones_mesa im ON im.id_mesa = me.id
+                    LEFT JOIN inscripciones_mesa im2 ON imc2.id_mesa = me.id AND im2.id_alumno = $1
                     INNER JOIN materias ma ON ma.id = me.id_materia
                     INNER JOIN carreras ca ON ca.id = ma.id_carrera
                     INNER JOIN carreras_abiertas caa ON caa.id_carrera = ca.id
@@ -150,7 +151,7 @@ export class MesasController {
                         me.fecha_examen, ca.nombre,
                         CONCAT_WS(', ', us.apellido, us.nombre),
                         CONCAT_WS(', ', us1.apellido, us1.nombre),
-                        CONCAT_WS(', ', us2.apellido, us2.nombre)
+                        CONCAT_WS(', ', us2.apellido, us2.nombre), im2.id
                     ORDER BY me.fecha_examen DESC, ca.nombre, ma.anio, ma.nombre`;
                 mesas = await this.db.manyOrNone(query, [id_alumno]);
             } else {
