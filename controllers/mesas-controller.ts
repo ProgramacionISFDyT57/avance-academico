@@ -134,7 +134,7 @@ export class MesasController {
                         COUNT(im.id) AS cant_inscriptos
                     FROM mesas me 
                     LEFT JOIN inscripciones_mesa im ON im.id_mesa = me.id
-                    LEFT JOIN inscripciones_mesa im2 ON imc2.id_mesa = me.id AND im2.id_alumno = $1
+                    LEFT JOIN inscripciones_mesa im2 ON im2.id_mesa = me.id AND im2.id_alumno = $1
                     INNER JOIN materias ma ON ma.id = me.id_materia
                     INNER JOIN carreras ca ON ca.id = ma.id_carrera
                     INNER JOIN carreras_abiertas caa ON caa.id_carrera = ca.id
@@ -148,10 +148,10 @@ export class MesasController {
                     WHERE ica.id_alumno = $1
                     AND date_part('year', me.fecha_examen) >= caa.cohorte
                     GROUP BY me.id, ma.nombre, ma.anio, me.fecha_inicio, me.fecha_limite,
-                        me.fecha_examen, ca.nombre,
+                        me.fecha_examen, ca.nombre, im2.id,
                         CONCAT_WS(', ', us.apellido, us.nombre),
                         CONCAT_WS(', ', us1.apellido, us1.nombre),
-                        CONCAT_WS(', ', us2.apellido, us2.nombre), im2.id
+                        CONCAT_WS(', ', us2.apellido, us2.nombre)
                     ORDER BY me.fecha_examen DESC, ca.nombre, ma.anio, ma.nombre`;
                 mesas = await this.db.manyOrNone(query, [id_alumno]);
             } else {
