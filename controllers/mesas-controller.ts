@@ -118,38 +118,75 @@ export class MesasController {
         }
     }
 
-    public lista_mesas(req: Request, res: Response) {
-        const query = `
-            SELECT me.id, ma.nombre AS materia, ma.anio AS anio_materia, me.fecha_inicio, me.fecha_limite, 
-                me.fecha_examen, ca.nombre AS carrera,
-                CONCAT_WS(', ', us.apellido, us.nombre) AS profesor,
-                CONCAT_WS(', ', us1.apellido, us1.nombre) AS vocal1,
-                CONCAT_WS(', ', us2.apellido, us2.nombre) AS vocal2,
-                COUNT(ic.id) AS cant_inscriptos
-            FROM mesas me 
-            LEFT JOIN inscripciones_mesa ic ON ic.id_mesa = me.id
-            INNER JOIN materias ma ON ma.id = me.id_materia
-            INNER JOIN carreras ca ON ca.id = ma.id_carrera
-            LEFT JOIN profesores pf ON pf.id = me.id_profesor
-            LEFT JOIN usuarios us ON us.id = pf.id_usuario
-            LEFT JOIN profesores v1 ON v1.id = me.id_vocal1
-            LEFT JOIN usuarios us1 ON us1.id = v1.id_usuario
-            LEFT JOIN profesores v2 ON v2.id = me.id_vocal2
-            LEFT JOIN usuarios us2 ON us2.id = v2.id_usuario
-            GROUP BY me.id, ma.nombre, ma.anio, me.fecha_inicio, me.fecha_limite,
-                me.fecha_examen, ca.nombre,
-                CONCAT_WS(', ', us.apellido, us.nombre),
-                CONCAT_WS(', ', us1.apellido, us1.nombre),
-                CONCAT_WS(', ', us2.apellido, us2.nombre)
-            ORDER BY me.fecha_examen DESC, ca.nombre, ma.anio, ma.nombre`;
-        this.db.manyOrNone(query)
-            .then((data) => {
-                res.status(200).json(data);
-            })
-            .catch((err) => {
-                console.error(err);
-                res.status(500).json(err);
+    public async lista_mesas(req: Request, res: Response) {
+        try {
+            const token: Token = res.locals.token;
+            const id_alumno = +token.id_alumno;
+            let query;
+            let mesas;
+            if (id_alumno) {
+                query = `
+                    SELECT me.id, ma.nombre AS materia, ma.anio AS anio_materia, me.fecha_inicio, me.fecha_limite, 
+                        me.fecha_examen, ca.nombre AS carrera,
+                        CONCAT_WS(', ', us.apellido, us.nombre) AS profesor,
+                        CONCAT_WS(', ', us1.apellido, us1.nombre) AS vocal1,
+                        CONCAT_WS(', ', us2.apellido, us2.nombre) AS vocal2,
+                        COUNT(ic.id) AS cant_inscriptos
+                    FROM mesas me 
+                    LEFT JOIN inscripciones_mesa ic ON ic.id_mesa = me.id
+                    INNER JOIN materias ma ON ma.id = me.id_materia
+                    INNER JOIN carreras ca ON ca.id = ma.id_carrera
+                    INNER JOIN carreras_abiertas caa ON caa.id_carrera = c.id
+                    INNER JOIN inscripciones_carreras ica ON ica.id_carrera_abierta = caa.id
+                    LEFT JOIN profesores pf ON pf.id = me.id_profesor
+                    LEFT JOIN usuarios us ON us.id = pf.id_usuario
+                    LEFT JOIN profesores v1 ON v1.id = me.id_vocal1
+                    LEFT JOIN usuarios us1 ON us1.id = v1.id_usuario
+                    LEFT JOIN profesores v2 ON v2.id = me.id_vocal2
+                    LEFT JOIN usuarios us2 ON us2.id = v2.id_usuario
+                    WHERE ica.id_alumno = $1
+                    AND date_part('year', TIMESTAMP me.fecha_examen) >= caa.cohorte
+                    GROUP BY me.id, ma.nombre, ma.anio, me.fecha_inicio, me.fecha_limite,
+                        me.fecha_examen, ca.nombre,
+                        CONCAT_WS(', ', us.apellido, us.nombre),
+                        CONCAT_WS(', ', us1.apellido, us1.nombre),
+                        CONCAT_WS(', ', us2.apellido, us2.nombre)
+                    ORDER BY me.fecha_examen DESC, ca.nombre, ma.anio, ma.nombre`;
+                mesas = await this.db.manyOrNone(query, [id_alumno]);
+            } else {
+                query = `
+                    SELECT me.id, ma.nombre AS materia, ma.anio AS anio_materia, me.fecha_inicio, me.fecha_limite, 
+                        me.fecha_examen, ca.nombre AS carrera,
+                        CONCAT_WS(', ', us.apellido, us.nombre) AS profesor,
+                        CONCAT_WS(', ', us1.apellido, us1.nombre) AS vocal1,
+                        CONCAT_WS(', ', us2.apellido, us2.nombre) AS vocal2,
+                        COUNT(ic.id) AS cant_inscriptos
+                    FROM mesas me 
+                    LEFT JOIN inscripciones_mesa ic ON ic.id_mesa = me.id
+                    INNER JOIN materias ma ON ma.id = me.id_materia
+                    INNER JOIN carreras ca ON ca.id = ma.id_carrera
+                    LEFT JOIN profesores pf ON pf.id = me.id_profesor
+                    LEFT JOIN usuarios us ON us.id = pf.id_usuario
+                    LEFT JOIN profesores v1 ON v1.id = me.id_vocal1
+                    LEFT JOIN usuarios us1 ON us1.id = v1.id_usuario
+                    LEFT JOIN profesores v2 ON v2.id = me.id_vocal2
+                    LEFT JOIN usuarios us2 ON us2.id = v2.id_usuario
+                    GROUP BY me.id, ma.nombre, ma.anio, me.fecha_inicio, me.fecha_limite,
+                        me.fecha_examen, ca.nombre,
+                        CONCAT_WS(', ', us.apellido, us.nombre),
+                        CONCAT_WS(', ', us1.apellido, us1.nombre),
+                        CONCAT_WS(', ', us2.apellido, us2.nombre)
+                    ORDER BY me.fecha_examen DESC, ca.nombre, ma.anio, ma.nombre`;
+            mesas = await this.db.manyOrNone(query);
+            }
+            res.status(200).json(mesas);
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({
+                mensaje: 'Ocurrio un error al listar las mesas',
+                error
             });
+        }
     }
 
     public crear_mesa(req: Request, res: Response) {

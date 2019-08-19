@@ -92,7 +92,7 @@ app.get("/listar_cursadas_aprobadas", seguridadController.chequear_roles(['alumn
 // MESAS
 //////////////////////////////////////////////////////////////////////////////////////
 app.post("/crear_mesa", mesasController.crear_mesa);
-app.get("/lista_mesas", mesasController.lista_mesas);
+app.get("/lista_mesas", seguridadController.chequear_roles(), mesasController.lista_mesas);
 app.delete("/mesas/:id_mesa", mesasController.eliminar_mesa);
 // INSCRIPCIONES MESAS
 app.get("/inscriptos_mesa/:id_mesa", mesasController.listar_inscriptos_mesa);
