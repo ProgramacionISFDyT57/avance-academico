@@ -153,24 +153,24 @@ export class CursadasController {
             if (id_alumno) {
                 // Muestra las cursadas de la/s carreras del alumno
                 query = `
-                    SELECT C.id, C.anio AS anio_cursada, C.fecha_inicio, C.fecha_limite, 
+                    SELECT cu.id, cu.anio AS anio_cursada, cu.fecha_inicio, cu.fecha_limite, 
                         M.nombre AS materia, M.anio AS anio_materia, c.nombre AS carrera,
                         CONCAT_WS(', ', U.apellido, U.nombre) AS profesor,
                         COUNT(ic.id) AS cant_inscriptos
-                    FROM cursadas C
-                    INNER JOIN materias M ON M.id = C.id_materia
+                    FROM cursadas cu
+                    INNER JOIN materias M ON M.id = cu.id_materia
                     INNER JOIN carreras c ON c.id = M.id_carrera
                     INNER JOIN carreras_abiertas ca ON ca.id_carrera = c.id
                     INNER JOIN inscripciones_carreras ic ON ic.id_carrera_abierta = ca.id
-                    LEFT JOIN profesores P ON P.id = C.id_profesor
+                    LEFT JOIN profesores P ON P.id = cu.id_profesor
                     LEFT JOIN usuarios U ON U.id = P.id_usuario
-                    LEFT JOIN inscripciones_cursadas ic ON ic.id_cursada = C.id
+                    LEFT JOIN inscripciones_cursadas ic ON ic.id_cursada = cu.id
                     WHERE ic.id_alumno = $1
-                    AND C.año >= ca.cohorte
-                    GROUP BY C.id, C.anio, C.fecha_inicio, C.fecha_limite, 
+                    AND cu.año >= ca.cohorte
+                    GROUP BY cu.id, cu.anio, cu.fecha_inicio, cu.fecha_limite, 
                         M.nombre, M.anio, c.nombre, 
                         CONCAT_WS(', ', U.apellido, U.nombre)
-                    ORDER BY C.anio DESC, c.nombre, M.anio, M.nombre`;
+                    ORDER BY cu.anio DESC, c.nombre, M.anio, M.nombre`;
                     cursadas = await this.db.manyOrNone(query, [id_alumno]);
             } else {
                 // Muestra todas las cursadas
