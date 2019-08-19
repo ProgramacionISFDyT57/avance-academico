@@ -54,7 +54,7 @@ export class UsuariosController {
         const usuario: Usuario = req.body.usuario;
         bcrypt.hash(usuario.dni, 10, (error, hash) => {
             const query = `
-                INSERT INTO usuarios ( email, dni, clave, nombre, apellido, fecha_nacimiento, fecha_alta, id_rol, telefono) 
+                INSERT INTO usuarios (email, dni, clave, nombre, apellido, fecha_nacimiento, fecha_alta, id_rol, telefono) 
                 VALUES ($1, $2, $3, $4, $5, $6, current_timestamp, $7, $8) 
                 RETURNING ID`;
             this.db.one(query, [usuario.email, usuario.dni, hash, usuario.nombre,
@@ -99,6 +99,7 @@ export class UsuariosController {
             const usuario: Usuario = req.body.usuario;
             const id_carrera_abierta = +req.body.id_carrera_abierta;
             const hash = await bcrypt.hash(usuario.dni, 10);
+            usuario.id_rol = 5;
             let query = `
                 INSERT INTO usuarios (email, dni, clave, nombre, apellido, fecha_nacimiento, fecha_alta, id_rol, telefono) 
                 VALUES ($1, $2, $3, $4, $5, $6, current_timestamp, $7, $8) 
@@ -140,7 +141,7 @@ export class UsuariosController {
     public async listar_usuarios(req: Request, res: Response) {
         try {
             const query = `
-                SELECT U.id, U.nombre, U.apellido, U.email, U.fecha_nacimiento, U.fecha_alta, R.nombre AS rol
+                SELECT U.*, R.nombre AS rol
                 FROM usuarios U
                 INNER JOIN roles R ON U.id_rol = R.id`;
             const usuarios = await this.db.manyOrNone(query);
@@ -193,13 +194,7 @@ export class UsuariosController {
     public async eliminar_usuario(req: Request, res: Response) {
         try {
             const id_usuario = req.params.id_usuario;
-            let query = `DELETE FROM alumnos WHERE id_usuario = $1`;
-            await this.db.none(query, [id_usuario]);
-            query = `DELETE FROM profesores WHERE id_usuario = $1`;
-            await this.db.none(query, [id_usuario]);
-            query = `DELETE FROM inscripciones_carreras WHERE id_usuario = $1`;
-            await this.db.none(query, [id_usuario]);
-            query = `DELETE FROM usuarios WHERE id = $1`;
+            const query = `DELETE FROM usuarios WHERE id = $1`;
             await this.db.none(query, [id_usuario]);
             res.json({
                 mensaje: 'Se eliminó el usuario'
