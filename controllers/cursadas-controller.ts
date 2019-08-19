@@ -161,11 +161,11 @@ export class CursadasController {
                     INNER JOIN materias M ON M.id = cu.id_materia
                     INNER JOIN carreras c ON c.id = M.id_carrera
                     INNER JOIN carreras_abiertas ca ON ca.id_carrera = c.id
-                    INNER JOIN inscripciones_carreras ic ON ic.id_carrera_abierta = ca.id
+                    INNER JOIN inscripciones_carreras ica ON ica.id_carrera_abierta = ca.id
                     LEFT JOIN profesores P ON P.id = cu.id_profesor
                     LEFT JOIN usuarios U ON U.id = P.id_usuario
                     LEFT JOIN inscripciones_cursadas ic ON ic.id_cursada = cu.id
-                    WHERE ic.id_alumno = $1
+                    WHERE ica.id_alumno = $1
                     AND cu.año >= ca.cohorte
                     GROUP BY cu.id, cu.anio, cu.fecha_inicio, cu.fecha_limite, 
                         M.nombre, M.anio, c.nombre, 
