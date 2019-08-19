@@ -37,6 +37,7 @@ app.delete("/usuarios/:id_usuario", usuariosController.eliminar_usuario);
 app.get("/profesores", usuariosController.listar_profesores);
 // ALUMNOS
 app.get("/alumnos", usuariosController.listar_alumnos);
+app.post("/alumnos", usuariosController.crear_alumno);
 // ROLES
 app.get("/roles", usuariosController.listar_roles);
 // TIPOS DE MATERIAS
