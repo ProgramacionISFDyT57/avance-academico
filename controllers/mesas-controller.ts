@@ -192,12 +192,14 @@ export class MesasController {
             const id_mesa = +req.params.id_mesa;
             if (id_mesa) {
                 const query = `
-                    SELECT us.apellido, us.nombre, us.dni, im.fecha_inscripcion, ma.nombre AS materia, me.fecha_examen, im.id AS id_inscripcion_mesa
+                    SELECT us.apellido, us.nombre, us.dni, im.fecha_inscripcion, ma.nombre AS materia, me.fecha_examen, im.id AS id_inscripcion_mesa,
+                        fi.nota, fi.libro, fi.folio
                     FROM mesas me
                     INNER JOIN materias ma ON ma.id = me.id_materia
                     INNER JOIN inscripciones_mesa im ON im.id_mesa = me.id
                     INNER JOIN alumnos al ON al.id = im.id_alumno
                     INNER JOIN usuarios us ON us.id = al.id_usuario
+                    LEFT JOIN finales fi ON fi.id_inscripcion_mesa = im.id
                     WHERE me.id = $1
                     ORDER BY us.apellido, us.nombre;`;
                 const inscriptos = await this.db.manyOrNone(query, [id_mesa]);
