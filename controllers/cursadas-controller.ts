@@ -166,7 +166,7 @@ export class CursadasController {
                     LEFT JOIN usuarios U ON U.id = P.id_usuario
                     LEFT JOIN inscripciones_cursadas ic ON ic.id_cursada = cu.id
                     WHERE ica.id_alumno = $1
-                    AND cu.año >= ca.cohorte
+                    AND cu.anio >= ca.cohorte
                     GROUP BY cu.id, cu.anio, cu.fecha_inicio, cu.fecha_limite, 
                         M.nombre, M.anio, c.nombre, 
                         CONCAT_WS(', ', U.apellido, U.nombre)
