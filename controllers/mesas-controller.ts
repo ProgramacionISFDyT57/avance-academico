@@ -261,16 +261,16 @@ export class MesasController {
     }
     public async eliminar_notas_final(req: Request, res: Response) {
         try {
-            const id_inscripcion_final = +req.params.id_inscripcion_final;
+            const id_inscripcion_mesa = +req.params.id_inscripcion_mesa;
             const query = 'DELETE FROM finales WHERE id_inscripcion_mesa = $1;'
-            await this.db.none(query, [id_inscripcion_final]);
+            await this.db.none(query, [id_inscripcion_mesa]);
             res.status(200).json({
-                mensaje: 'Se eliminaron las notas del final',
+                mensaje: 'Se eliminó la nota del final',
             });
         } catch (error) {
             console.error(error);
             res.status(500).json({
-                mensaje: 'Ocurrio un error al eliminar las notas del final',
+                mensaje: 'Ocurrio un error al eliminar la nota del final',
                 error
             });
         }
