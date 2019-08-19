@@ -136,7 +136,7 @@ export class MesasController {
                     LEFT JOIN inscripciones_mesa ic ON ic.id_mesa = me.id
                     INNER JOIN materias ma ON ma.id = me.id_materia
                     INNER JOIN carreras ca ON ca.id = ma.id_carrera
-                    INNER JOIN carreras_abiertas caa ON caa.id_carrera = c.id
+                    INNER JOIN carreras_abiertas caa ON caa.id_carrera = ca.id
                     INNER JOIN inscripciones_carreras ica ON ica.id_carrera_abierta = caa.id
                     LEFT JOIN profesores pf ON pf.id = me.id_profesor
                     LEFT JOIN usuarios us ON us.id = pf.id_usuario
