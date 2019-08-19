@@ -94,7 +94,7 @@ app.post("/crear_mesa", mesasController.crear_mesa);
 app.get("/lista_mesas", mesasController.lista_mesas);
 app.delete("/mesas/:id_mesa", mesasController.eliminar_mesa);
 // INSCRIPCIONES MESAS
-app.get("/inscriptos_mesa/:id_mesa", mesasController.listar_inscriptos);
+app.get("/inscriptos_mesa/:id_mesa", mesasController.listar_inscriptos_mesa);
 app.post("/inscripciones_mesas", seguridadController.chequear_roles(['alumno']), mesasController.crear_inscripcion_mesa);
 app.delete("/inscripciones_mesas/:id_inscripcion_mesa", seguridadController.chequear_roles(['alumno']), mesasController.eliminar_inscripcion_mesa);
 // NOTAS FINALES (AVANCE ACADEMICO)

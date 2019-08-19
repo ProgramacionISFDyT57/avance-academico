@@ -17,7 +17,7 @@ export class MesasController {
         this.lista_mesas = this.lista_mesas.bind(this);
         this.crear_mesa = this.crear_mesa.bind(this);
         this.eliminar_mesa = this.eliminar_mesa.bind(this);
-        this.listar_inscriptos = this.listar_inscriptos.bind(this);
+        this.listar_inscriptos_mesa = this.listar_inscriptos_mesa.bind(this);
         this.cargar_notas_final = this.cargar_notas_final.bind(this);
         this.eliminar_notas_final = this.eliminar_notas_final.bind(this);
     }
@@ -187,12 +187,12 @@ export class MesasController {
         }
     }
 
-    public async listar_inscriptos(req: Request, res: Response) {
+    public async listar_inscriptos_mesa(req: Request, res: Response) {
         try {
             const id_mesa = +req.params.id_mesa;
             if (id_mesa) {
                 const query = `
-                    SELECT us.apellido, us.nombre, us.dni, im.fecha_inscripcion, ma.nombre AS materia, me.fecha_examen
+                    SELECT us.apellido, us.nombre, us.dni, im.fecha_inscripcion, ma.nombre AS materia, me.fecha_examen, im.id AS id_inscripcion_mesa
                     FROM mesas me
                     INNER JOIN materias ma ON ma.id = me.id_materia
                     INNER JOIN inscripciones_mesa im ON im.id_mesa = me.id
