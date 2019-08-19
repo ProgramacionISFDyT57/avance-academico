@@ -187,10 +187,9 @@ export class CursadasController {
     }
 
     private notas_validas(avance: Avance) {
-
-        if (avance.nota_cuat_1 > 4 && avance.nota_cuat_2 > 4 && avance.nota_recuperatorio != null) {
+        if (avance.nota_cuat_1 >= 4 && avance.nota_cuat_2 >= 4 && avance.nota_recuperatorio) {
             return 'No es posible tener nota de recuperatorio con los dos cuatrimestres aprobados';
-        } else if (avance.nota_cuat_1 < 4 && avance.nota_cuat_2 < 4 && avance.nota_recuperatorio != null) {
+        } else if (avance.nota_cuat_1 < 4 && avance.nota_cuat_2 < 4 && avance.nota_recuperatorio) {
             return 'No es posible tener nota de recuperatorio con los dos cuatrimestres desaprobados';
         } else if (avance.nota_cuat_1 % 1 !== 0 || avance.nota_cuat_2 % 1 !== 0 || avance.nota_recuperatorio % 1 !== 0) {
             return 'Las notas deben ser números enteros';
@@ -209,7 +208,7 @@ export class CursadasController {
         try {
             const avance: Avance = req.body.avance_academico;
             const notas_validas = this.notas_validas(avance);
-            if (notas_validas) {
+            if (notas_validas === true) {
                 const query =
                     `INSERT INTO avance_academico (id_inscripcion_cursada, nota_cuat_1, nota_cuat_2, nota_recuperatorio, asistencia) 
                     VALUES ($1, $2, $3, $4, $5)
