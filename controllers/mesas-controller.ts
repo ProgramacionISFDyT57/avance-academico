@@ -231,9 +231,10 @@ export class MesasController {
             if (id_mesa) {
                 const query = `
                     SELECT us.apellido, us.nombre, us.dni, im.fecha_inscripcion, ma.nombre AS materia, me.fecha_examen, im.id AS id_inscripcion_mesa,
-                        fi.nota, fi.libro, fi.folio
+                        fi.nota, fi.libro, fi.folio, c.nombre AS carrera
                     FROM mesas me
                     INNER JOIN materias ma ON ma.id = me.id_materia
+                    INNER JOIN carreras c ON c.id = ma.id_carrera
                     INNER JOIN inscripciones_mesa im ON im.id_mesa = me.id
                     INNER JOIN alumnos al ON al.id = im.id_alumno
                     INNER JOIN usuarios us ON us.id = al.id_usuario
