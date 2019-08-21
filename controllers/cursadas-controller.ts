@@ -421,9 +421,10 @@ export class CursadasController {
                 const query = `
                     SELECT us.apellido, us.nombre, us.dni, ic.fecha_inscripcion, ma.nombre AS materia, cu.anio AS anio_cursada,
                         aa.nota_cuat_1, aa.nota_cuat_2, aa.nota_recuperatorio, aa.asistencia, ic.id AS id_inscripcion_cursada,
-                        ic.cursa, ic.equivalencia
+                        ic.cursa, ic.equivalencia, c.nombre AS carrera
                     FROM cursadas cu
                     INNER JOIN materias ma ON ma.id = cu.id_materia
+                    INNER JOIN carreras c ON c.id = ma.id_carrera
                     INNER JOIN inscripciones_cursadas ic ON ic.id_cursada = cu.id
                     INNER JOIN alumnos al ON al.id = ic.id_alumno
                     INNER JOIN usuarios us ON us.id = al.id_usuario
