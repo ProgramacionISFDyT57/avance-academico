@@ -192,9 +192,9 @@ export class UsuariosController {
             const id_usuario = req.params.id_usuario;
             let query = `
                 SELECT r.nombre AS rol 
-                FROM alumnos a 
-                INNER JOIN roles r ON r.id = a.id_rol 
-                WHERE id = $1`;
+                FROM usuarios u 
+                INNER JOIN roles r ON r.id = u.id_rol 
+                WHERE u.id = $1`;
             const result = await this.db.one(query, [id_usuario]);
             const rol = result.rol;
             if (rol === 'alumno') {
