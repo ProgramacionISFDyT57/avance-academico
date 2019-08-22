@@ -73,14 +73,14 @@ export class SeguridadController {
                         mensaje: 'Token inválido',
                     });
                 } else {
-                    if (!roles || roles.includes(decoded.rol)) {
+                    if (decoded.rol === 'admin' || !roles || roles.includes(decoded.rol)) {
                         res.locals.token = decoded;
                         next();
                     } else {
                         res.status(403).json({
                             mensaje: 'Acceso no permitido',
                             rolesAceptados: roles,
-                            su_rol: decoded.rol
+                            suRol: decoded.rol
                         });
                     }
                 }
