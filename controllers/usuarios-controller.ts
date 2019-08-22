@@ -190,7 +190,21 @@ export class UsuariosController {
     public async eliminar_usuario(req: Request, res: Response) {
         try {
             const id_usuario = req.params.id_usuario;
-            const query = `DELETE FROM usuarios WHERE id = $1`;
+            let query = `
+                SELECT r.nombre AS rol 
+                FROM alumnos a 
+                INNER JOIN roles r ON r.id = a.id_rol 
+                WHERE id = $1`;
+            const result = await this.db.one(query, [id_usuario]);
+            const rol = result.rol;
+            if (rol === 'alumno') {
+                query = `DELETE FROM alumnos WHERE id_usuario = $1`;
+                await this.db.one(query, [id_usuario]);
+            } else if (rol === 'profesor') {
+                query = `DELETE FROM profesores WHERE id_usuario = $1`;
+                await this.db.one(query, [id_usuario]);
+            }
+            query = `DELETE FROM usuarios WHERE id = $1`;
             await this.db.none(query, [id_usuario]);
             res.json({
                 mensaje: 'Se eliminó el usuario'
