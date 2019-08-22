@@ -38,7 +38,7 @@ app.get("/profesores", seguridadController.chequear_roles(), usuariosController.
 // ALUMNOS
 app.get("/alumnos", seguridadController.chequear_roles(['directivo', 'preceptor']), usuariosController.listar_alumnos);
 app.post("/alumnos", seguridadController.chequear_roles(['directivo', 'preceptor']), usuariosController.crear_alumno);
-app.delete("/alumnos", seguridadController.chequear_roles(['directivo', 'preceptor']), usuariosController.eliminar_alumno);
+app.delete("/alumnos/:id_alumno", seguridadController.chequear_roles(['directivo', 'preceptor']), usuariosController.eliminar_alumno);
 // ROLES
 app.get("/roles", seguridadController.chequear_roles(['directivo']), usuariosController.listar_roles);
 // TIPOS DE MATERIAS
