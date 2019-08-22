@@ -28,30 +28,22 @@ export class CarrerasController {
 
     public async borrar_inscripcion_carrera(req: Request, res: Response) {
         try {
-            const token: Token = res.locals.token;
-            const id_alumno_token = token.id_alumno;
             const id_inscripcion = +req.params.id_inscripcion;
             if (id_inscripcion) {
                 let query = `SELECT id_alumno FROM inscripciones_carreras WHERE id = $1`;
                 let result = await this.db.one(query, id_inscripcion);
                 const id_alumno = result.id_alumno;
-                if (id_alumno_token === id_alumno) {
-                    query = `SELECT COUNT(id) AS cantidad FROM incripciones_cursadas WHERE id_alumno = $1`;
-                    result = await this.db.one(query, id_inscripcion);
-                    if (result.cantidad !== 0) {
-                        query = `DELETE FROM inscripciones_carreras WHERE id = $1;`;
-                        await this.db.none(query, id_inscripcion);
-                        res.json({
-                            mensaje: 'Inscripción a carrera borrada correctamente',
-                        });
-                    } else {
-                        res.status(400).json({
-                            mensaje: 'No se puede eliminar un alumno con inscripciones a cursadas',
-                        });
-                    }
+                query = `SELECT COUNT(id) AS cantidad FROM incripciones_cursadas WHERE id_alumno = $1`;
+                result = await this.db.one(query, id_alumno);
+                if (result.cantidad !== 0) {
+                    query = `DELETE FROM inscripciones_carreras WHERE id = $1;`;
+                    await this.db.none(query, id_inscripcion);
+                    res.json({
+                        mensaje: 'Inscripción a carrera borrada correctamente',
+                    });
                 } else {
                     res.status(400).json({
-                        mensaje: 'La incripción no corresponde al alumno',
+                        mensaje: 'No se puede eliminar un alumno con inscripciones a cursadas',
                     });
                 }
             } else {
