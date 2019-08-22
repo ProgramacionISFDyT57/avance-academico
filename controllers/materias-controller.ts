@@ -87,7 +87,7 @@ export class MateriasController {
             });
         }
     }
-    // Materias    
+    // Materias
     public ver_materias(req: Request, res: Response) {
         const query = `
             SELECT m.id, m.nombre, m.anio, tm.nombre AS tipo_materia, c.nombre AS carrera, array_agg(mc.nombre) AS correlativas
@@ -241,24 +241,27 @@ export class MateriasController {
             });
         }
     }
-    public borrar_materia(req: Request, res: Response) {
-        const id = +req.params.id;
-        if (id) {
-            this.db.none('DELETE FROM materias WHERE id = $1', [id])
-                .then(() => {
-                    res.status(200).json({
-                        mensaje: "Se eliminó la materia",
-                    });
-                })
-                .catch((error) => {
-                    console.error(error);
-                    res.status(500).json(error);
+    public async borrar_materia(req: Request, res: Response) {
+        try {
+            const id = +req.params.id;
+            if (id) {
+                await this.db.none('DELETE FROM materias WHERE id = $1', [id])
+                res.status(200).json({
+                    mensaje: "Se eliminó la materia",
                 });
-        } else {
-            res.status(400).json({
-                mensaje: 'ID Incorrecto',
+            } else {
+                res.status(400).json({
+                    mensaje: 'ID Incorrecto',
+                });
+            }
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({
+                mensaje: 'Ocurrió un error al eliminar la materia',
+                error
             });
         }
+
     }
     // Correlativas
     public crear_correlativas(req: Request, res: Response) {
