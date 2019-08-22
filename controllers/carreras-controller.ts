@@ -196,15 +196,14 @@ export class CarrerasController {
             this.db.none('DELETE FROM carreras WHERE id = $1', [id])
                 .then((data) => {
                     res.status(200).json({
-                        mensaje: null,
-                        datos: data
+                        mensaje: 'La carrera se eliminó correctamente'
                     });
                 })
-                .catch((err) => {
-                    console.error(err);
+                .catch((error) => {
+                    console.error(error);
                     res.status(500).json({
-                        mensaje: err,
-                        datos: null
+                        mensaje: 'Ocurrió un error al eliminar la carrera',
+                        error
                     });
                 });
         } else {
