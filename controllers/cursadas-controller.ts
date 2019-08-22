@@ -26,57 +26,53 @@ export class CursadasController {
         this.eliminar_inscripcion_cursada = this.eliminar_inscripcion_cursada.bind(this);
         this.listar_inscriptos_cursada = this.listar_inscriptos_cursada.bind(this);
     }
-    public crear_cursada(req: Request, res: Response) {
-        const cursada: Cursada = req.body.cursada;
-        const año = new Date().getFullYear();
-        if (cursada.año < año) {
-            res.status(400).json({
-                mensaje: 'El año no puede ser menor que el año actual',
-            });
-        } else {
-            const fecha_inicio = new Date(cursada.fecha_inicio);
-            const fecha_limite = new Date(cursada.fecha_limite);
-            if (fecha_inicio > fecha_limite) {
+    public async crear_cursada(req: Request, res: Response) {
+        try {
+            const cursada: Cursada = req.body.cursada;
+            const año = new Date().getFullYear();
+            if (cursada.año < año) {
                 res.status(400).json({
-                    mensaje: 'La fecha de inicio no puede ser superior a la fecha límite',
+                    mensaje: 'El año no puede ser menor que el año actual',
                 });
             } else {
-                const fecha_actual = new Date();
-                if (fecha_actual > fecha_limite) {
+                const fecha_inicio = new Date(cursada.fecha_inicio);
+                const fecha_limite = new Date(cursada.fecha_limite);
+                if (fecha_inicio > fecha_limite) {
                     res.status(400).json({
-                        mensaje: 'La fecha límite no puede ser menor a la actual',
+                        mensaje: 'La fecha de inicio no puede ser superior a la fecha límite',
                     });
                 } else {
-                    const query1 = `SELECT id FROM cursadas WHERE id_materia = $1 AND anio = $2;`;
-                    this.db.oneOrNone(query1, [cursada.id_materia, cursada.año])
-                        .then((data) => {
-                            if (data) {
-                                res.status(400).json({
-                                    mensaje: 'La cursada ya se encuentra abierta para inscripción',
-                                });
-                            } else {
-                                const query2 = `
-                                    INSERT INTO cursadas (id_materia, id_profesor, anio, fecha_inicio, fecha_limite) 
-                                    VALUES ($1, $2, $3, $4, $5) RETURNING ID;`;
-                                this.db.one(query2, [cursada.id_materia, cursada.id_profesor, cursada.año, cursada.fecha_inicio, cursada.fecha_limite])
-                                    .then((data) => {
-                                        res.status(200).json(data);
-                                    })
-                                    .catch((err) => {
-                                        console.error(err);
-                                        res.status(500).json(err);
-                                    });
-                            }
-                        })
-                        .catch((err) => {
-                            console.error(err);
-                            res.status(500).json(err);
+                    const fecha_actual = new Date();
+                    if (fecha_actual > fecha_limite) {
+                        res.status(400).json({
+                            mensaje: 'La fecha límite no puede ser menor a la actual',
                         });
+                    } else {
+                        let query = `SELECT id FROM cursadas WHERE id_materia = $1 AND anio = $2;`;
+                        const data = await this.db.oneOrNone(query, [cursada.id_materia, cursada.año]);
+                        if (data) {
+                            res.status(400).json({
+                                mensaje: 'La cursada ya se encuentra abierta para inscripción',
+                            });
+                        } else {
+                            query = `
+                                INSERT INTO cursadas (id_materia, id_profesor, anio, fecha_inicio, fecha_limite) 
+                                VALUES ($1, $2, $3, $4, $5);`;
+                            await this.db.none(query, [cursada.id_materia, cursada.id_profesor, cursada.año, cursada.fecha_inicio, cursada.fecha_limite]);
+                            res.json({
+                                mensaje: 'Se creo la cursada correctamente'
+                            });
+                        }
+                    }
                 }
             }
-
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({
+                mensaje: 'Ocurrio un error al crear la cursada',
+                error
+            });
         }
-
     }
     public listar_cursadas_aprobadas(req: Request, res: Response) {
         const token: Token = res.locals.token;

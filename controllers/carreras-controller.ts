@@ -270,7 +270,7 @@ export class CarrerasController {
                         });
                     } else {
                         let query = `SELECT id FROM carreras_abiertas WHERE id_carrera = $1 AND cohorte = $2`;
-                        let result = await this.db.oneOrNone(query, [ca.id_carrera, ca.cohorte])
+                        let result = await this.db.oneOrNone(query, [ca.id_carrera, ca.cohorte]);
                         if (result) {
                             res.status(400).json({
                                 mensaje: 'Ya está abierta la carrera en la cohorte seleccionada',
@@ -279,7 +279,7 @@ export class CarrerasController {
                             query = `
                                 INSERT INTO carreras_abiertas (id_carrera, cohorte, fecha_inicio, fecha_limite) 
                                 VALUES ($1, $2, $3, $4);`;
-                            await this.db.none(query, [ca.id_carrera, ca.cohorte, ca.fecha_inicio, ca.fecha_limite])
+                            await this.db.none(query, [ca.id_carrera, ca.cohorte, ca.fecha_inicio, ca.fecha_limite]);
                             res.status(200).json({
                                 mensaje: 'Se abrió la inscripción a la carrera correctamente'
                             });
