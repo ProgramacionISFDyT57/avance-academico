@@ -64,7 +64,7 @@ export class CarrerasController {
                     } else {
                         res.status(400).json({
                             mensaje: carrera_abierta,
-                        });    
+                        });
                     }
                 } else {
                     res.status(400).json({
@@ -247,56 +247,52 @@ export class CarrerasController {
                 res.status(500).json(err);
             });
     }
-    public crear_carreras_abiertas(req: Request, res: Response) {
-        const ca: CarreraAbierta = req.body.carreras_abiertas;
-        const año = new Date().getFullYear();
-        if (ca.cohorte < año) {
-            res.status(400).json({
-                mensaje: 'La cohorte no puede ser menor que el año actual',
-            });
-        } else {
-            const fecha_inicio = new Date(ca.fecha_inicio);
-            const fecha_limite = new Date(ca.fecha_limite);
-            if (fecha_inicio > fecha_limite) {
+    public async crear_carreras_abiertas(req: Request, res: Response) {
+        try {
+            const ca: CarreraAbierta = req.body.carreras_abiertas;
+            const año = new Date().getFullYear();
+            if (ca.cohorte < año) {
                 res.status(400).json({
-                    mensaje: 'La fecha de inicio no puede ser superior a la fecha límite',
+                    mensaje: 'La cohorte no puede ser menor que el año actual',
                 });
             } else {
-                const fecha_actual = new Date();
-                if (fecha_actual > fecha_limite) {
+                const fecha_inicio = new Date(ca.fecha_inicio);
+                const fecha_limite = new Date(ca.fecha_limite);
+                if (fecha_inicio > fecha_limite) {
                     res.status(400).json({
-                        mensaje: 'La fecha límite no puede ser menor a la actual',
+                        mensaje: 'La fecha de inicio no puede ser superior a la fecha límite',
                     });
                 } else {
-                    const query1 = `SELECT id FROM carreras_abiertas WHERE id_carrera = $1 AND cohorte = $2`;
-                    this.db.oneOrNone(query1, [ca.id_carrera, ca.cohorte])
-                        .then((data) => {
-                            if (data) {
-                                res.status(400).json({
-                                    mensaje: 'Ya está  abierta la carrera en la cohorte seleccionada',
-                                });
-                            } else {
-                                const query2 = `
-                                    INSERT INTO carreras_abiertas (id_carrera, cohorte, fecha_inicio, fecha_limite) 
-                                    VALUES ($1, $2, $3, $4) RETURNING ID`;
-                                this.db.one(query2, [ca.id_carrera, ca.cohorte, ca.fecha_inicio, ca.fecha_limite])
-                                    .then((data) => {
-                                        res.status(200).json({
-                                            mensaje: 'Se abrió la inscripción a carrera correctamente'
-                                        });
-                                    })
-                                    .catch((err) => {
-                                        console.error(err);
-                                        res.status(500).json(err);
-                                    });
-                            }
-                        })
-                        .catch((err) => {
-                            console.error(err);
-                            res.status(500).json(err);
+                    const fecha_actual = new Date();
+                    if (fecha_actual > fecha_limite) {
+                        res.status(400).json({
+                            mensaje: 'La fecha límite no puede ser menor a la fecha actual',
                         });
+                    } else {
+                        let query = `SELECT id FROM carreras_abiertas WHERE id_carrera = $1 AND cohorte = $2`;
+                        let result = await this.db.oneOrNone(query, [ca.id_carrera, ca.cohorte])
+                        if (result) {
+                            res.status(400).json({
+                                mensaje: 'Ya está abierta la carrera en la cohorte seleccionada',
+                            });
+                        } else {
+                            query = `
+                                INSERT INTO carreras_abiertas (id_carrera, cohorte, fecha_inicio, fecha_limite) 
+                                VALUES ($1, $2, $3, $4);`;
+                            await this.db.none(query, [ca.id_carrera, ca.cohorte, ca.fecha_inicio, ca.fecha_limite])
+                            res.status(200).json({
+                                mensaje: 'Se abrió la inscripción a la carrera correctamente'
+                            });
+                        }
+                    }
                 }
             }
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({
+                mensaje: 'Ocurrio un error al abrir la carrera',
+                error
+            });
         }
     }
     public async eliminar_carrera_abierta(req: Request, res: Response) {
