@@ -199,10 +199,10 @@ export class UsuariosController {
             const rol = result.rol;
             if (rol === 'alumno') {
                 query = `DELETE FROM alumnos WHERE id_usuario = $1;`;
-                await this.db.one(query, [id_usuario]);
+                await this.db.none(query, [id_usuario]);
             } else if (rol === 'profesor') {
                 query = `DELETE FROM profesores WHERE id_usuario = $1;`;
-                await this.db.one(query, [id_usuario]);
+                await this.db.none(query, [id_usuario]);
             }
             query = `DELETE FROM usuarios WHERE id = $1;`;
             await this.db.none(query, [id_usuario]);
