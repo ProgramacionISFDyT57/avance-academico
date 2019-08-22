@@ -33,7 +33,7 @@ export class CarrerasController {
                 let query = `SELECT id_alumno FROM inscripciones_carreras WHERE id = $1`;
                 let result = await this.db.one(query, id_inscripcion);
                 const id_alumno = result.id_alumno;
-                query = `SELECT COUNT(id) AS cantidad FROM incripciones_cursadas WHERE id_alumno = $1`;
+                query = `SELECT COUNT(id) AS cantidad FROM inscripciones_cursadas WHERE id_alumno = $1`;
                 result = await this.db.one(query, id_alumno);
                 if (result.cantidad !== 0) {
                     query = `DELETE FROM inscripciones_carreras WHERE id = $1;`;
