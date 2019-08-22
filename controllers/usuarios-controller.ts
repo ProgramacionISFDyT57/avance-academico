@@ -209,6 +209,8 @@ export class UsuariosController {
             let query = `SELECT id_usuario FROM alumnos WHERE id = $1`;
             const result = await this.db.one(query, [id_alumno]);
             const id_usuario = result.id_usuario;
+            query = `DELETE FROM alumnos WHERE id = $1`;
+            await this.db.none(query, [id_alumno]);
             query = `DELETE FROM usuarios WHERE id = $1`;
             await this.db.none(query, [id_usuario]);
             res.json({
