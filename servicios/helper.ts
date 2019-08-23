@@ -43,6 +43,22 @@ export class HelperService {
         });
     }
 
+    public  async get_id_mesa(id_inscripcion_mesa: number): Promise<number> {
+        return new Promise(async (resolve, reject) => {
+            try {
+                const query = `
+                    SELECT cu.id
+                    FROM inscripciones_mesa im
+                    INNER JOIN mesas me ON me.id = im.id_mesa
+                    WHERE im.id = $1`;
+                const resultado = await this.db.one(query, [id_inscripcion_mesa]);
+                resolve(resultado.id);
+            } catch (error) {
+                reject(error);
+            }
+        });
+    }
+
     public async carrera_abierta(id_carrera_abierta: number): Promise<true|string> {
         return new Promise(async (resolve, reject) => {
             try {

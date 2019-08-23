@@ -104,11 +104,33 @@ export class MesasController {
             const token: Token = res.locals.token;
             const id_alumno = token.id_alumno;
             const id_inscripcion_mesa = +req.params.id_inscripcion_mesa;
-            const query = 'DELETE FROM inscripciones_mesa WHERE id = $1 AND id_alumno = $2;'
-            await this.db.none(query, [id_inscripcion_mesa, id_alumno]);
-            res.status(200).json({
-                mensaje: 'Se eliminó la inscripción a la mesa',
-            });
+            if (id_alumno) {
+                if (id_inscripcion_mesa) {
+                    const id_mesa = await this.helper.get_id_mesa(id_inscripcion_mesa);
+                    const mesa_abierta = await this.helper.mesa_abierta(id_mesa);
+                    if (mesa_abierta) {
+                        const query = 'DELETE FROM inscripciones_mesa WHERE id = $1 AND id_alumno = $2;'
+                        await this.db.none(query, [id_inscripcion_mesa, id_alumno]);
+                        res.status(200).json({
+                            mensaje: 'Se eliminó la inscripción a la mesa',
+                        });
+                    } else {
+                        res.status(400).json({
+                            mensaje: 'Solo se puede eliminar la inscripción durante el periodo de inscripción',
+                            error: mesa_abierta
+                        });
+                    }
+                } else {
+                    res.status(400).json({
+                        mensaje: 'ID de inscripción a mesa inválido',
+                    });
+                }
+            } else {
+                res.status(400).json({
+                    mensaje: 'El usuario no es un alumno',
+                });
+            }
+
         } catch (error) {
             console.error(error);
             res.status(500).json({
@@ -178,7 +200,7 @@ export class MesasController {
                         CONCAT_WS(', ', us1.apellido, us1.nombre),
                         CONCAT_WS(', ', us2.apellido, us2.nombre)
                     ORDER BY me.fecha_examen DESC, ca.nombre, ma.anio, ma.nombre`;
-            mesas = await this.db.manyOrNone(query);
+                mesas = await this.db.manyOrNone(query);
             }
             res.status(200).json(mesas);
         } catch (error) {

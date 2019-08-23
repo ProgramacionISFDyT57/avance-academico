@@ -408,7 +408,7 @@ export class CursadasController {
                         });
                     } else {
                         res.status(400).json({
-                            mensaje: 'Solo se puede eliminar la inscripción durante el periodo de inscripcion',
+                            mensaje: 'Solo se puede eliminar la inscripción durante el periodo de inscripción',
                             error: cursada_abierta
                         });    
                     }
