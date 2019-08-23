@@ -188,7 +188,7 @@ export class MateriasController {
     }
     public crear_materia(req: Request, res: Response) {
         const materia: Materia = req.body.materia;
-        this.db.one(`INSERT INTO materias (nombre, anio, id_carrera, id_tipo) VALUES ($1, $2, $3, $4) RETURNING ID`, [materia.nombre, materia.año, materia.id_carrera, materia.id_tipo])
+        this.db.one(`INSERT INTO materias (nombre, anio, id_carrera, id_tipo) VALUES ($1, $2, $3, $4) RETURNING ID`, [materia.nombre, materia.anio, materia.id_carrera, materia.id_tipo])
             .then((data) => {
                 if (materia.correlativas && materia.correlativas.length) {
                     const id_materia_creada = data.id;
@@ -225,7 +225,7 @@ export class MateriasController {
         const id = +req.params.id;
         const materia: Materia = req.body.materia;
         if (id) {
-            this.db.none(`UPDATE materias SET (nombre, anio, id_carrera, id_tipo) VALUES ($1, $2, $3, $4) WHERE id = $5`, [materia.nombre, materia.año, materia.id_carrera, materia.id_tipo, id])
+            this.db.none(`UPDATE materias SET (nombre, anio, id_carrera, id_tipo) VALUES ($1, $2, $3, $4) WHERE id = $5`, [materia.nombre, materia.anio, materia.id_carrera, materia.id_tipo, id])
                 .then(() => {
                     res.status(200).json({
                         mensaje: "Se modificó la materia",
