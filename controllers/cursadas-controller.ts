@@ -396,11 +396,32 @@ export class CursadasController {
             const token: Token = res.locals.token;
             const id_alumno = token.id_alumno;
             const id_inscripcion_cursada = +req.params.id_inscripcion_cursada;
-            const query = 'DELETE FROM inscripciones_cursadas WHERE id = $1 AND id_alumno = $2;'
-            await this.db.none(query, [id_inscripcion_cursada, id_alumno]);
-            res.status(200).json({
-                mensaje: 'Se eliminó la inscripción a la cursada',
-            });
+            if (id_alumno) {
+                if (id_inscripcion_cursada) {
+                    const id_cursada = await this.helper.get_id_cursada(id_inscripcion_cursada);
+                    const cursada_abierta = await this.helper.cursada_abierta(id_cursada);
+                    if (cursada_abierta) {
+                        const query = 'DELETE FROM inscripciones_cursadas WHERE id = $1 AND id_alumno = $2;'
+                        await this.db.none(query, [id_inscripcion_cursada, id_alumno]);
+                        res.status(200).json({
+                            mensaje: 'Se eliminó la inscripción a la cursada',
+                        });
+                    } else {
+                        res.status(400).json({
+                            mensaje: 'Solo se puede eliminar la inscripción durante el periodo de inscripcion',
+                            error: cursada_abierta
+                        });    
+                    }
+                } else {
+                    res.status(400).json({
+                        mensaje: 'ID de cursada inválido',
+                    });
+                }
+            } else {
+                res.status(400).json({
+                    mensaje: 'El usuario no es un alumno',
+                });
+            }
         } catch (error) {
             console.error(error);
             res.status(500).json({

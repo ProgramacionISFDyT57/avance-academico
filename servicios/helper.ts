@@ -27,6 +27,22 @@ export class HelperService {
         });
     }
 
+    public  async get_id_cursada(id_inscripcion_cursada: number): Promise<number> {
+        return new Promise(async (resolve, reject) => {
+            try {
+                const query = `
+                    SELECT cu.id
+                    FROM inscripciones_cursadas ic 
+                    INNER JOIN cursadas cu ON cu.id = ic.id_cursada
+                    WHERE ic.id = $1`;
+                const resultado = await this.db.one(query, [id_inscripcion_cursada]);
+                resolve(resultado.id);
+            } catch (error) {
+                reject(error);
+            }
+        });
+    }
+
     public async carrera_abierta(id_carrera_abierta: number): Promise<true|string> {
         return new Promise(async (resolve, reject) => {
             try {
