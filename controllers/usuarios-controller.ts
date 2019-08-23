@@ -153,7 +153,7 @@ export class UsuariosController {
     public async listar_profesores(req: Request, res: Response) {
         try {
             const query = `
-                SELECT p.id, u.email, u.nombre, u.apellido, u.fecha_nacimiento, u.dni, u.fecha_alta 
+                SELECT p.id, u.email, u.nombre, u.apellido, u.fecha_nacimiento, u.dni, u.fecha_alta, CONCAT(u.apellido, ', ', u.nombre) AS nombre_completo
                 FROM usuarios u
                 INNER JOIN profesores p on p.id_usuario = u.id
                 WHERE u.id_rol = 4`;
