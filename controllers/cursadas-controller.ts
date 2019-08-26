@@ -152,7 +152,7 @@ export class CursadasController {
                     SELECT cu.id, cu.anio AS anio_cursada, cu.fecha_inicio, cu.fecha_limite, 
                         M.nombre AS materia, M.anio AS anio_materia, c.nombre AS carrera,
                         CONCAT_WS(', ', U.apellido, U.nombre) AS profesor, ic2.id AS id_inscripcion_cursada,
-                        aa.nota_cuat1, aa.nota_cuat2, aa.recuperatorio, aa.asistencia 
+                        aa.nota_cuat_1, aa.nota_cuat_2, aa.nota_recuperatorio, aa.asistencia 
                     FROM cursadas cu
                     INNER JOIN materias M ON M.id = cu.id_materia
                     INNER JOIN carreras c ON c.id = M.id_carrera
