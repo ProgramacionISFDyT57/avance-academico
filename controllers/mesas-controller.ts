@@ -153,7 +153,7 @@ export class MesasController {
                         CONCAT_WS(', ', us.apellido, us.nombre) AS profesor,
                         CONCAT_WS(', ', us1.apellido, us1.nombre) AS vocal1,
                         CONCAT_WS(', ', us2.apellido, us2.nombre) AS vocal2,
-                        COUNT(im.id) AS cant_inscriptos
+                        fi.nota, fi.libro, fi.folio
                     FROM mesas me 
                     LEFT JOIN inscripciones_mesa im ON im.id_mesa = me.id
                     LEFT JOIN inscripciones_mesa im2 ON im2.id_mesa = me.id AND im2.id_alumno = $1
@@ -167,13 +167,9 @@ export class MesasController {
                     LEFT JOIN usuarios us1 ON us1.id = v1.id_usuario
                     LEFT JOIN profesores v2 ON v2.id = me.id_vocal2
                     LEFT JOIN usuarios us2 ON us2.id = v2.id_usuario
+                    LEFT JOIN finales fi ON fi.id_inscripcion_mesa = im2.id
                     WHERE ica.id_alumno = $1
                     AND date_part('year', me.fecha_examen) >= caa.cohorte
-                    GROUP BY me.id, ma.nombre, ma.anio, me.fecha_inicio, me.fecha_limite,
-                        me.fecha_examen, ca.nombre, im2.id,
-                        CONCAT_WS(', ', us.apellido, us.nombre),
-                        CONCAT_WS(', ', us1.apellido, us1.nombre),
-                        CONCAT_WS(', ', us2.apellido, us2.nombre)
                     ORDER BY me.fecha_examen DESC, ca.nombre, ma.anio, ma.nombre`;
                 mesas = await this.db.manyOrNone(query, [id_alumno]);
             } else {
