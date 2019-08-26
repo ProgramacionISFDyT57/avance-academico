@@ -263,7 +263,8 @@ export class UsuariosController {
             if (id_alumno) {
                 const query = `
                     SELECT c.nombre AS carrera, ma.nombre AS materia, ma.anio, ca.cohorte,
-                        c1.nota_cuat_1, c1.nota_cuat_2, c1.nota_recuperatorio, c1.asistencia
+                        c1.nota_cuat_1, c1.nota_cuat_2, c1.nota_recuperatorio, c1.asistencia,
+                        c2.nota AS final, c2.libro, c2.folio
                     FROM alumnos al                    
                     INNER JOIN inscripciones_carreras ica ON ica.id_alumno = al.id
                     INNER JOIN carreras_abiertas ca ON ca.id = ica.id_carrera_abierta
@@ -278,6 +279,14 @@ export class UsuariosController {
                         LEFT JOIN avance_academico aa ON aa.id_inscripcion_cursada = icu.id
                         WHERE icu.id_alumno = $1
                     ) c1 ON c1.id_materia = ma.id
+                    LEFT JOIN (
+                        SELECT ma.id AS id_materia, fi.nota, fi.libro, fi.folio
+                        FROM inscripciones_mesa ime
+                        INNER JOIN mesas me ON me.id = ime.id_mesa
+                        INNER JOIN materias ma ON ma.id = me.id_materia
+                        LEFT JOIN finales fi ON fi.id_inscripcion_mesa = ime.id
+                        WHERE ime.id_alumno = $1
+                    ) c2 ON c2.id_materia = ma.id
                     WHERE al.id = $1
                     ORDER BY c.nombre, ma.anio, ma.nombre;`;
                 const avance = await this.db.manyOrNone(query, [id_alumno]);
