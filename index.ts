@@ -102,7 +102,10 @@ app.delete("/inscripciones_mesas/:id_inscripcion_mesa", seguridadController.cheq
 // NOTAS FINALES (AVANCE ACADEMICO)
 app.post("/notas_final", seguridadController.chequear_roles(['directivo', 'preceptor']), mesasController.cargar_notas_final);
 app.delete("/notas_final/:id_inscripcion_mesa", seguridadController.chequear_roles(['directivo', 'preceptor']), mesasController.eliminar_notas_final);
-// 
+//////////////////////////////////////////////////////////////////////////////////////
+// MESAS
+//////////////////////////////////////////////////////////////////////////////////////
+app.get("/avance_academico", seguridadController.chequear_roles(['alumno']), usuariosController .avance_academico);
 //////////////////////////////////////////////////////////////////////////////////////
 app.listen(port, () => {
     console.log("Servidor escuchando en le puerto ", + port);

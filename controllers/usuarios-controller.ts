@@ -20,6 +20,7 @@ export class UsuariosController {
         this.listar_roles = this.listar_roles.bind(this);
         this.eliminar_usuario = this.eliminar_usuario.bind(this);
         this.eliminar_alumno = this.eliminar_alumno.bind(this);
+        this.avance_academico = this.avance_academico.bind(this);
     }
 
     public async cambiar_contraseña(req: Request, res: Response) {
@@ -238,7 +239,6 @@ export class UsuariosController {
             });
         }
     }
-
     public async listar_roles(req: Request, res: Response) {
         try {
             const query = `SELECT * FROM roles;`
@@ -251,6 +251,41 @@ export class UsuariosController {
             console.error(error);
             res.status(500).json({
                 mensaje: 'Ocurrio un error al listar los roles',
+                error
+            });
+        }
+    }
+
+    public async avance_academico(req: Request, res: Response) {
+        try {
+            const token: Token = res.locals.token;
+            const id_alumno = +token.id_alumno;
+            if (id_alumno) {
+                const query = `
+                    SELECT c.nombre AS carrera, ma.nombre AS materia, ma.anio, 
+                        aa.nota_cuat_1, aa.nota_cuat_2, aa.nota_recuperatorio, aa.asistencia
+                    FROM alumnos al
+                    INNER JOIN inscripciones_carreras ica ON ica.id_alummno = al.id
+                    INNER JOIN carreras_abiertas ca ON ca.id = ica.id_carrera_abierta
+                    INNER JOIN carreras c ON c.id = ca.id_carrera
+                    INNER JOIN materias ma ON ma.id_carrera = c.id
+                    LEFT JOIN cursadas cu ON cu.id_materia = ma.id
+                    INNER JOIN inscripciones_cursadas icu ON icu.id_cursada = cu.id AND icu.id_alumno = $1
+                    LEFT JOIN avance_academico aa ON aa.id_inscripcion_cursada = icu.id
+                    WHERE al.id = $1
+                    ORDER BY c.nombre, ma.anio, ma.nombre;`;
+                const avance = await this.db.manyOrNone(query, [id_alumno]);
+                res.json(avance);
+            } else {
+                res.status(400).json({
+                    mensaje: 'El usuario no es un alumno',
+                });
+            }
+
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({
+                mensaje: 'Ocurrio un error al listar el avance académico',
                 error
             });
         }
