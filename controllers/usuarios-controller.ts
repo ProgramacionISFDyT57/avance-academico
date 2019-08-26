@@ -276,7 +276,7 @@ export class UsuariosController {
                         INNER JOIN cursadas cu ON cu.id = icu.id_cursada
                         INNER JOIN materias ma ON ma.id = cu.id_materia
                         LEFT JOIN avance_academico aa ON aa.id_inscripcion_cursada = icu.id
-                        WHERE id = $1
+                        WHERE icu.id = $1
                     ) c1 ON c1.id_materia = ma.id
                     WHERE al.id = $1
                     ORDER BY c.nombre, ma.anio, ma.nombre;`;
