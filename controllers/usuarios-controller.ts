@@ -276,8 +276,11 @@ export class UsuariosController {
                         FROM inscripciones_cursadas icu
                         INNER JOIN cursadas cu ON cu.id = icu.id_cursada
                         INNER JOIN materias ma ON ma.id = cu.id_materia
+                        INNER JOIN tipos_materias tm ON tm.id = ma.id_tipo
                         LEFT JOIN avance_academico aa ON aa.id_inscripcion_cursada = icu.id
                         WHERE icu.id_alumno = $1
+                        AND ((aa.nota_cuat_1 >=4 and aa.nota_cuat_2 >=4) OR (aa.nota_recuperatorio >=4))
+                        AND ((tm.id = 2 AND aa.asistencia >= 80) OR (tm.id != 2 AND aa.asistencia >= 60))
                     ) c1 ON c1.id_materia = ma.id
                     LEFT JOIN (
                         SELECT ma.id AS id_materia, fi.nota, fi.libro, fi.folio
@@ -286,6 +289,7 @@ export class UsuariosController {
                         INNER JOIN materias ma ON ma.id = me.id_materia
                         LEFT JOIN finales fi ON fi.id_inscripcion_mesa = ime.id
                         WHERE ime.id_alumno = $1
+                        AND fi.nota >= 4 
                     ) c2 ON c2.id_materia = ma.id
                     WHERE al.id = $1
                     ORDER BY c.nombre, ma.anio, ma.nombre;`;
