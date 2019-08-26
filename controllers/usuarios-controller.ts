@@ -265,7 +265,7 @@ export class UsuariosController {
                     SELECT c.nombre AS carrera, ma.nombre AS materia, ma.anio, 
                         aa.nota_cuat_1, aa.nota_cuat_2, aa.nota_recuperatorio, aa.asistencia
                     FROM alumnos al
-                    INNER JOIN inscripciones_carreras ica ON ica.id_alummno = al.id
+                    INNER JOIN inscripciones_carreras ica ON ica.id_alumno = al.id
                     INNER JOIN carreras_abiertas ca ON ca.id = ica.id_carrera_abierta
                     INNER JOIN carreras c ON c.id = ca.id_carrera
                     INNER JOIN materias ma ON ma.id_carrera = c.id
