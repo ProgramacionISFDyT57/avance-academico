@@ -1,4 +1,5 @@
 import { IDatabase } from 'pg-promise';
+import { CursadaAlumno } from '../modelos/cursada-alumno';
 
 export class HelperService {
     private db: IDatabase<any>;
@@ -57,6 +58,17 @@ export class HelperService {
                 reject(error);
             }
         });
+    }
+
+    public cursadaAprobada(cursada: CursadaAlumno) {
+        if ( (cursada.nota_cuat_1 >=4 && cursada.nota_cuat_2 >=4) ||
+            ( cursada.nota_recuperatorio >= 4)) {
+            if ( (cursada.tipo_materia.toLowerCase() === 'pratica' && cursada.asistencia >= 80) ||
+                (cursada.tipo_materia.toLowerCase() !== 'pratica' && cursada.asistencia >= 60))  {
+                    return true;
+            }
+        }
+        return false;
     }
 
     public async carrera_abierta(id_carrera_abierta: number): Promise<true|string> {

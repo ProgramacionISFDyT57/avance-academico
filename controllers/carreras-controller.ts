@@ -35,7 +35,7 @@ export class CarrerasController {
                 const id_alumno = result.id_alumno;
                 query = `SELECT id FROM inscripciones_cursadas WHERE id_alumno = $1`;
                 result = await this.db.manyOrNone(query, id_alumno);
-                if (!result) {
+                if (result.length === 0) {
                     query = `DELETE FROM inscripciones_carreras WHERE id = $1;`;
                     await this.db.none(query, id_inscripcion);
                     res.json({

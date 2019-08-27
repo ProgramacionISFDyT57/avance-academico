@@ -152,9 +152,10 @@ export class CursadasController {
                     SELECT cu.id, cu.anio AS anio_cursada, cu.fecha_inicio, cu.fecha_limite, 
                         M.nombre AS materia, M.anio AS anio_materia, c.nombre AS carrera,
                         CONCAT_WS(', ', U.apellido, U.nombre) AS profesor, ic2.id AS id_inscripcion_cursada,
-                        aa.nota_cuat_1, aa.nota_cuat_2, aa.nota_recuperatorio, aa.asistencia 
+                        aa.nota_cuat_1, aa.nota_cuat_2, aa.nota_recuperatorio, aa.asistencia, tm.nombre AS tipo_materia
                     FROM cursadas cu
                     INNER JOIN materias M ON M.id = cu.id_materia
+                    INNER JOIN tipos_materias tm ON tm.id = M.id_tipo
                     INNER JOIN carreras c ON c.id = M.id_carrera
                     INNER JOIN carreras_abiertas ca ON ca.id_carrera = c.id
                     INNER JOIN inscripciones_carreras ica ON ica.id_carrera_abierta = ca.id
@@ -167,6 +168,9 @@ export class CursadasController {
                     AND cu.anio >= ca.cohorte
                     ORDER BY cu.anio DESC, c.nombre, M.anio, M.nombre`;
                     cursadas = await this.db.manyOrNone(query, [id_alumno]);
+                    for (const cursada of cursadas) {
+                        cursada.aprobada = this.helper.cursadaAprobada(cursada);
+                    }
             } else {
                 // Muestra todas las cursadas
                 query = `
