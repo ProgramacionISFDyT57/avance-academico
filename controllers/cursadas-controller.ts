@@ -165,6 +165,7 @@ export class CursadasController {
                     LEFT JOIN inscripciones_cursadas ic2 ON ic2.id_cursada = cu.id AND ic2.id_alumno = $1
                     LEFT JOIN avance_academico aa ON aa.id_inscripcion_cursada = ic2.id
                     WHERE ica.id_alumno = $1
+                    AND current_timestamp BETWEEN cu.fecha_inicio AND cu.fecha_limite
                     AND cu.anio >= ca.cohorte
                     ORDER BY cu.anio DESC, c.nombre, M.anio, M.nombre`;
                     cursadas = await this.db.manyOrNone(query, [id_alumno]);
