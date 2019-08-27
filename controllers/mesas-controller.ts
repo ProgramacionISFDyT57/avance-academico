@@ -169,6 +169,7 @@ export class MesasController {
                     LEFT JOIN usuarios us2 ON us2.id = v2.id_usuario
                     LEFT JOIN finales fi ON fi.id_inscripcion_mesa = im2.id
                     WHERE ica.id_alumno = $1
+                    AND current_timestamp BETWEEN me.fecha_inicio AND me.fecha_limite
                     AND date_part('year', me.fecha_examen) >= caa.cohorte
                     ORDER BY me.fecha_examen DESC, ca.nombre, ma.anio, ma.nombre`;
                 mesas = await this.db.manyOrNone(query, [id_alumno]);

@@ -145,11 +145,11 @@ export class CursadasController {
             const token: Token = res.locals.token;
             const id_alumno = +token.id_alumno;
             let query;
-            let cursadas;
+            let cursadas = [];
             if (id_alumno) {
                 // Muestra las cursadas de la/s carreras del alumno
                 query = `
-                    SELECT cu.id, cu.anio AS anio_cursada, cu.fecha_inicio, cu.fecha_limite, 
+                    SELECT cu.id, cu.anio AS anio_cursada, cu.fecha_inicio, cu.fecha_limite, M.id AS id_materia,
                         M.nombre AS materia, M.anio AS anio_materia, c.nombre AS carrera,
                         CONCAT_WS(', ', U.apellido, U.nombre) AS profesor, ic2.id AS id_inscripcion_cursada,
                         aa.nota_cuat_1, aa.nota_cuat_2, aa.nota_recuperatorio, aa.asistencia, tm.nombre AS tipo_materia
@@ -168,9 +168,12 @@ export class CursadasController {
                     AND current_timestamp BETWEEN cu.fecha_inicio AND cu.fecha_limite
                     AND cu.anio >= ca.cohorte
                     ORDER BY cu.anio DESC, c.nombre, M.anio, M.nombre`;
-                    cursadas = await this.db.manyOrNone(query, [id_alumno]);
-                    for (const cursada of cursadas) {
-                        cursada.aprobada = this.helper.cursadaAprobada(cursada);
+                    const cursadasTodas = await this.db.manyOrNone(query, [id_alumno]);
+                    for (const cursada of cursadasTodas) {
+                       const cursadaAprobada = await this.helper.cursada_aprobada(cursada.id_materia, id_alumno);
+                       if (!cursadaAprobada) {
+                           cursadas.push(cursada);
+                       } 
                     }
             } else {
                 // Muestra todas las cursadas
