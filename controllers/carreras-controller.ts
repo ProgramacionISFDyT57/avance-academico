@@ -167,7 +167,9 @@ export class CarrerasController {
         this.db.one('INSERT INTO carreras (nombre, duracion, cantidad_materias) VALUES ($1, $2, $3) RETURNING ID;',
             [carrera.nombre, carrera.duracion, carrera.cantidad_materias])
             .then((data) => {
-                res.status(200).json(data);
+                res.status(200).json({
+                    mensaje: 'Se creó la carrera correctamente'
+                });
             })
             .catch((err) => {
                 console.error(err);
