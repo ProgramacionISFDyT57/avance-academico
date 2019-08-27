@@ -145,7 +145,7 @@ export class MesasController {
             const token: Token = res.locals.token;
             const id_alumno = +token.id_alumno;
             let query;
-            let mesas;
+            let mesas = [];
             if (id_alumno) {
                 query = `
                     SELECT me.id, ma.nombre AS materia, ma.anio AS anio_materia, me.fecha_inicio, me.fecha_limite, 
@@ -153,7 +153,7 @@ export class MesasController {
                         CONCAT_WS(', ', us.apellido, us.nombre) AS profesor,
                         CONCAT_WS(', ', us1.apellido, us1.nombre) AS vocal1,
                         CONCAT_WS(', ', us2.apellido, us2.nombre) AS vocal2,
-                        fi.nota, fi.libro, fi.folio
+                        fi.nota, fi.libro, fi.folio, ma.id AS id_materia
                     FROM mesas me 
                     LEFT JOIN inscripciones_mesa im ON im.id_mesa = me.id
                     LEFT JOIN inscripciones_mesa im2 ON im2.id_mesa = me.id AND im2.id_alumno = $1
@@ -172,7 +172,13 @@ export class MesasController {
                     AND current_timestamp BETWEEN me.fecha_inicio AND me.fecha_limite
                     AND date_part('year', me.fecha_examen) >= caa.cohorte
                     ORDER BY me.fecha_examen DESC, ca.nombre, ma.anio, ma.nombre`;
-                mesas = await this.db.manyOrNone(query, [id_alumno]);
+                const mesasTodas = await this.db.manyOrNone(query, [id_alumno]);
+                for (const mesa of mesasTodas) {
+                    const finalAprobado = await this.helper.final_aprobado(mesa.id_materia, id_alumno);
+                    if (!finalAprobado) {
+                        mesas.push(mesa);
+                    } 
+                 }
             } else {
                 query = `
                     SELECT me.id, ma.nombre AS materia, ma.anio AS anio_materia, me.fecha_inicio, me.fecha_limite, 
