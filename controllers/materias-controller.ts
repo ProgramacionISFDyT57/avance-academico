@@ -150,8 +150,13 @@ export class MateriasController {
             GROUP BY m.id, m.nombre, m.anio, tm.nombre, c.nombre
             ORDER BY c.nombre, m.anio, m.nombre`;
         this.db.manyOrNone(query, id_carrera)
-            .then((data) => {
-                res.status(200).json(data);
+            .then((materias) => {
+                for (const materia of materias) {
+                    if (materia.correlativas[0] === null) {
+                        materia.correlativas = [];
+                    }
+                }
+                res.status(200).json(materias);
             })
             .catch((error) => {
                 console.error(error);
