@@ -30,11 +30,22 @@ export class CarrerasController {
         try {
             const id_inscripcion = +req.params.id_inscripcion;
             if (id_inscripcion) {
-                let query = `SELECT id_alumno FROM inscripciones_carreras WHERE id = $1`;
+                let query = `
+                    SELECT ic.id_alumno, ca.id_carrera
+                    FROM inscripciones_carreras ic
+                    INNER JOIN carreras_abiertas ca ON ca.id = ic.id_carrera_abierta
+                    WHERE ic.id = $1`;
                 let result = await this.db.one(query, id_inscripcion);
                 const id_alumno = result.id_alumno;
-                query = `SELECT id FROM inscripciones_cursadas WHERE id_alumno = $1`;
-                result = await this.db.manyOrNone(query, id_alumno);
+                const id_carrera = result.id_carrera;
+                query = `
+                    SELECT ic.id 
+                    FROM inscripciones_cursadas ic
+                    INNER JOIN cursadas cu ON cu.id = ic.id_cursada
+                    INNER JOIN materias ma ON ma.id = cu.id_materia
+                    WHERE id_alumno = $1
+                    AND ma.id_carrera = $2`;
+                result = await this.db.manyOrNone(query, [id_alumno, id_carrera]);
                 if (result.length === 0) {
                     query = `DELETE FROM inscripciones_carreras WHERE id = $1;`;
                     await this.db.none(query, id_inscripcion);
