@@ -163,7 +163,7 @@ export class UsuariosController {
         } catch (error) {
             console.error(error);
             res.status(500).json({
-                mensaje: 'Ocurrio un error al eliminar el usuario',
+                mensaje: 'Ocurrio un error al listar los profesores',
                 error
             });
         }
@@ -184,7 +184,7 @@ export class UsuariosController {
         } catch (error) {
             console.error(error);
             res.status(500).json({
-                mensaje: 'Ocurrio un error al eliminar el usuario',
+                mensaje: 'Ocurrio un error al listar los alumnos',
                 error
             });
         }
