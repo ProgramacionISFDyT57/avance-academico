@@ -48,7 +48,7 @@ export class HelperService {
         return new Promise(async (resolve, reject) => {
             try {
                 const query = `
-                    SELECT cu.id
+                    SELECT me.id
                     FROM inscripciones_mesa im
                     INNER JOIN mesas me ON me.id = im.id_mesa
                     WHERE im.id = $1`;
