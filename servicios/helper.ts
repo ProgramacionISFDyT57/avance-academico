@@ -12,9 +12,10 @@ export class HelperService {
         return new Promise(async (resolve, reject) => {
             try {
                 const query = `
-                    SELECT co.id_correlativa AS id, ma.nombre
+                    SELECT co.id_correlativa AS id, ma2.nombre
                     FROM materias ma
                     INNER JOIN correlativas co ON co.id_materia = ma.id
+                    INNER JOIN materias ma2 ON ma2.id = co.id_correlativa
                     WHERE ma.id = $1`;
                 const correlativas = await this.db.manyOrNone(query, [id_materia]);
                 resolve(correlativas);
