@@ -200,18 +200,18 @@ export class HelperService {
                 if (!correlativas.length) {
                     resolve(true);
                 } else {
-                    let aprobada: boolean | string = true;
+                    let respuesta: boolean | string = true;
                     for (const correlativa of correlativas) {
-                        aprobada = await this.final_aprobado(correlativa.id, id_alumno);
+                        const aprobada = await this.final_aprobado(correlativa.id, id_alumno);
                         if (!aprobada) {
-                            if (aprobada === true) {
-                                aprobada = correlativa.nombre
+                            if (respuesta === true) {
+                                respuesta = correlativa.nombre
                             } else {
-                                aprobada = aprobada + ', ' + correlativa.nombre;
+                                respuesta = respuesta + ', ' + correlativa.nombre;
                             }
                         }
                     }
-                    resolve(aprobada);
+                    resolve(respuesta);
                 }
             } catch (error) {
                 reject(error);
@@ -226,18 +226,18 @@ export class HelperService {
                 if (!correlativas.length) {
                     resolve(true);
                 } else {
-                    let aprobada: boolean | string = true;
+                    let respuesta: boolean | string = true;
                     for (const correlativa of correlativas) {
-                        aprobada = await this.cursada_aprobada(correlativa.id, id_alumno);
+                        const aprobada = await this.cursada_aprobada(correlativa.id, id_alumno);
                         if (!aprobada) {
-                            if (aprobada === true) {
-                                aprobada = correlativa.nombre
+                            if (respuesta === true) {
+                                respuesta = correlativa.nombre
                             } else {
-                                aprobada = aprobada + ', ' + correlativa.nombre;
+                                respuesta = respuesta + ', ' + correlativa.nombre;
                             }
                         }
                     }
-                    resolve(aprobada);
+                    resolve(respuesta);
                 }
             } catch (error) {
                 reject(error);
