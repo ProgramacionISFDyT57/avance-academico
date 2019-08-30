@@ -308,7 +308,7 @@ export class UsuariosController {
                     ) c2 ON c2.id_materia = ma.id
                     WHERE al.id = $1
                     GROUP BY c.nombre, ca.cohorte, us.apellido, us.nombre, us.dni, us.telefono, us.fecha_nacimiento
-                    ORDER BY c.nombre, ma.anio, ma.nombre;`;
+                    ORDER BY c.nombre`;
                 const avance = await this.db.manyOrNone(query, [id_alumno]);
                 res.json(avance);
             } else {
