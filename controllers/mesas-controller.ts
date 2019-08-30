@@ -51,7 +51,7 @@ export class MesasController {
                         const cursada_aprobada = await this.helper.cursada_aprobada(id_materia, id_alumno);
                         if (cursada_aprobada) {
                             const correlativas_aprobadas = await this.helper.finales_correlativos_aprobados(id_materia, id_alumno);
-                            if (correlativas_aprobadas) {
+                            if (correlativas_aprobadas === true) {
                                 const final_aprobado = await this.helper.final_aprobado(id_materia, id_alumno);
                                 if (!final_aprobado) {
                                     const query = `INSERT INTO inscripciones_mesa (id_mesa, id_alumno, fecha_inscripcion) 
@@ -67,7 +67,7 @@ export class MesasController {
                                 }
                             } else {
                                 res.status(400).json({
-                                    mensaje: 'No posee las correlativas aprobadas',
+                                    mensaje: 'No posee las siguientes correlativas aprobadas: ' + correlativas_aprobadas,
                                 });
                             }
                         } else {

@@ -8,20 +8,16 @@ export class HelperService {
         this.db = db;
     }
     
-    public  async get_id_materias_correlativas(id_materia: number): Promise<number[]> {
+    public  async get_id_materias_correlativas(id_materia: number): Promise<{id:number, nombre:string}[]> {
         return new Promise(async (resolve, reject) => {
             try {
                 const query = `
-                    SELECT co.id_correlativa
+                    SELECT co.id_correlativa AS id, ma.nombre
                     FROM materias ma
                     INNER JOIN correlativas co ON co.id_materia = ma.id
                     WHERE ma.id = $1`;
                 const correlativas = await this.db.manyOrNone(query, [id_materia]);
-                const ids = [];
-                for (const correlativa of correlativas) {
-                    ids.push(correlativa.id_correlativa);
-                }
-                resolve(ids);
+                resolve(correlativas);
             } catch (error) {
                 reject(error);
             }
@@ -197,24 +193,25 @@ export class HelperService {
         });
     }
 
-    public async finales_correlativos_aprobados(id_materia: number, id_alumno: number): Promise<boolean> {
+    public async finales_correlativos_aprobados(id_materia: number, id_alumno: number): Promise<boolean | string> {
         return new Promise(async (resolve, reject) => {
             try {                
                 const correlativas = await this.get_id_materias_correlativas(id_materia);
                 if (!correlativas.length) {
                     resolve(true);
                 } else {
-                    let aprobada = true;
-                    let i = 0;
-                    while (aprobada && i < correlativas.length) {
-                        aprobada = await this.final_aprobado(correlativas[i], id_alumno);
-                        i++;
+                    let aprobada: boolean | string = true;
+                    for (const correlativa of correlativas) {
+                        aprobada = await this.final_aprobado(correlativa.id, id_alumno);
+                        if (!aprobada) {
+                            if (aprobada === true) {
+                                aprobada = correlativa.nombre
+                            } else {
+                                aprobada = aprobada + ', ' + correlativa.nombre;
+                            }
+                        }
                     }
-                    if (aprobada) {
-                        resolve(true);
-                    } else {
-                        resolve(false);
-                    }
+                    resolve(aprobada);
                 }
             } catch (error) {
                 reject(error);
@@ -222,24 +219,25 @@ export class HelperService {
         });
     }
 
-    public async cursadas_correlativas_aprobadas(id_materia: number, id_alumno: number): Promise<boolean> {
+    public async cursadas_correlativas_aprobadas(id_materia: number, id_alumno: number): Promise<boolean | string> {
         return new Promise(async (resolve, reject) => {
             try {                
                 const correlativas = await this.get_id_materias_correlativas(id_materia);
                 if (!correlativas.length) {
                     resolve(true);
                 } else {
-                    let aprobada = true;
-                    let i = 0;
-                    while (aprobada && i < correlativas.length) {
-                        aprobada = await this.cursada_aprobada(correlativas[i], id_alumno);
-                        i++;
+                    let aprobada: boolean | string = true;
+                    for (const correlativa of correlativas) {
+                        aprobada = await this.cursada_aprobada(correlativa.id, id_alumno);
+                        if (!aprobada) {
+                            if (aprobada === true) {
+                                aprobada = correlativa.nombre
+                            } else {
+                                aprobada = aprobada + ', ' + correlativa.nombre;
+                            }
+                        }
                     }
-                    if (aprobada) {
-                        resolve(true);
-                    } else {
-                        resolve(false);
-                    }
+                    resolve(aprobada);
                 }
             } catch (error) {
                 reject(error);
