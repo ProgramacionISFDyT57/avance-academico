@@ -106,6 +106,7 @@ app.delete("/notas_final/:id_inscripcion_mesa", seguridadController.chequear_rol
 // MESAS
 //////////////////////////////////////////////////////////////////////////////////////
 app.get("/avance_academico", seguridadController.chequear_roles(['alumno']), usuariosController .avance_academico);
+app.get("/avance_academico/:id_alumno", seguridadController.chequear_roles(['directivo', 'preceptor']), usuariosController .avance_academico);
 //////////////////////////////////////////////////////////////////////////////////////
 app.listen(port, () => {
     console.log("Servidor escuchando en le puerto ", + port);

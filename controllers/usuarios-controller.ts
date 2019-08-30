@@ -258,14 +258,29 @@ export class UsuariosController {
 
     public async avance_academico(req: Request, res: Response) {
         try {
-            const token: Token = res.locals.token;
-            const id_alumno = +token.id_alumno;
+            let id_alumno;
+            if (+req.params.id_alumno) {
+                id_alumno = +req.params.id_alumno
+            } else {
+                const token: Token = res.locals.token;
+                id_alumno = +token.id_alumno;
+            }
             if (id_alumno) {
                 const query = `
-                    SELECT c.nombre AS carrera, ma.nombre AS materia, ma.anio, ca.cohorte,
-                        c1.nota_cuat_1, c1.nota_cuat_2, c1.nota_recuperatorio, c1.asistencia,
-                        c2.nota AS final, c2.libro, c2.folio
-                    FROM alumnos al                    
+                    SELECT c.nombre AS carrera, ca.cohorte, us.apellido, us.nombre, us.dni, us.telefono, us.fecha_nacimiento
+                        json_agg(json_build_object( 
+                            'materia', ma.nombre, 
+                            'anio', ma.anio, 
+                            'nota_cuat_1', c1.nota_cuat_1, 
+                            'nota_cuat_2', c1.nota_cuat_2, 
+                            'nota_recuperatorio', c1.nota_recuperatorio, 
+                            'asistencia', c1.asistencia, 
+                            'final', c2.nota,
+                            'libro', c2.libro,
+                            'folio', c2.folio
+                        )) AS materias
+                    FROM alumnos al
+                    INNER JOIN usuarios us ON us.id = al.id_usuario               
                     INNER JOIN inscripciones_carreras ica ON ica.id_alumno = al.id
                     INNER JOIN carreras_abiertas ca ON ca.id = ica.id_carrera_abierta
                     INNER JOIN carreras c ON c.id = ca.id_carrera
@@ -292,6 +307,7 @@ export class UsuariosController {
                         AND fi.nota >= 4 
                     ) c2 ON c2.id_materia = ma.id
                     WHERE al.id = $1
+                    GROUP BY c.nombre, ca.cohorte, us.apellido, us.nombre, us.dni, us.telefono, us.fecha_nacimiento
                     ORDER BY c.nombre, ma.anio, ma.nombre;`;
                 const avance = await this.db.manyOrNone(query, [id_alumno]);
                 res.json(avance);
