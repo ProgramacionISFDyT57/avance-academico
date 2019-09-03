@@ -178,6 +178,22 @@ Devuelve el listado de todos los profesores
 
 ## Materias
 
+### `POST /materias`
+Crea una materia
+
+#### Request Body
+```json
+{
+	"materia": {
+		"nombre":"",
+		"año": "",
+		"id_carrera": "",
+		"id_tipo": "",
+		"correlativas": []
+	}
+}
+```
+
 ### `GET /materias_por_carrera/:id_carrera`
 Devuelve el listado de materias de la carrera solicitada
 #### Parametro de ruta
