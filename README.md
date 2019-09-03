@@ -132,6 +132,32 @@ Crea un usuario
 }
 ```
 
+### GET / alumnos
+Devuelve el listado de todos los alumnos
+
+#### Requiere rols de acceso
+- Directivo
+- Preceptor
+
+#### Formato de respuesta
+```json
+[
+    {
+        "id_alumno": 10,
+        "nombre": "",
+        "apellido": "",
+        "dni": "",
+        "fecha_nacimiento": "",
+        "email": "",
+        "telefono": "",
+        "cohorte": 2019,
+        "carrera": "",
+        "nombre_completo": ""
+    }
+]
+```
+
+
 ### `GET /profesores`
 Devuelve el listado de todos los profesores
 #### Formato de respuesta
