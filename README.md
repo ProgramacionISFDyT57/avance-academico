@@ -132,7 +132,7 @@ Crea un usuario
 }
 ```
 
-### GET / alumnos
+### `GET / alumnos`
 Devuelve el listado de todos los alumnos
 
 #### Requiere rols de acceso
@@ -196,3 +196,17 @@ Devuelve el listado de materias de la carrera solicitada
 
 ```
 
+### `GET /materias`
+Devuelve el listado de todas las materias existentes
+
+#### Formato de respuesta
+```json
+{
+        "id": 42,
+        "nombre": "",
+        "anio": 1,
+        "tipo_materia": "",
+        "carrera": "",
+        "correlativas": []
+},
+```
