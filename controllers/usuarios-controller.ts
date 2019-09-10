@@ -52,38 +52,30 @@ export class UsuariosController {
             });
         }
     }
-    public crear_usuario(req: Request, res: Response) {
-        const usuario: Usuario = req.body.usuario;
-        bcrypt.hash(usuario.dni, 10, (error, hash) => {
+    public async crear_usuario(req: Request, res: Response) {
+        try {
+            const usuario: Usuario = req.body.usuario;
+            const hash = await bcrypt.hash(usuario.dni, 10);
             const query = `
-                INSERT INTO usuarios (email, dni, clave, nombre, apellido, fecha_nacimiento, fecha_alta, id_rol, telefono) 
-                VALUES ($1, $2, $3, $4, $5, $6, current_timestamp, $7, $8) 
+                INSERT INTO usuarios (email, dni, clave, nombre, apellido, fecha_nacimiento, id_rol, telefono, fecha_alta) 
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, current_timestamp) 
                 RETURNING ID`;
-            this.db.one(query, [usuario.email, usuario.dni, hash, usuario.nombre,
-            usuario.apellido, usuario.fecha_nacimiento, usuario.id_rol, usuario.telefono])
-                .then((data) => {
-                    if (usuario.id_rol === 4) {
-                        this.db.one('INSERT INTO profesores (id_usuario) VALUES ($1) RETURNING ID', [data.id])
-                            .then((data) => {
-                                res.status(200).json({
-                                    mensaje: "El usuario se creo correctamente",
-                                });
-                            })
-                            .catch((err) => {
-                                console.error(err);
-                                res.status(500).json(err);
-                            });
-                    } else {
-                        res.status(200).json({
-                            mensaje: "El usuario se creo correctamente",
-                        });
-                    }
-                })
-                .catch((err) => {
-                    console.error(err);
-                    res.status(500).json(err);
-                });
-        });
+            const result = await this.db.one(query, [usuario.email, usuario.dni, hash, usuario.nombre,
+                usuario.apellido, usuario.fecha_nacimiento, usuario.id_rol, usuario.telefono]);
+            const id_usuario = result.id;
+            if (usuario.id_rol === 4) {
+                await this.db.none('INSERT INTO profesores (id_usuario) VALUES ($1)', [id_usuario])
+            }
+            res.status(200).json({
+                mensaje: "El usuario se creo correctamente",
+            });
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({
+                mensaje: 'Ocurrio un error al crear el usuario',
+                error
+            });
+        }
     }
     public async crear_alumno(req: Request, res: Response) {
         try {
