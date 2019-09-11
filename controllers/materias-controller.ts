@@ -238,23 +238,26 @@ export class MateriasController {
                 res.status(500).json(error);
             });
     }
-    public modificar_materia(req: Request, res: Response) {
-        const id = +req.params.id;
-        const materia: Materia = req.body.materia;
-        if (id) {
-            this.db.none(`UPDATE materias SET (nombre, anio, id_carrera, id_tipo) VALUES ($1, $2, $3, $4) WHERE id = $5`, [materia.nombre, materia.anio, materia.id_carrera, materia.id_tipo, id])
-                .then(() => {
-                    res.status(200).json({
-                        mensaje: "Se modificó la materia",
-                    });
-                })
-                .catch((error) => {
-                    console.error(error);
-                    res.status(500).json(error);
+    public async modificar_materia(req: Request, res: Response) {
+        try {
+            const id = +req.params.id;
+            const materia: Materia = req.body.materia;
+            if (id) {
+                const query = `UPDATE materias SET (nombre, anio, id_carrera, id_tipo) VALUES ($1, $2, $3, $4) WHERE id = $5`;
+                await this.db.none(query, [materia.nombre, materia.anio, materia.id_carrera, materia.id_tipo, id]);
+                res.status(200).json({
+                    mensaje: "Se modificó la materia correctamente",
                 });
-        } else {
-            res.status(400).json({
-                mensaje: 'ID Incorrecto',
+            } else {
+                res.status(400).json({
+                    mensaje: 'ID de materia incorrecto',
+                });
+            }
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({
+                mensaje: 'Ocurrió un error al eliminar la materia',
+                error
             });
         }
     }
