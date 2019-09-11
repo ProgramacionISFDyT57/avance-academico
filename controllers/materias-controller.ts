@@ -102,7 +102,7 @@ export class MateriasController {
                 FROM cursadas c
                 INNER JOIN materias m ON m.id = c.id_materia
                 GROUP BY m.id
-            ) cu ON cu.id_materia = mc.id
+            ) cu ON cu.id_materia = m.id
             GROUP BY m.id, m.nombre, m.anio, tm.nombre, c.nombre, cu.ultima_cursada
             ORDER BY c.nombre, m.anio, m.nombre`;
         this.db.manyOrNone(query)
