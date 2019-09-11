@@ -190,28 +190,26 @@ export class CarrerasController {
                 });
             });
     }
-    public modificar_carrera(req: Request, res: Response) {
-        const id = +req.params.id;
-        const carrera: Carrera = req.body.carrera;
-        if (id) {
-            this.db.none('UPDATE carreras SET nombre = $1, duracion = $2, cantidad_materias = $3 WHERE id = $4', [carrera.nombre, carrera.duracion, carrera.cantidad_materias, id])
-                .then(() => {
-                    res.status(200).json({
-                        mensaje: null,
-                        datos: null
-                    });
-                })
-                .catch((err) => {
-                    console.error(err);
-                    res.status(500).json({
-                        mensaje: err,
-                        datos: null
-                    });
+    public async modificar_carrera(req: Request, res: Response) {
+        try {
+            const id = +req.params.id;
+            const carrera: Carrera = req.body.carrera;
+            if (id) {
+                const query = 'UPDATE carreras SET nombre = $1, duracion = $2, cantidad_materias = $3 WHERE id = $4';
+                await this.db.none(query, [carrera.nombre, carrera.duracion, carrera.cantidad_materias, id]);
+                res.status(200).json({
+                    mensaje: 'La carrera se modificó correctamente',
                 });
-        } else {
-            res.status(400).json({
-                mensaje: 'ID Incorrecto',
-                datos: null
+            } else {
+                res.status(400).json({
+                    mensaje: 'ID de carrera incorrecto',
+                });
+            }
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({
+                mensaje: 'Ocurrio un error al modificar la carrera',
+                error
             });
         }
     }
