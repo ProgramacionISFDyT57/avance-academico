@@ -90,8 +90,8 @@ export class MateriasController {
     // Materias
     public ver_materias(req: Request, res: Response) {
         const query = `
-            SELECT m.id, m.nombre, m.anio, tm.nombre AS tipo_materia, c.nombre AS carrera, c.id AS id_carrera, cu.ultima_cursada,
-                array_agg(mc.nombre) AS correlativas
+            SELECT m.id, m.nombre, m.anio, tm.nombre AS tipo_materia, c.nombre AS carrera, c.id AS id_carrera, c.duracion,
+                cu.ultima_cursada, array_agg(mc.nombre) AS correlativas
             FROM materias m
             INNER JOIN tipos_materias tm ON tm.id = m.id_tipo
             INNER JOIN carreras c ON c.id = m.id_carrera
@@ -103,7 +103,7 @@ export class MateriasController {
                 INNER JOIN materias m ON m.id = c.id_materia
                 GROUP BY m.id
             ) cu ON cu.id_materia = m.id
-            GROUP BY m.id, m.nombre, m.anio, tm.nombre, c.nombre, c.id, cu.ultima_cursada
+            GROUP BY m.id, m.nombre, m.anio, tm.nombre, c.nombre, c.id, c.duracion, cu.ultima_cursada
             ORDER BY c.nombre, m.anio, m.nombre`;
         this.db.manyOrNone(query)
             .then((materias) => {
