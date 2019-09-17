@@ -22,6 +22,7 @@ export class CursadasController {
         this.cargar_notas_cursada = this.cargar_notas_cursada.bind(this);
         this.eliminar_notas_cursada = this.eliminar_notas_cursada.bind(this);
         this.crear_inscripcion_cursada = this.crear_inscripcion_cursada.bind(this);
+        this.inscribir_alumno_cursada = this.inscribir_alumno_cursada.bind(this);
         this.eliminar_inscripcion_cursada = this.eliminar_inscripcion_cursada.bind(this);
         this.listar_inscriptos_cursada = this.listar_inscriptos_cursada.bind(this);
     }
@@ -167,13 +168,13 @@ export class CursadasController {
                     AND current_timestamp BETWEEN cu.fecha_inicio AND cu.fecha_limite
                     AND cu.anio >= ca.cohorte
                     ORDER BY cu.anio DESC, c.nombre, M.anio, M.nombre`;
-                    const cursadasTodas = await this.db.manyOrNone(query, [id_alumno]);
-                    for (const cursada of cursadasTodas) {
-                       const cursadaAprobada = await this.helper.cursada_aprobada(cursada.id_materia, id_alumno);
-                       if (!cursadaAprobada) {
-                           cursadas.push(cursada);
-                       } 
+                const cursadasTodas = await this.db.manyOrNone(query, [id_alumno]);
+                for (const cursada of cursadasTodas) {
+                    const cursadaAprobada = await this.helper.cursada_aprobada(cursada.id_materia, id_alumno);
+                    if (!cursadaAprobada) {
+                        cursadas.push(cursada);
                     }
+                }
             } else {
                 // Muestra todas las cursadas
                 query = `
@@ -226,10 +227,10 @@ export class CursadasController {
             return 'No es posible tener nota de recuperatorio con los dos cuatrimestres desaprobados';
         } else if (avance.nota_cuat_1 % 1 !== 0 || avance.nota_cuat_2 % 1 !== 0 || avance.nota_recuperatorio % 1 !== 0) {
             return 'Las notas deben ser números enteros';
-        } else if ( 
+        } else if (
             ((avance.nota_cuat_1) && (avance.nota_cuat_1 < 1 || avance.nota_cuat_1 > 10)) ||
             ((avance.nota_cuat_2) && (avance.nota_cuat_2 < 1 || avance.nota_cuat_2 > 10)) ||
-            ((avance.nota_recuperatorio) && (avance.nota_recuperatorio < 1 || avance.nota_recuperatorio > 10)) 
+            ((avance.nota_recuperatorio) && (avance.nota_recuperatorio < 1 || avance.nota_recuperatorio > 10))
         ) {
             return 'Las notas deben ser entre 1 y 10';
         } else {
@@ -271,7 +272,7 @@ export class CursadasController {
                 } else {
                     res.status(400).json({
                         mensaje: asistencia_valida
-                    });    
+                    });
                 }
             } else {
                 res.status(400).json({
@@ -393,6 +394,45 @@ export class CursadasController {
         }
     }
 
+    public async inscribir_alumno_cursada(req: Request, res: Response) {
+        try {
+            const id_cursada = +req.body.id_cursada;
+            const cursa = req.body.cursa;
+            const equivalencia = req.body.equivalencia;
+            const id_alumno = +req.body.id_alumno;
+            if (id_alumno) {
+                if (id_cursada) {
+                    const id_materia = await this.get_id_materia(id_cursada);
+                    const correlativas_aprobadas = await this.helper.cursadas_correlativas_aprobadas(id_materia, id_alumno);
+                    if (correlativas_aprobadas === true) {
+                        await this.realizar_inscripcion_cursada(id_alumno, id_cursada, cursa, equivalencia);
+                        res.status(200).json({
+                            mensaje: 'Inscripción a cursada creada!',
+                        });
+                    } else {
+                        res.status(400).json({
+                            mensaje: 'No posee las siguientes correlativas aprobadas: ' + correlativas_aprobadas,
+                        });
+                    }
+                } else {
+                    res.status(400).json({
+                        mensaje: 'ID de cursada inválido',
+                    });
+                }
+            } else {
+                res.status(400).json({
+                    mensaje: 'El usuario no es un alumno',
+                });
+            }
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({
+                mensaje: 'Ocurrio un error al crear la inscripcion a la cursada',
+                error,
+            });
+        }
+    }
+
     public async eliminar_inscripcion_cursada(req: Request, res: Response) {
         try {
             const token: Token = res.locals.token;
@@ -412,7 +452,7 @@ export class CursadasController {
                         res.status(400).json({
                             mensaje: 'Solo se puede eliminar la inscripción durante el periodo de inscripción',
                             error: cursada_abierta
-                        });    
+                        });
                     }
                 } else {
                     res.status(400).json({

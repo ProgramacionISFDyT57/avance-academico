@@ -13,6 +13,7 @@ export class MesasController {
         this.db = db;
         this.helper = new HelperService(db);
         this.crear_inscripcion_mesa = this.crear_inscripcion_mesa.bind(this);
+        this.inscribir_alumno_mesa = this.inscribir_alumno_mesa.bind(this);
         this.eliminar_inscripcion_mesa = this.eliminar_inscripcion_mesa.bind(this);
         this.lista_mesas = this.lista_mesas.bind(this);
         this.crear_mesa = this.crear_mesa.bind(this);
@@ -78,6 +79,59 @@ export class MesasController {
                     } else {
                         res.status(400).json({
                             mensaje: mesa_abierta,
+                        });
+                    }
+                } else {
+                    res.status(400).json({
+                        mensaje: 'ID de mesa inválido',
+                    });
+                }
+            } else {
+                res.status(400).json({
+                    mensaje: 'El usuario no es un alumno',
+                });
+            }
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({
+                mensaje: 'Ocurrio un error al crear la inscripción',
+                error
+            });
+        }
+    }
+
+    public async inscribir_alumno_mesa(req: Request, res: Response) {
+        try {
+            const id_mesa = +req.body.id_mesa;
+            const id_alumno = +req.body.id_alumno;
+            if (id_alumno) {
+                if (id_mesa) {
+                    const id_materia = await this.get_id_materia(id_mesa);
+                    const cursada_aprobada = await this.helper.cursada_aprobada(id_materia, id_alumno);
+                    if (cursada_aprobada) {
+                        const correlativas_aprobadas = await this.helper.finales_correlativos_aprobados(id_materia, id_alumno);
+                        if (correlativas_aprobadas === true) {
+                            const final_aprobado = await this.helper.final_aprobado(id_materia, id_alumno);
+                            if (!final_aprobado) {
+                                const query = `INSERT INTO inscripciones_mesa (id_mesa, id_alumno, fecha_inscripcion) 
+                                                    VALUES ($1, $2, current_timestamp);`
+                                await this.db.none(query, [id_mesa, id_alumno])
+                                res.status(200).json({
+                                    mensaje: 'Inscripción a final creada!',
+                                });
+                            } else {
+                                res.status(400).json({
+                                    mensaje: 'Ya posee la materia aprobada',
+                                });
+                            }
+                        } else {
+                            res.status(400).json({
+                                mensaje: 'No posee las siguientes correlativas aprobadas: ' + correlativas_aprobadas,
+                            });
+                        }
+                    } else {
+                        res.status(400).json({
+                            mensaje: 'No posee la cursada aprobada',
                         });
                     }
                 } else {
@@ -177,8 +231,8 @@ export class MesasController {
                     const finalAprobado = await this.helper.final_aprobado(mesa.id_materia, id_alumno);
                     if (!finalAprobado) {
                         mesas.push(mesa);
-                    } 
-                 }
+                    }
+                }
             } else {
                 query = `
                     SELECT me.id, ma.nombre AS materia, ma.anio AS anio_materia, me.fecha_inicio, me.fecha_limite, 
