@@ -232,7 +232,7 @@ Devuelve el listado de todas las materias existentes
 #### `GET/carreras_abiertas`
 Devuelve el listado de carreras abiertas
 
-Formato de respuesta
+#### Formato de respuesta
 ```json
 [
     {
@@ -245,6 +245,23 @@ Formato de respuesta
         "cant_inscriptos": 
     }
 ]
+```
+
+#### `GET/carreras_abiertas_hoy`
+Muestra las abiertas y a las que se pueden inscribir
+
+
+#### Formato de respuesta
+
+```json
+    {
+        "id": 12,
+        "nombre": ,
+        "duracion": ,
+        "cohorte": ,
+        "fecha_inicio": ,
+        "fecha_limite": 
+    }
 ```
 
 ### `POST /carreras_abiertas`
