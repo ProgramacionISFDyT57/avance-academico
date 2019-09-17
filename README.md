@@ -228,6 +228,25 @@ Devuelve el listado de todas las materias existentes
 ```
 ## Inscripcion Carreras
 
+
+#### `GET/carreras_abiertas`
+Devuelve el listado de carreras abiertas
+
+Formato de respuesta
+```json
+[
+    {
+        "id": ,
+        "nombre": ,
+        "duracion": ,
+        "cohorte": ,
+        "fecha_inicio": ,
+        "fecha_limite": ,
+        "cant_inscriptos": 
+    }
+]
+```
+
 ### `POST /carreras_abiertas`
  Abre una inscripcion a carrera
 
