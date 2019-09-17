@@ -150,7 +150,7 @@ export class CursadasController {
                 // Muestra las cursadas de la/s carreras del alumno
                 query = `
                     SELECT cu.id, cu.anio AS anio_cursada, cu.fecha_inicio, cu.fecha_limite, M.id AS id_materia,
-                        M.nombre AS materia, M.anio AS anio_materia, c.nombre AS carrera,
+                        M.nombre AS materia, M.anio AS anio_materia, c.nombre AS carrera, c.id AS id_carrera,
                         CONCAT_WS(', ', U.apellido, U.nombre) AS profesor, ic2.id AS id_inscripcion_cursada,
                         aa.nota_cuat_1, aa.nota_cuat_2, aa.nota_recuperatorio, aa.asistencia, tm.nombre AS tipo_materia
                     FROM cursadas cu

@@ -16,6 +16,7 @@ export class UsuariosController {
         this.listar_usuarios = this.listar_usuarios.bind(this);
         this.listar_profesores = this.listar_profesores.bind(this);
         this.listar_alumnos = this.listar_alumnos.bind(this);
+        this.listar_alumnos_por_carrera = this.listar_alumnos_por_carrera.bind(this);
         this.cambiar_contraseña = this.cambiar_contraseña.bind(this);
         this.listar_roles = this.listar_roles.bind(this);
         this.eliminar_usuario = this.eliminar_usuario.bind(this);
@@ -177,6 +178,29 @@ export class UsuariosController {
             console.error(error);
             res.status(500).json({
                 mensaje: 'Ocurrio un error al listar los alumnos',
+                error
+            });
+        }
+    }
+    public async listar_alumnos_por_carrera(req: Request, res: Response) {
+        try {
+            const id_carrera = +req.params.id_carrera;
+            const query = `
+                SELECT a.id AS id_alumno, u.nombre, u.apellido, u.dni, u.fecha_nacimiento, u.email, u.telefono, ca.cohorte, c.nombre AS carrera, 
+                    concat(u.apellido, ', ', u.nombre) AS nombre_completo
+                FROM alumnos a
+                INNER JOIN usuarios u ON u.id = a.id_usuario
+                LEFT JOIN inscripciones_carreras ic ON ic.id_alumno = a.id
+                LEFT JOIN carreras_abiertas ca ON ca.id = ic.id_carrera_abierta
+                LEFT JOIN carreras c ON c.id = ca.id_carrera
+                WHERE c.id = $1
+                ORDER BY u.apellido, u.nombre;`
+            const alumnos = await this.db.manyOrNone(query, [id_carrera]);
+            res.json(alumnos);
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({
+                mensaje: 'Ocurrio un error al listar los alumnos de la carrera',
                 error
             });
         }
