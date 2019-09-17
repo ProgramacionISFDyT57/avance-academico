@@ -179,7 +179,7 @@ export class CursadasController {
                 // Muestra todas las cursadas
                 query = `
                     SELECT C.id, C.anio AS anio_cursada, C.fecha_inicio, C.fecha_limite, 
-                        M.nombre AS materia, M.anio AS anio_materia, ca.nombre AS carrera,
+                        M.nombre AS materia, M.anio AS anio_materia, ca.nombre AS carrera, ca.id AS id_carrera,
                         CONCAT_WS(', ', U.apellido, U.nombre) AS profesor,
                         COUNT(ic.id) AS cant_inscriptos
                     FROM cursadas C
