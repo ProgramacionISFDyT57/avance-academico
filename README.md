@@ -226,3 +226,32 @@ Devuelve el listado de todas las materias existentes
         "correlativas": []
 },
 ```
+## Inscripcion Carreras
+
+### `POST /carreras_abiertas`
+ Abre una inscripcion a carrera
+
+#### Request Body
+```json{
+	"carreras_abiertas": {
+		"id_carreras": ,
+		"cohorte": 2019,
+		"fecha_inicio": ,
+		"fecha_limite": 
+		
+	}
+}
+```
+
+
+### `POST/inscripciones_carreras`
+Inscripcion a una carrera
+
+#### Request Body
+```json{
+	{
+	"id_carrera_abierta": ,
+	"id_alumno": 
+	}
+}
+```
