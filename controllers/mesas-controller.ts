@@ -252,7 +252,7 @@ export class MesasController {
                     LEFT JOIN profesores v2 ON v2.id = me.id_vocal2
                     LEFT JOIN usuarios us2 ON us2.id = v2.id_usuario
                     GROUP BY me.id, ma.nombre, ma.anio, me.fecha_inicio, me.fecha_limite,
-                        me.fecha_examen, ca.nombre,
+                        me.fecha_examen, ca.nombre, ca.id,
                         CONCAT_WS(', ', us.apellido, us.nombre),
                         CONCAT_WS(', ', us1.apellido, us1.nombre),
                         CONCAT_WS(', ', us2.apellido, us2.nombre)
