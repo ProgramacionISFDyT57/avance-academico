@@ -203,7 +203,7 @@ export class MesasController {
             if (id_alumno) {
                 query = `
                     SELECT me.id, ma.nombre AS materia, ma.anio AS anio_materia, me.fecha_inicio, me.fecha_limite, 
-                        me.fecha_examen, ca.nombre AS carrera, im2.id AS id_inscripcion_mesa,
+                        me.fecha_examen, ca.nombre AS carrera, ca.id AS id_carrera, im2.id AS id_inscripcion_mesa,
                         CONCAT_WS(', ', us.apellido, us.nombre) AS profesor,
                         CONCAT_WS(', ', us1.apellido, us1.nombre) AS vocal1,
                         CONCAT_WS(', ', us2.apellido, us2.nombre) AS vocal2,
