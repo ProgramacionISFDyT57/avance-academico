@@ -343,13 +343,13 @@ export class MesasController {
             if (id_mesa) {
                 const query = `
                     SELECT me.fecha_examen, ma.nombre AS materia, c.nombre AS carrera, 
-                        CONCAT_WS(', ', us.apellido, us.nombre) AS profesor,
+                        CONCAT_WS(', ', us0.apellido, us0.nombre) AS profesor,
                         CONCAT_WS(', ', us1.apellido, us1.nombre) AS vocal1,
                         CONCAT_WS(', ', us2.apellido, us2.nombre) AS vocal2,
                         json_agg(json_build_object( 'apellido', us.apellido, 'nombre', us.nombre, 'dni', us.dni, 'cohorte', caa.cohorte)) AS inscriptos
                     FROM mesas me
                     LEFT JOIN profesores pf ON pf.id = me.id_profesor
-                    LEFT JOIN usuarios us ON us.id = pf.id_usuario
+                    LEFT JOIN usuarios us0 ON us0.id = pf.id_usuario
                     LEFT JOIN profesores v1 ON v1.id = me.id_vocal1
                     LEFT JOIN usuarios us1 ON us1.id = v1.id_usuario
                     LEFT JOIN profesores v2 ON v2.id = me.id_vocal2
@@ -363,7 +363,7 @@ export class MesasController {
                     INNER JOIN carreras_abiertas caa ON caa.id = ic.id_carrera_abierta
                     WHERE me.id = $1
                     GROUP BY me.fecha_examen, ma.nombre, c.nombre,
-                        CONCAT_WS(', ', us.apellido, us.nombre),
+                        CONCAT_WS(', ', us0.apellido, us0.nombre),
                         CONCAT_WS(', ', us1.apellido, us1.nombre),
                         CONCAT_WS(', ', us2.apellido, us2.nombre)
                     `;
