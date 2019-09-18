@@ -295,7 +295,7 @@ export class UsuariosController {
                             'final', c2.nota,
                             'libro', c2.libro,
                             'folio', c2.folio
-                        )) AS materias
+                        ) ORDER BY ma.anio, ma.nombre) AS materias
                     FROM alumnos al
                     INNER JOIN usuarios us ON us.id = al.id_usuario               
                     INNER JOIN inscripciones_carreras ica ON ica.id_alumno = al.id
@@ -313,7 +313,6 @@ export class UsuariosController {
                         WHERE icu.id_alumno = $1
                         AND ((aa.nota_cuat_1 >=4 and aa.nota_cuat_2 >=4) OR (aa.nota_recuperatorio >=4))
                         AND ((tm.id = 2 AND aa.asistencia >= 80) OR (tm.id != 2 AND aa.asistencia >= 60))
-                        ORDER BY ma.anio, ma.nombre
                     ) c1 ON c1.id_materia = ma.id
                     LEFT JOIN (
                         SELECT ma.id AS id_materia, fi.nota, fi.libro, fi.folio
@@ -323,7 +322,6 @@ export class UsuariosController {
                         LEFT JOIN finales fi ON fi.id_inscripcion_mesa = ime.id
                         WHERE ime.id_alumno = $1
                         AND fi.nota >= 4 
-                        ORDER BY ma.anio, ma.nombre
                     ) c2 ON c2.id_materia = ma.id
                     WHERE al.id = $1
                     GROUP BY c.nombre, ca.cohorte, us.apellido, us.nombre, us.dni, us.telefono, us.fecha_nacimiento

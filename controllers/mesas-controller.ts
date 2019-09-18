@@ -354,14 +354,13 @@ export class MesasController {
                     LEFT JOIN usuarios us1 ON us1.id = v1.id_usuario
                     LEFT JOIN profesores v2 ON v2.id = me.id_vocal2
                     LEFT JOIN usuarios us2 ON us2.id = v2.id_usuario
-                    LEFT JOIN finales fi ON fi.id_inscripcion_mesa = im2.id
                     INNER JOIN materias ma ON ma.id = me.id_materia
                     INNER JOIN carreras c ON c.id = ma.id_carrera
-                    INNER JOIN inscripciones_carreras ic ON ic.id_alumno = al.id
-                    INNER JOIN carreras_abiertas caa ON caa.id = ic.id_carrera_abierta
                     INNER JOIN inscripciones_mesa im ON im.id_mesa = me.id
                     INNER JOIN alumnos al ON al.id = im.id_alumno
                     INNER JOIN usuarios us ON us.id = al.id_usuario
+                    INNER JOIN inscripciones_carreras ic ON ic.id_alumno = al.id
+                    INNER JOIN carreras_abiertas caa ON caa.id = ic.id_carrera_abierta
                     WHERE me.id = $1
                     GROUP BY me.fecha_examen, ma.nombre, c.nombre,
                         CONCAT_WS(', ', us.apellido, us.nombre),
