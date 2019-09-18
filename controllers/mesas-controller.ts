@@ -346,7 +346,12 @@ export class MesasController {
                         CONCAT_WS(', ', us0.apellido, us0.nombre) AS profesor,
                         CONCAT_WS(', ', us1.apellido, us1.nombre) AS vocal1,
                         CONCAT_WS(', ', us2.apellido, us2.nombre) AS vocal2,
-                        json_agg(json_build_object( 'apellido', us.apellido, 'nombre', us.nombre, 'dni', us.dni, 'cohorte', caa.cohorte)) AS inscriptos
+                        json_agg(json_build_object( 
+                            'apellido', us.apellido, 
+                            'nombre', us.nombre, 
+                            'dni', us.dni, 
+                            'cohorte', caa.cohorte
+                        ) ORDER BY us.apellido, us.nombre) AS inscriptos
                     FROM mesas me
                     LEFT JOIN profesores pf ON pf.id = me.id_profesor
                     LEFT JOIN usuarios us0 ON us0.id = pf.id_usuario
@@ -367,7 +372,7 @@ export class MesasController {
                         CONCAT_WS(', ', us1.apellido, us1.nombre),
                         CONCAT_WS(', ', us2.apellido, us2.nombre)
                     `;
-                const inscriptos = await this.db.manyOrNone(query, [id_mesa]);
+                const inscriptos = await this.db.one(query, [id_mesa]);
                 res.status(200).json(inscriptos);
             } else {
                 res.status(400).json({
