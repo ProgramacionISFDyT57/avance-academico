@@ -19,6 +19,7 @@ export class MesasController {
         this.crear_mesa = this.crear_mesa.bind(this);
         this.eliminar_mesa = this.eliminar_mesa.bind(this);
         this.listar_inscriptos_mesa = this.listar_inscriptos_mesa.bind(this);
+        this.acta_volante = this.acta_volante.bind(this);
         this.cargar_notas_final = this.cargar_notas_final.bind(this);
         this.eliminar_notas_final = this.eliminar_notas_final.bind(this);
     }
@@ -320,6 +321,53 @@ export class MesasController {
                     LEFT JOIN finales fi ON fi.id_inscripcion_mesa = im.id
                     WHERE me.id = $1
                     ORDER BY us.apellido, us.nombre;`;
+                const inscriptos = await this.db.manyOrNone(query, [id_mesa]);
+                res.status(200).json(inscriptos);
+            } else {
+                res.status(400).json({
+                    mensaje: 'ID de mesa invalido'
+                });
+            }
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({
+                mensaje: 'Ocurrio un error al listar los inscriptos a la mesa',
+                error
+            });
+        }
+    }
+
+    public async acta_volante(req: Request, res: Response) {
+        try {
+            const id_mesa = +req.params.id_mesa;
+            if (id_mesa) {
+                const query = `
+                    SELECT me.fecha_examen, ma.nombre AS materia, c.nombre AS carrera, 
+                        CONCAT_WS(', ', us.apellido, us.nombre) AS profesor,
+                        CONCAT_WS(', ', us1.apellido, us1.nombre) AS vocal1,
+                        CONCAT_WS(', ', us2.apellido, us2.nombre) AS vocal2,
+                        json_agg(json_build_object( 'apellido', us.apellido, 'nombre', us.nombre, 'dni', us.dni, 'cohorte', caa.cohorte)) AS inscriptos
+                    FROM mesas me
+                    LEFT JOIN profesores pf ON pf.id = me.id_profesor
+                    LEFT JOIN usuarios us ON us.id = pf.id_usuario
+                    LEFT JOIN profesores v1 ON v1.id = me.id_vocal1
+                    LEFT JOIN usuarios us1 ON us1.id = v1.id_usuario
+                    LEFT JOIN profesores v2 ON v2.id = me.id_vocal2
+                    LEFT JOIN usuarios us2 ON us2.id = v2.id_usuario
+                    LEFT JOIN finales fi ON fi.id_inscripcion_mesa = im2.id
+                    INNER JOIN materias ma ON ma.id = me.id_materia
+                    INNER JOIN carreras c ON c.id = ma.id_carrera
+                    INNER JOIN inscripciones_carreras ic ON ic.id_alumno = al.id
+                    INNER JOIN carreras_abiertas caa ON caa.id = ic.id_carrera_abierta
+                    INNER JOIN inscripciones_mesa im ON im.id_mesa = me.id
+                    INNER JOIN alumnos al ON al.id = im.id_alumno
+                    INNER JOIN usuarios us ON us.id = al.id_usuario
+                    WHERE me.id = $1
+                    GROUP BY me.fecha_examen, ma.nombre, c.nombre,
+                        CONCAT_WS(', ', us.apellido, us.nombre),
+                        CONCAT_WS(', ', us1.apellido, us1.nombre),
+                        CONCAT_WS(', ', us2.apellido, us2.nombre)
+                    `;
                 const inscriptos = await this.db.manyOrNone(query, [id_mesa]);
                 res.status(200).json(inscriptos);
             } else {
