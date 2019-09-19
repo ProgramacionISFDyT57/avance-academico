@@ -366,7 +366,7 @@ export class MesasController {
                     GROUP BY me.id, me.fecha_examen, ma.nombre, c.nombre, c.id
                     `;
                 const inscriptos = await this.db.one(query, [id_mesa]);
-                if (inscriptos.inscriptos.apellido === null) {
+                if (inscriptos.inscriptos[0].apellido === null) {
                     inscriptos.inscriptos = [];
                 }
                 res.status(200).json(inscriptos);
