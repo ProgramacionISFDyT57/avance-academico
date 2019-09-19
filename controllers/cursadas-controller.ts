@@ -25,6 +25,7 @@ export class CursadasController {
         this.inscribir_alumno_cursada = this.inscribir_alumno_cursada.bind(this);
         this.eliminar_inscripcion_cursada = this.eliminar_inscripcion_cursada.bind(this);
         this.listar_inscriptos_cursada = this.listar_inscriptos_cursada.bind(this);
+        this.planilla_inscriptos_cursada = this.planilla_inscriptos_cursada.bind(this);
     }
     public async crear_cursada(req: Request, res: Response) {
         try {
@@ -490,6 +491,45 @@ export class CursadasController {
                     LEFT JOIN avance_academico aa ON aa.id_inscripcion_cursada = ic.id
                     WHERE cu.id = $1
                     ORDER BY us.apellido, us.nombre;`;
+                const inscriptos = await this.db.manyOrNone(query, [id_cursada]);
+                res.status(200).json(inscriptos);
+            } else {
+                res.status(400).json({
+                    mensaje: 'ID de cursada inválido'
+                });
+            }
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({
+                mensaje: 'Ocurrio un error al listar los inscriptos a la cursada',
+                error
+            });
+        }
+    }
+
+    public async planilla_inscriptos_cursada(req: Request, res: Response) {
+        try {
+            const id_cursada = +req.params.id_cursada;
+            if (id_cursada) {
+                const query = `
+                    SELECT ma.nombre AS materia, ma.anio AS anio_materia, cu.anio AS anio_cursada, c.nombre AS carrera,
+                        json_agg(json_build_object( 
+                            'apellido', us.apellido, 
+                            'nombre', us.nombre, 
+                            'fecha_inscripcion', ic.fecha_inscripcion, 
+                            'cursa', ic.cursa,
+                            'cohorte', caa.cohorte
+                        ) ORDER BY us.apellido, us.nombre) AS inscriptos
+                    FROM cursadas cu
+                    INNER JOIN materias ma ON ma.id = cu.id_materia
+                    INNER JOIN carreras c ON c.id = ma.id_carrera
+                    INNER JOIN inscripciones_cursadas ic ON ic.id_cursada = cu.id
+                    INNER JOIN alumnos al ON al.id = ic.id_alumno
+                    INNER JOIN usuarios us ON us.id = al.id_usuario
+                    INNER JOIN inscripciones_carreras ica ON ica.id_alumno = al.id
+                    INNER JOIN carreras_abiertas caa ON caa.id = ica.id_carrera_abierta
+                    WHERE cu.id = $1
+                    GROUP BY ma.nombre, ma.anio, cu.anio, c.nombre`;
                 const inscriptos = await this.db.manyOrNone(query, [id_cursada]);
                 res.status(200).json(inscriptos);
             } else {
