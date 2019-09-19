@@ -19,6 +19,7 @@ export class MesasController {
         this.crear_mesa = this.crear_mesa.bind(this);
         this.eliminar_mesa = this.eliminar_mesa.bind(this);
         this.listar_inscriptos_mesa = this.listar_inscriptos_mesa.bind(this);
+        this.listar_inscriptos_mesa2 = this.listar_inscriptos_mesa2.bind(this);
         this.acta_volante = this.acta_volante.bind(this);
         this.cargar_notas_final = this.cargar_notas_final.bind(this);
         this.eliminar_notas_final = this.eliminar_notas_final.bind(this);
@@ -305,6 +306,7 @@ export class MesasController {
         }
     }
 
+    // Eliminar
     public async listar_inscriptos_mesa(req: Request, res: Response) {
         try {
             const id_mesa = +req.params.id_mesa;
@@ -321,6 +323,47 @@ export class MesasController {
                     LEFT JOIN finales fi ON fi.id_inscripcion_mesa = im.id
                     WHERE me.id = $1
                     ORDER BY us.apellido, us.nombre;`;
+                const inscriptos = await this.db.manyOrNone(query, [id_mesa]);
+                res.status(200).json(inscriptos);
+            } else {
+                res.status(400).json({
+                    mensaje: 'ID de mesa invalido'
+                });
+            }
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({
+                mensaje: 'Ocurrio un error al listar los inscriptos a la mesa',
+                error
+            });
+        }
+    }
+
+    public async listar_inscriptos_mesa2(req: Request, res: Response) {
+        try {
+            const id_mesa = +req.params.id_mesa;
+            if (id_mesa) {
+                const query = `
+                    SELECT ma.nombre AS materia, me.fecha_examen, c.nombre AS carrera, me.id AS id_mesa, c.id AS id_carrera,
+                        json_agg(json_build_object( 
+                            'apellido', us.apellido, 
+                            'nombre', us.nombre, 
+                            'dni', us.dni, 
+                            'fecha_inscripcion', im.fecha_inscripcion,
+                            'id_inscripcion_mesa', im.id AS id_inscripcion_mesa,
+                            'nota',  fi.nota,
+                            'libro', fi.libro,
+                            'folio', fi.folio
+                        ) ORDER BY us.apellido, us.nombre) AS inscriptos
+                    FROM mesas me
+                    INNER JOIN materias ma ON ma.id = me.id_materia
+                    INNER JOIN carreras c ON c.id = ma.id_carrera
+                    LEFT JOIN inscripciones_mesa im ON im.id_mesa = me.id
+                    LEFT JOIN alumnos al ON al.id = im.id_alumno
+                    LEFT JOIN usuarios us ON us.id = al.id_usuario
+                    LEFT JOIN finales fi ON fi.id_inscripcion_mesa = im.id
+                    WHERE me.id = $1
+                    GROUP BY ma.nombre, me.fecha_examen, c.nombre, me.id, c.id;`;
                 const inscriptos = await this.db.manyOrNone(query, [id_mesa]);
                 res.status(200).json(inscriptos);
             } else {

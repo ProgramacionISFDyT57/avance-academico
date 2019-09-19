@@ -100,6 +100,7 @@ app.post("/crear_mesa", seguridadController.chequear_roles(['directivo', 'precep
 app.delete("/mesas/:id_mesa", seguridadController.chequear_roles(['directivo', 'preceptor']), mesasController.eliminar_mesa);
 // INSCRIPCIONES MESAS
 app.get("/inscriptos_mesa/:id_mesa", seguridadController.chequear_roles(['directivo', 'preceptor']), mesasController.listar_inscriptos_mesa);
+app.get("/inscriptos_mesa2/:id_mesa", seguridadController.chequear_roles(['directivo', 'preceptor']), mesasController.listar_inscriptos_mesa2);
 app.get("/acta_volante/:id_mesa", seguridadController.chequear_roles(['directivo', 'preceptor']), mesasController.acta_volante);
 app.post("/inscripciones_mesas", seguridadController.chequear_roles(['alumno']), mesasController.crear_inscripcion_mesa);
 app.post("/inscribir_alumno_final", seguridadController.chequear_roles(['directivo', 'preceptor']), mesasController.inscribir_alumno_mesa);
