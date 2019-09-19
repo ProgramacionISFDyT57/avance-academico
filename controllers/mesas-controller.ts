@@ -344,7 +344,7 @@ export class MesasController {
             const id_mesa = +req.params.id_mesa;
             if (id_mesa) {
                 const query = `
-                    SELECT ma.nombre AS materia, me.fecha_examen, c.nombre AS carrera, me.id AS id_mesa, c.id AS id_carrera,
+                    SELECT me.id AS id_mesa, me.fecha_examen, ma.nombre AS materia, c.nombre AS carrera, c.id AS id_carrera,
                         json_agg(json_build_object( 
                             'apellido', us.apellido, 
                             'nombre', us.nombre, 
@@ -363,8 +363,9 @@ export class MesasController {
                     LEFT JOIN usuarios us ON us.id = al.id_usuario
                     LEFT JOIN finales fi ON fi.id_inscripcion_mesa = im.id
                     WHERE me.id = $1
-                    GROUP BY ma.nombre, me.fecha_examen, c.nombre, me.id, c.id;`;
-                const inscriptos = await this.db.manyOrNone(query, [id_mesa]);
+                    GROUP BY me.id, me.fecha_examen, ma.nombre, c.nombre, c.id
+                    `;
+                const inscriptos = await this.db.one(query, [id_mesa]);
                 res.status(200).json(inscriptos);
             } else {
                 res.status(400).json({
