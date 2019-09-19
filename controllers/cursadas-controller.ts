@@ -530,7 +530,7 @@ export class CursadasController {
                     INNER JOIN carreras_abiertas caa ON caa.id = ica.id_carrera_abierta
                     WHERE cu.id = $1
                     GROUP BY ma.nombre, ma.anio, cu.anio, c.nombre`;
-                const inscriptos = await this.db.manyOrNone(query, [id_cursada]);
+                const inscriptos = await this.db.one(query, [id_cursada]);
                 res.status(200).json(inscriptos);
             } else {
                 res.status(400).json({
