@@ -83,6 +83,7 @@ app.post("/cursadas", seguridadController.chequear_roles(['directivo', 'precepto
 app.delete("/cursadas/:id_cursada", seguridadController.chequear_roles(['directivo', 'preceptor']), cursadasController.eliminar_cursada);
 // INCRIPCIONES CURSADAS
 app.get("/inscriptos_cursada/:id_cursada", seguridadController.chequear_roles(['directivo', 'preceptor']), cursadasController.listar_inscriptos_cursada);
+app.get("/inscriptos_cursada2/:id_cursada", seguridadController.chequear_roles(['directivo', 'preceptor']), cursadasController.listar_inscriptos_cursada2);
 app.get("/planilla_inscriptos_cursada/:id_cursada", seguridadController.chequear_roles(['directivo', 'preceptor']), cursadasController.planilla_inscriptos_cursada);
 app.post("/inscripcion_cursada", seguridadController.chequear_roles(['alumno']), cursadasController.crear_inscripcion_cursada);
 app.post("/inscribir_alumno_cursada", seguridadController.chequear_roles(['directivo', 'preceptor']), cursadasController.inscribir_alumno_cursada);
