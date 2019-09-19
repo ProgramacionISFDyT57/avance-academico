@@ -512,7 +512,7 @@ export class CursadasController {
             const id_cursada = +req.params.id_cursada;
             if (id_cursada) {
                 const query = `
-                    SELECT ma.nombre AS materia, ma.anio AS anio_materia, cu.anio AS anio_cursada, c.nombre AS carrera,
+                    SELECT ma.nombre AS materia, ma.anio AS anio_materia, cu.anio AS anio_cursada, c.nombre AS carrera, CONCAT_WS(', ', usp.apellido, usp.nombre) AS profesor,
                         json_agg(json_build_object( 
                             'apellido', us.apellido, 
                             'nombre', us.nombre, 
@@ -528,8 +528,10 @@ export class CursadasController {
                     INNER JOIN usuarios us ON us.id = al.id_usuario
                     INNER JOIN inscripciones_carreras ica ON ica.id_alumno = al.id
                     INNER JOIN carreras_abiertas caa ON caa.id = ica.id_carrera_abierta
+                    LEFT JOIN profesores p ON p.id = cu.id_profesor
+                    LEFT JOIN usuarios usp ON usp.id = p.id_usuarios
                     WHERE cu.id = $1
-                    GROUP BY ma.nombre, ma.anio, cu.anio, c.nombre`;
+                    GROUP BY ma.nombre, ma.anio, cu.anio, c.nombre, CONCAT_WS(', ', usp.apellido, usp.nombre)`;
                 const inscriptos = await this.db.one(query, [id_cursada]);
                 res.status(200).json(inscriptos);
             } else {
