@@ -529,7 +529,7 @@ export class CursadasController {
                     INNER JOIN inscripciones_carreras ica ON ica.id_alumno = al.id
                     INNER JOIN carreras_abiertas caa ON caa.id = ica.id_carrera_abierta
                     LEFT JOIN profesores p ON p.id = cu.id_profesor
-                    LEFT JOIN usuarios usp ON usp.id = p.id_usuarios
+                    LEFT JOIN usuarios usp ON usp.id = p.id_usuario
                     WHERE cu.id = $1
                     GROUP BY ma.nombre, ma.anio, cu.anio, c.nombre, CONCAT_WS(', ', usp.apellido, usp.nombre)`;
                 const inscriptos = await this.db.one(query, [id_cursada]);
