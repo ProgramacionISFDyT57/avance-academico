@@ -350,7 +350,7 @@ export class MesasController {
                             'nombre', us.nombre, 
                             'dni', us.dni, 
                             'fecha_inscripcion', im.fecha_inscripcion,
-                            'id_inscripcion_mesa', im.id AS id_inscripcion_mesa,
+                            'id_inscripcion_mesa', im.id,
                             'nota',  fi.nota,
                             'libro', fi.libro,
                             'folio', fi.folio
