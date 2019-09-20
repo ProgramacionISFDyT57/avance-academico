@@ -37,7 +37,8 @@ export class UsuariosController {
             const query = `
                 SELECT U.id, U.nombre, U.apellido, U.email, U.fecha_nacimiento, U.fecha_alta, U.telefono, U.dni, R.nombre AS rol
                 FROM usuarios U
-                INNER JOIN roles R ON U.id_rol = R.id`;
+                INNER JOIN roles R ON U.id_rol = R.id
+                ORDER BY U.apellido, U.nombre`;
             const usuarios = await this.db.manyOrNone(query);
             res.json(usuarios);
         } catch (error) {
@@ -140,7 +141,8 @@ export class UsuariosController {
                 SELECT p.id, u.email, u.nombre, u.apellido, u.fecha_nacimiento, u.dni, u.fecha_alta, CONCAT(u.apellido, ', ', u.nombre) AS nombre_completo
                 FROM usuarios u
                 INNER JOIN profesores p on p.id_usuario = u.id
-                WHERE u.id_rol = 4`;
+                WHERE u.id_rol = 4
+                ORDER BY u.apellido, u.nombre`;
             const profesores = await this.db.manyOrNone(query);
             res.json(profesores);
         } catch (error) {
