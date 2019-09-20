@@ -89,6 +89,7 @@ app.get("/inscriptos_cursada2/:id_cursada", seguridadController.chequear_roles([
 app.get("/planilla_inscriptos_cursada/:id_cursada", seguridadController.chequear_roles(['directivo', 'preceptor']), cursadasController.planilla_inscriptos_cursada);
 app.post("/inscripcion_cursada", seguridadController.chequear_roles(['alumno']), cursadasController.crear_inscripcion_cursada);
 app.post("/inscribir_alumno_cursada", seguridadController.chequear_roles(['directivo', 'preceptor']), cursadasController.inscribir_alumno_cursada);
+app.delete("/inscripcion_cursada_alumno/:id_inscripcion_cursada", seguridadController.chequear_roles(['admin']), cursadasController.eliminar_inscripcion_cursada_alumno);
 app.delete("/inscripcion_cursada/:id_inscripcion_cursada", seguridadController.chequear_roles(['alumno']), cursadasController.eliminar_inscripcion_cursada);
 // NOTAS CURSADA (AVANCE ACADEMICO)
 app.post("/notas_cursada", seguridadController.chequear_roles(['directivo', 'preceptor']), cursadasController.cargar_notas_cursada);
@@ -107,6 +108,7 @@ app.get("/inscriptos_mesa2/:id_mesa", seguridadController.chequear_roles(['direc
 app.get("/acta_volante/:id_mesa", seguridadController.chequear_roles(['directivo', 'preceptor']), mesasController.acta_volante);
 app.post("/inscripciones_mesas", seguridadController.chequear_roles(['alumno']), mesasController.crear_inscripcion_mesa);
 app.post("/inscribir_alumno_final", seguridadController.chequear_roles(['directivo', 'preceptor']), mesasController.inscribir_alumno_mesa);
+app.delete("/inscripcion_mesa_alumno/:id_inscripcion_mesa", seguridadController.chequear_roles(['admin']), mesasController.eliminar_inscripcion_mesa_alumno);
 app.delete("/inscripciones_mesas/:id_inscripcion_mesa", seguridadController.chequear_roles(['alumno']), mesasController.eliminar_inscripcion_mesa);
 // NOTAS FINALES (AVANCE ACADEMICO)
 app.post("/notas_final", seguridadController.chequear_roles(['directivo', 'preceptor']), mesasController.cargar_notas_final);

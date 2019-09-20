@@ -24,6 +24,7 @@ export class CursadasController {
         this.crear_inscripcion_cursada = this.crear_inscripcion_cursada.bind(this);
         this.inscribir_alumno_cursada = this.inscribir_alumno_cursada.bind(this);
         this.eliminar_inscripcion_cursada = this.eliminar_inscripcion_cursada.bind(this);
+        this.eliminar_inscripcion_cursada_alumno = this.eliminar_inscripcion_cursada_alumno.bind(this);
         this.listar_inscriptos_cursada = this.listar_inscriptos_cursada.bind(this);
         this.listar_inscriptos_cursada2 = this.listar_inscriptos_cursada2.bind(this);
         this.planilla_inscriptos_cursada = this.planilla_inscriptos_cursada.bind(this);
@@ -464,6 +465,28 @@ export class CursadasController {
             } else {
                 res.status(400).json({
                     mensaje: 'El usuario no es un alumno',
+                });
+            }
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({
+                mensaje: 'Ocurrio un error al eliminar la inscripción a la cursada',
+                error
+            });
+        }
+    }
+    public async eliminar_inscripcion_cursada_alumno(req: Request, res: Response) {
+        try {
+            const id_inscripcion_cursada = +req.params.id_inscripcion_cursada;
+            if (id_inscripcion_cursada) {
+                const query = 'DELETE FROM inscripciones_cursadas WHERE id = $1;'
+                await this.db.none(query, [id_inscripcion_cursada]);
+                res.status(200).json({
+                    mensaje: 'Se eliminó la inscripción a la cursada',
+                });
+            } else {
+                res.status(400).json({
+                    mensaje: 'ID de cursada inválido',
                 });
             }
         } catch (error) {
