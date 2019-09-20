@@ -42,6 +42,20 @@ export class MesasController {
         });
     }
 
+    private async inscribir_alumno_mesa_service(id_mesa: number, id_alumno: number) {
+        return new Promise(async (resolve, reject) => {
+            try {
+                const query = `INSERT INTO inscripciones_mesa (id_mesa, id_alumno, fecha_inscripcion) 
+                VALUES ($1, $2, current_timestamp);`
+                await this.db.none(query, [id_mesa, id_alumno]);
+                resolve();
+            } catch (error) {
+                reject(error);
+            }
+        })
+
+    }
+
     public async crear_inscripcion_mesa(req: Request, res: Response) {
         try {
             const id_mesa = +req.body.id_mesa;
@@ -52,15 +66,15 @@ export class MesasController {
                     const mesa_abierta = await this.helper.mesa_abierta(id_mesa);
                     if (mesa_abierta === true) {
                         const id_materia = await this.get_id_materia(id_mesa);
+                        const fecha_examen = await this.helper.get_fecha_examen(id_mesa);
+                        const cursada_libre = await this.helper.final_libre(id_materia, id_alumno, fecha_examen);
                         const cursada_aprobada = await this.helper.cursada_aprobada(id_materia, id_alumno);
-                        if (cursada_aprobada) {
+                        if (cursada_libre || cursada_aprobada) {
                             const correlativas_aprobadas = await this.helper.finales_correlativos_aprobados(id_materia, id_alumno);
                             if (correlativas_aprobadas === true) {
                                 const final_aprobado = await this.helper.final_aprobado(id_materia, id_alumno);
                                 if (!final_aprobado) {
-                                    const query = `INSERT INTO inscripciones_mesa (id_mesa, id_alumno, fecha_inscripcion) 
-                                                    VALUES ($1, $2, current_timestamp);`
-                                    await this.db.none(query, [id_mesa, id_alumno])
+                                    await this.inscribir_alumno_mesa_service(id_mesa, id_alumno);
                                     res.status(200).json({
                                         mensaje: 'Inscripción a final creada!',
                                     });
@@ -110,8 +124,10 @@ export class MesasController {
             if (id_alumno) {
                 if (id_mesa) {
                     const id_materia = await this.get_id_materia(id_mesa);
+                    const fecha_examen = await this.helper.get_fecha_examen(id_mesa);
+                    const cursada_libre = await this.helper.final_libre(id_materia, id_alumno, fecha_examen);
                     const cursada_aprobada = await this.helper.cursada_aprobada(id_materia, id_alumno);
-                    if (cursada_aprobada) {
+                    if (cursada_libre || cursada_aprobada) {
                         const correlativas_aprobadas = await this.helper.finales_correlativos_aprobados(id_materia, id_alumno);
                         if (correlativas_aprobadas === true) {
                             const final_aprobado = await this.helper.final_aprobado(id_materia, id_alumno);

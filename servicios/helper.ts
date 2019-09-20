@@ -8,7 +8,7 @@ export class HelperService {
         this.db = db;
     }
     
-    public  async get_id_materias_correlativas(id_materia: number): Promise<{id:number, nombre:string}[]> {
+    public async get_id_materias_correlativas(id_materia: number): Promise<{id:number, nombre:string}[]> {
         return new Promise(async (resolve, reject) => {
             try {
                 const query = `
@@ -25,7 +25,7 @@ export class HelperService {
         });
     }
 
-    public  async get_id_cursada(id_inscripcion_cursada: number): Promise<number> {
+    public async get_id_cursada(id_inscripcion_cursada: number): Promise<number> {
         return new Promise(async (resolve, reject) => {
             try {
                 const query = `
@@ -41,7 +41,7 @@ export class HelperService {
         });
     }
 
-    public  async get_id_mesa(id_inscripcion_mesa: number): Promise<number> {
+    public async get_id_mesa(id_inscripcion_mesa: number): Promise<number> {
         return new Promise(async (resolve, reject) => {
             try {
                 const query = `
@@ -51,6 +51,21 @@ export class HelperService {
                     WHERE im.id = $1`;
                 const resultado = await this.db.one(query, [id_inscripcion_mesa]);
                 resolve(resultado.id);
+            } catch (error) {
+                reject(error);
+            }
+        });
+    }
+
+    public async get_fecha_examen(id_mesa: number): Promise<string> {
+        return new Promise(async (resolve, reject) => {
+            try {
+                const query = `
+                    SELECT fecha_examen
+                    FROM mesas
+                    WHERE id = $1`;
+                const resultado = await this.db.one(query, [id_mesa]);
+                resolve(resultado.fecha_examen);
             } catch (error) {
                 reject(error);
             }
@@ -171,22 +186,27 @@ export class HelperService {
     public async cursada_aprobada(id_materia: number, id_alumno: number): Promise<boolean> {
         return new Promise(async (resolve, reject) => {
             try {
-                const query = `
-                    SELECT ma.id
-                    FROM materias ma
-                    INNER JOIN tipos_materias tm ON tm.id = ma.id_tipo
-                    INNER JOIN cursadas cu ON cu.id_materia = ma.id
-                    INNER JOIN inscripciones_cursadas ic ON ic.id_cursada = cu.id
-                    INNER JOIN avance_academico aa ON aa.id_inscripcion_cursada = ic.id
-                    WHERE ma.id = $1
-                    AND ic.id_alumno = $2
-                    AND ((aa.nota_cuat_1 >=4 and aa.nota_cuat_2 >=4) OR (aa.nota_recuperatorio >=4))
-                    AND ((tm.id = 2 AND aa.asistencia >= 80) OR (tm.id != 2 AND aa.asistencia >= 60))`;
-                const resultados = await this.db.manyOrNone(query, [id_materia, id_alumno]);
-                if (resultados.length) {
+                const final_aprobado = await this.final_aprobado(id_materia, id_alumno);
+                if (final_aprobado) {
                     resolve(true);
                 } else {
-                    resolve(false);
+                    const query = `
+                        SELECT ma.id
+                        FROM materias ma
+                        INNER JOIN tipos_materias tm ON tm.id = ma.id_tipo
+                        INNER JOIN cursadas cu ON cu.id_materia = ma.id
+                        INNER JOIN inscripciones_cursadas ic ON ic.id_cursada = cu.id
+                        INNER JOIN avance_academico aa ON aa.id_inscripcion_cursada = ic.id
+                        WHERE ma.id = $1
+                        AND ic.id_alumno = $2
+                        AND ((aa.nota_cuat_1 >=4 and aa.nota_cuat_2 >=4) OR (aa.nota_recuperatorio >=4))
+                        AND ((tm.id = 2 AND aa.asistencia >= 80) OR (tm.id != 2 AND aa.asistencia >= 60))`;
+                    const resultados = await this.db.manyOrNone(query, [id_materia, id_alumno]);
+                    if (resultados.length) {
+                        resolve(true);
+                    } else {
+                        resolve(false);
+                    }
                 }
             } catch (error) {
                 reject(error);
@@ -257,6 +277,36 @@ export class HelperService {
                 const respuesta = await this.db.one(query, [id_materia]);
                 if (respuesta.tipo_materia.toLowerCase() === 'curricular') {
                     resolve(true);
+                } else {
+                    resolve(false);
+                }
+            } catch (error) {
+                reject(error);
+            }
+        });
+    }
+
+    public async final_libre(id_materia: number, id_alumno: number, fecha_examen: string): Promise<boolean> {
+        return new Promise(async (resolve, reject) => {
+            try {
+                const query = `
+                    SELECT c.anio
+                    FROM inscripciones_cursadas ic
+                    INNER JOIN cursadas c ON c.id = ic.id_cursada
+                    INNER JOIN materias m ON m.id = c.id_materia
+                    WHERE m.id = $1
+                    AND ic.cursa = false
+                    AND ic.id_alumno = $2;`
+                const respuesta = await this.db.oneOrNone(query, [id_materia, id_alumno]);
+                if (respuesta) {
+                    const año_cursada = respuesta.anio;
+                    const fecha_limite = new Date('1/5/' + (año_cursada + 1));
+                    const f_examen = new Date(fecha_examen);
+                    if (f_examen < fecha_limite) {
+                        resolve(true);
+                    } else {
+                        resolve(false);
+                    }
                 } else {
                     resolve(false);
                 }
