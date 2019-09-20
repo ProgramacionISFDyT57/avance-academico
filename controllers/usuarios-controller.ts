@@ -15,6 +15,7 @@ export class UsuariosController {
         // Usuarios
         this.listar_usuarios = this.listar_usuarios.bind(this);
         this.crear_usuario = this.crear_usuario.bind(this);
+        this.editar_usuario = this.editar_usuario.bind(this);
         this.eliminar_usuario = this.eliminar_usuario.bind(this);
         // Profesores
         this.listar_profesores = this.listar_profesores.bind(this);
@@ -68,6 +69,36 @@ export class UsuariosController {
             console.error(error);
             res.status(500).json({
                 mensaje: 'Ocurrio un error al crear el usuario',
+                error
+            });
+        }
+    }
+    public async editar_usuario(req: Request, res: Response) {
+        try {
+            const a: Usuario = req.body.usuario;
+            if (a) {
+                const query = `
+                    UPDATE usuarios SET 
+                        nombre = $1, 
+                        apellido = $2, 
+                        dni = $3, 
+                        email = $4,
+                        telefono = $5,
+                        fecha_nacimiento = $6
+                    WHERE id = $7;`;
+                const result = await this.db.none(query, [a.nombre, a.apellido, a.dni, a.email, a.telefono, a.fecha_nacimiento, a.id]);
+                res.status(200).json({
+                    mensaje: 'El usuario se editó correctamente'
+                });
+            } else {
+                res.status(400).json({
+                    mensaje: 'Datos inválidos',
+                });
+            }
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({
+                mensaje: 'Ocurrio un error al editar el usuario',
                 error
             });
         }
@@ -243,7 +274,7 @@ export class UsuariosController {
         } catch (error) {
             console.error(error);
             res.status(500).json({
-                mensaje: 'Ocurrio un error al crear el alumno',
+                mensaje: 'Ocurrio un error al editar el alumno',
                 error
             });
         }

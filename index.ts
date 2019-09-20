@@ -31,6 +31,7 @@ app.post("/login", seguridadController.login);
 // USUARIOS
 app.get("/usuarios", seguridadController.chequear_roles(['directivo']), usuariosController.listar_usuarios);
 app.post("/usuarios", seguridadController.chequear_roles(['directivo']), usuariosController.crear_usuario);
+app.put("/usuarios/:id_usuario", seguridadController.chequear_roles(['directivo']), usuariosController.editar_usuario);
 app.delete("/usuarios/:id_usuario", seguridadController.chequear_roles(['directivo']), usuariosController.eliminar_usuario);
 app.put("/cambio_password", seguridadController.chequear_roles(), usuariosController.cambiar_contraseña);
 // PROFESORES
