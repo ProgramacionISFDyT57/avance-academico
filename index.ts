@@ -39,6 +39,7 @@ app.get("/profesores", seguridadController.chequear_roles(), usuariosController.
 app.get("/alumnos", seguridadController.chequear_roles(['directivo', 'preceptor']), usuariosController.listar_alumnos);
 app.get("/alumnos_por_carrera/:id_carrera", seguridadController.chequear_roles(['directivo', 'preceptor']), usuariosController.listar_alumnos_por_carrera);
 app.post("/alumnos", seguridadController.chequear_roles(['directivo', 'preceptor']), usuariosController.crear_alumno);
+app.put("/alumnos/:id_alumno", seguridadController.chequear_roles(['directivo', 'preceptor']), usuariosController.editar_alumno);
 app.delete("/alumnos/:id_alumno", seguridadController.chequear_roles(['directivo', 'preceptor']), usuariosController.eliminar_alumno);
 // ROLES
 app.get("/roles", seguridadController.chequear_roles(['directivo']), usuariosController.listar_roles);

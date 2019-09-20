@@ -2,6 +2,7 @@ import { IDatabase } from 'pg-promise';
 import { Request, Response } from 'express';
 import { Usuario } from '../modelos/modelo-usuario';
 import { Token } from '../modelos/modelo-token';
+import { Alumno } from '../modelos/modelo-alumno';
 import * as bcrypt from 'bcrypt';
 import { HelperService } from '../servicios/helper';
 export class UsuariosController {
@@ -11,44 +12,37 @@ export class UsuariosController {
     constructor(db: IDatabase<any>) {
         this.db = db;
         this.helper = new HelperService(db);
-        this.crear_usuario = this.crear_usuario.bind(this);
-        this.crear_alumno = this.crear_alumno.bind(this);
+        // Usuarios
         this.listar_usuarios = this.listar_usuarios.bind(this);
+        this.crear_usuario = this.crear_usuario.bind(this);
+        this.eliminar_usuario = this.eliminar_usuario.bind(this);
+        // Profesores
         this.listar_profesores = this.listar_profesores.bind(this);
+        // Alumnos
         this.listar_alumnos = this.listar_alumnos.bind(this);
         this.listar_alumnos_por_carrera = this.listar_alumnos_por_carrera.bind(this);
+        this.crear_alumno = this.crear_alumno.bind(this);
+        this.editar_alumno = this.editar_alumno.bind(this);
+        this.eliminar_alumno = this.eliminar_alumno.bind(this);
+        // Otros
         this.cambiar_contraseña = this.cambiar_contraseña.bind(this);
         this.listar_roles = this.listar_roles.bind(this);
-        this.eliminar_usuario = this.eliminar_usuario.bind(this);
-        this.eliminar_alumno = this.eliminar_alumno.bind(this);
         this.avance_academico = this.avance_academico.bind(this);
     }
 
-    public async cambiar_contraseña(req: Request, res: Response) {
+    // Usuarios    
+    public async listar_usuarios(req: Request, res: Response) {
         try {
-            const claveVieja: string = req.body.claveVieja;
-            const newPass: string = req.body.claveNueva;
-            const token: Token = res.locals.token;
-            const id_usuario = +token.id_usuario;
-            let query = `SELECT clave FROM usuarios WHERE id = $1`;
-            const result = await this.db.one(query, [id_usuario]);
-            const same = await bcrypt.compare(claveVieja, result.clave);
-            if (same) {
-                const hash = await bcrypt.hash(newPass, 10);
-                query = `UPDATE usuarios SET clave = $1 WHERE id = $2`;
-                await this.db.none(query, [hash, id_usuario]);
-                res.status(200).json({
-                    mensaje: "Modificación de contraseña exitosa",
-                });
-            } else {
-                res.status(400).json({
-                    mensaje: "La contraseña no coincide",
-                });
-            }
+            const query = `
+                SELECT U.id, U.nombre, U.apellido, U.email, U.fecha_nacimiento, U.fecha_alta, U.telefono, U.dni, R.nombre AS rol
+                FROM usuarios U
+                INNER JOIN roles R ON U.id_rol = R.id`;
+            const usuarios = await this.db.manyOrNone(query);
+            res.json(usuarios);
         } catch (error) {
             console.error(error);
             res.status(500).json({
-                mensaje: 'Ocurrio un error al crear el alumno',
+                mensaje: 'Ocurrio un error al eliminar el usuario',
                 error
             });
         }
@@ -74,6 +68,99 @@ export class UsuariosController {
             console.error(error);
             res.status(500).json({
                 mensaje: 'Ocurrio un error al crear el usuario',
+                error
+            });
+        }
+    }
+    public async eliminar_usuario(req: Request, res: Response) {
+        try {
+            const id_usuario = +req.params.id_usuario;
+            let query = `
+                SELECT r.nombre AS rol 
+                FROM usuarios u 
+                INNER JOIN roles r ON r.id = u.id_rol 
+                WHERE u.id = $1;`;
+            const result = await this.db.one(query, [id_usuario]);
+            const rol = result.rol;
+            if (rol === 'alumno') {
+                query = `DELETE FROM alumnos WHERE id_usuario = $1;`;
+                await this.db.none(query, [id_usuario]);
+            } else if (rol === 'profesor') {
+                query = `DELETE FROM profesores WHERE id_usuario = $1;`;
+                await this.db.none(query, [id_usuario]);
+            }
+            query = `DELETE FROM usuarios WHERE id = $1;`;
+            await this.db.none(query, [id_usuario]);
+            res.json({
+                mensaje: 'Se eliminó el usuario'
+            });
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({
+                mensaje: 'Ocurrio un error al eliminar el usuario',
+                error
+            });
+        }
+    }
+    // Profesores
+    public async listar_profesores(req: Request, res: Response) {
+        try {
+            const query = `
+                SELECT p.id, u.email, u.nombre, u.apellido, u.fecha_nacimiento, u.dni, u.fecha_alta, CONCAT(u.apellido, ', ', u.nombre) AS nombre_completo
+                FROM usuarios u
+                INNER JOIN profesores p on p.id_usuario = u.id
+                WHERE u.id_rol = 4`;
+            const profesores = await this.db.manyOrNone(query);
+            res.json(profesores);
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({
+                mensaje: 'Ocurrio un error al listar los profesores',
+                error
+            });
+        }
+    }
+    // Alumnos
+    public async listar_alumnos(req: Request, res: Response) {
+        try {
+            const query = `
+                SELECT a.id AS id_alumno, u.nombre, u.apellido, u.dni, u.fecha_nacimiento, u.email, u.telefono, ca.cohorte, c.nombre AS carrera, 
+                    concat(u.apellido, ', ', u.nombre) AS nombre_completo
+                FROM alumnos a
+                INNER JOIN usuarios u ON u.id = a.id_usuario
+                LEFT JOIN inscripciones_carreras ic ON ic.id_alumno = a.id
+                LEFT JOIN carreras_abiertas ca ON ca.id = ic.id_carrera_abierta
+                LEFT JOIN carreras c ON c.id = ca.id_carrera
+                ORDER BY u.apellido, u.nombre;`
+            const alumnos = await this.db.manyOrNone(query);
+            res.json(alumnos);
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({
+                mensaje: 'Ocurrio un error al listar los alumnos',
+                error
+            });
+        }
+    }
+    public async listar_alumnos_por_carrera(req: Request, res: Response) {
+        try {
+            const id_carrera = +req.params.id_carrera;
+            const query = `
+                SELECT a.id AS id_alumno, u.nombre, u.apellido, u.dni, u.fecha_nacimiento, u.email, u.telefono, ca.cohorte, c.nombre AS carrera, 
+                    concat(u.apellido, ', ', u.nombre) AS nombre_completo
+                FROM alumnos a
+                INNER JOIN usuarios u ON u.id = a.id_usuario
+                LEFT JOIN inscripciones_carreras ic ON ic.id_alumno = a.id
+                LEFT JOIN carreras_abiertas ca ON ca.id = ic.id_carrera_abierta
+                LEFT JOIN carreras c ON c.id = ca.id_carrera
+                WHERE c.id = $1
+                ORDER BY u.apellido, u.nombre;`
+            const alumnos = await this.db.manyOrNone(query, [id_carrera]);
+            res.json(alumnos);
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({
+                mensaje: 'Ocurrio un error al listar los alumnos de la carrera',
                 error
             });
         }
@@ -128,109 +215,35 @@ export class UsuariosController {
             });
         }
     }
-    public async listar_usuarios(req: Request, res: Response) {
+    public async editar_alumno(req: Request, res: Response) {
         try {
-            const query = `
-                SELECT U.id, U.nombre, U.apellido, U.email, U.fecha_nacimiento, U.fecha_alta, U.telefono, U.dni, R.nombre AS rol
-                FROM usuarios U
-                INNER JOIN roles R ON U.id_rol = R.id`;
-            const usuarios = await this.db.manyOrNone(query);
-            res.json(usuarios);
-        } catch (error) {
-            console.error(error);
-            res.status(500).json({
-                mensaje: 'Ocurrio un error al eliminar el usuario',
-                error
-            });
-        }
-    }
-    public async listar_profesores(req: Request, res: Response) {
-        try {
-            const query = `
-                SELECT p.id, u.email, u.nombre, u.apellido, u.fecha_nacimiento, u.dni, u.fecha_alta, CONCAT(u.apellido, ', ', u.nombre) AS nombre_completo
-                FROM usuarios u
-                INNER JOIN profesores p on p.id_usuario = u.id
-                WHERE u.id_rol = 4`;
-            const profesores = await this.db.manyOrNone(query);
-            res.json(profesores);
-        } catch (error) {
-            console.error(error);
-            res.status(500).json({
-                mensaje: 'Ocurrio un error al listar los profesores',
-                error
-            });
-        }
-    }
-    public async listar_alumnos(req: Request, res: Response) {
-        try {
-            const query = `
-                SELECT a.id AS id_alumno, u.nombre, u.apellido, u.dni, u.fecha_nacimiento, u.email, u.telefono, ca.cohorte, c.nombre AS carrera, 
-                    concat(u.apellido, ', ', u.nombre) AS nombre_completo
-                FROM alumnos a
-                INNER JOIN usuarios u ON u.id = a.id_usuario
-                LEFT JOIN inscripciones_carreras ic ON ic.id_alumno = a.id
-                LEFT JOIN carreras_abiertas ca ON ca.id = ic.id_carrera_abierta
-                LEFT JOIN carreras c ON c.id = ca.id_carrera
-                ORDER BY u.apellido, u.nombre;`
-            const alumnos = await this.db.manyOrNone(query);
-            res.json(alumnos);
-        } catch (error) {
-            console.error(error);
-            res.status(500).json({
-                mensaje: 'Ocurrio un error al listar los alumnos',
-                error
-            });
-        }
-    }
-    public async listar_alumnos_por_carrera(req: Request, res: Response) {
-        try {
-            const id_carrera = +req.params.id_carrera;
-            const query = `
-                SELECT a.id AS id_alumno, u.nombre, u.apellido, u.dni, u.fecha_nacimiento, u.email, u.telefono, ca.cohorte, c.nombre AS carrera, 
-                    concat(u.apellido, ', ', u.nombre) AS nombre_completo
-                FROM alumnos a
-                INNER JOIN usuarios u ON u.id = a.id_usuario
-                LEFT JOIN inscripciones_carreras ic ON ic.id_alumno = a.id
-                LEFT JOIN carreras_abiertas ca ON ca.id = ic.id_carrera_abierta
-                LEFT JOIN carreras c ON c.id = ca.id_carrera
-                WHERE c.id = $1
-                ORDER BY u.apellido, u.nombre;`
-            const alumnos = await this.db.manyOrNone(query, [id_carrera]);
-            res.json(alumnos);
-        } catch (error) {
-            console.error(error);
-            res.status(500).json({
-                mensaje: 'Ocurrio un error al listar los alumnos de la carrera',
-                error
-            });
-        }
-    }
-    public async eliminar_usuario(req: Request, res: Response) {
-        try {
-            const id_usuario = +req.params.id_usuario;
-            let query = `
-                SELECT r.nombre AS rol 
-                FROM usuarios u 
-                INNER JOIN roles r ON r.id = u.id_rol 
-                WHERE u.id = $1;`;
-            const result = await this.db.one(query, [id_usuario]);
-            const rol = result.rol;
-            if (rol === 'alumno') {
-                query = `DELETE FROM alumnos WHERE id_usuario = $1;`;
-                await this.db.none(query, [id_usuario]);
-            } else if (rol === 'profesor') {
-                query = `DELETE FROM profesores WHERE id_usuario = $1;`;
-                await this.db.none(query, [id_usuario]);
+            const a: Alumno = req.body.alumno;
+            if (a) {
+                let query = `SELECT id_usuario FROM alumnos WHERE id = $1`;
+                let result = await this.db.one(query, [a.id_alumno]);
+                const id_usuario = result.id_usuario;
+                query = `
+                    UPDATE usuarios SET 
+                        nombre = $1, 
+                        apellido = $2, 
+                        dni = $3, 
+                        email = $4,
+                        telefono = $5,
+                        fecha_nacimiento = $6
+                    WHERE id = $7;`;
+                result = await this.db.none(query, [a.nombre, a.apellido, a.dni, a.email, a.telefono, a.fecha_nacimiento, id_usuario]);
+                res.status(200).json({
+                    mensaje: 'El alumno se editó correctamente'
+                });
+            } else {
+                res.status(400).json({
+                    mensaje: 'Datos inválidos',
+                });
             }
-            query = `DELETE FROM usuarios WHERE id = $1;`;
-            await this.db.none(query, [id_usuario]);
-            res.json({
-                mensaje: 'Se eliminó el usuario'
-            });
         } catch (error) {
             console.error(error);
             res.status(500).json({
-                mensaje: 'Ocurrio un error al eliminar el usuario',
+                mensaje: 'Ocurrio un error al crear el alumno',
                 error
             });
         }
@@ -256,6 +269,37 @@ export class UsuariosController {
             });
         }
     }
+    // Contraseña
+    public async cambiar_contraseña(req: Request, res: Response) {
+        try {
+            const claveVieja: string = req.body.claveVieja;
+            const newPass: string = req.body.claveNueva;
+            const token: Token = res.locals.token;
+            const id_usuario = +token.id_usuario;
+            let query = `SELECT clave FROM usuarios WHERE id = $1`;
+            const result = await this.db.one(query, [id_usuario]);
+            const same = await bcrypt.compare(claveVieja, result.clave);
+            if (same) {
+                const hash = await bcrypt.hash(newPass, 10);
+                query = `UPDATE usuarios SET clave = $1 WHERE id = $2`;
+                await this.db.none(query, [hash, id_usuario]);
+                res.status(200).json({
+                    mensaje: "Modificación de contraseña exitosa",
+                });
+            } else {
+                res.status(400).json({
+                    mensaje: "La contraseña no coincide",
+                });
+            }
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({
+                mensaje: 'Ocurrio un error al crear el alumno',
+                error
+            });
+        }
+    }
+    // Roles
     public async listar_roles(req: Request, res: Response) {
         try {
             const query = `SELECT * FROM roles;`
@@ -272,7 +316,7 @@ export class UsuariosController {
             });
         }
     }
-
+    // Avance Academico
     public async avance_academico(req: Request, res: Response) {
         try {
             let id_alumno;
