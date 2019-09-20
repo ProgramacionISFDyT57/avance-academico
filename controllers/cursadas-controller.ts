@@ -33,7 +33,7 @@ export class CursadasController {
         try {
             const cursada: Cursada = req.body.cursada;
             const año = new Date().getFullYear();
-            if (cursada.año < año) {
+            if (cursada.año < (año-6)) {
                 res.status(400).json({
                     mensaje: 'El año no puede ser menor que el año actual',
                 });

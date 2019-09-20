@@ -274,7 +274,7 @@ export class CarrerasController {
         try {
             const ca: CarreraAbierta = req.body.carreras_abiertas;
             const año = new Date().getFullYear();
-            if (ca.cohorte < año) {
+            if (ca.cohorte < (año-6)) {
                 res.status(400).json({
                     mensaje: 'La cohorte no puede ser menor que el año actual',
                 });
