@@ -52,7 +52,7 @@ app.get("/roles", seguridadController.chequear_roles(['directivo']), usuariosCon
 // app.delete('/correlativas', materiasController.borrar_correlativas);
 // app.get("/correlativas/:id_materia", materiasController.ver_correlativas);
 // MATERIAS
-app.get("/materias", materiasController.ver_materias);
+app.get("/materias", materiasController.listar_materias);
 // app.get("/materia/:id", materiasController.ver_materia); //borrar
 app.get("/materias_por_carrera/:id_carrera", materiasController.materias_por_carrera);
 app.post("/materias", seguridadController.chequear_roles(['directivo']), materiasController.crear_materia);
@@ -82,7 +82,7 @@ app.get("/cursadas_abiertas", seguridadController.chequear_roles(), cursadasCont
 app.post("/cursadas", seguridadController.chequear_roles(['directivo', 'preceptor']), cursadasController.crear_cursada);
 app.delete("/cursadas/:id_cursada", seguridadController.chequear_roles(['directivo', 'preceptor']), cursadasController.eliminar_cursada);
 // INCRIPCIONES CURSADAS
-app.get("/inscriptos_cursada/:id_cursada", seguridadController.chequear_roles(['directivo', 'preceptor']), cursadasController.listar_inscriptos_cursada);
+app.get("/inscriptos_cursada/:id_cursada", seguridadController.chequear_roles(['directivo', 'preceptor']), cursadasController.listar_inscriptos_cursada); // Borrar
 app.get("/inscriptos_cursada2/:id_cursada", seguridadController.chequear_roles(['directivo', 'preceptor']), cursadasController.listar_inscriptos_cursada2);
 app.get("/planilla_inscriptos_cursada/:id_cursada", seguridadController.chequear_roles(['directivo', 'preceptor']), cursadasController.planilla_inscriptos_cursada);
 app.post("/inscripcion_cursada", seguridadController.chequear_roles(['alumno']), cursadasController.crear_inscripcion_cursada);
@@ -100,7 +100,7 @@ app.get("/lista_mesas", seguridadController.chequear_roles(), mesasController.li
 app.post("/crear_mesa", seguridadController.chequear_roles(['directivo', 'preceptor']), mesasController.crear_mesa);
 app.delete("/mesas/:id_mesa", seguridadController.chequear_roles(['directivo', 'preceptor']), mesasController.eliminar_mesa);
 // INSCRIPCIONES MESAS
-app.get("/inscriptos_mesa/:id_mesa", seguridadController.chequear_roles(['directivo', 'preceptor']), mesasController.listar_inscriptos_mesa);
+app.get("/inscriptos_mesa/:id_mesa", seguridadController.chequear_roles(['directivo', 'preceptor']), mesasController.listar_inscriptos_mesa); // Borrar
 app.get("/inscriptos_mesa2/:id_mesa", seguridadController.chequear_roles(['directivo', 'preceptor']), mesasController.listar_inscriptos_mesa2);
 app.get("/acta_volante/:id_mesa", seguridadController.chequear_roles(['directivo', 'preceptor']), mesasController.acta_volante);
 app.post("/inscripciones_mesas", seguridadController.chequear_roles(['alumno']), mesasController.crear_inscripcion_mesa);

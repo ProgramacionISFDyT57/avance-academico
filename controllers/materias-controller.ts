@@ -13,7 +13,7 @@ export class MateriasController {
         this.modificar_tipo_materia = this.modificar_tipo_materia.bind(this);
         this.borrar_tipo_materia = this.borrar_tipo_materia.bind(this);
         //
-        this.ver_materias = this.ver_materias.bind(this);
+        this.listar_materias = this.listar_materias.bind(this);
         this.ver_materia = this.ver_materia.bind(this);
         this.materias_por_carrera = this.materias_por_carrera.bind(this);
         this.crear_materia = this.crear_materia.bind(this);
@@ -88,7 +88,7 @@ export class MateriasController {
         }
     }
     // Materias
-    public ver_materias(req: Request, res: Response) {
+    public listar_materias(req: Request, res: Response) {
         const query = `
             SELECT m.id, m.nombre, m.anio, tm.nombre AS tipo_materia, tm.id AS id_tipo_materia, c.nombre AS carrera, c.id AS id_carrera, c.duracion AS duracion_carrera,
                 cu.ultima_cursada, me.ultima_mesa, array_agg(mc.nombre) AS correlativas, array_agg(mc.id) AS id_correlativas
@@ -116,6 +116,7 @@ export class MateriasController {
                 for (const materia of materias) {
                     if (materia.correlativas[0] === null) {
                         materia.correlativas = [];
+                        materia.id_correlativas = [];
                     }
                 }
                 res.status(200).json(materias);
