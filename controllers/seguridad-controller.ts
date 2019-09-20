@@ -18,7 +18,7 @@ export class SeguridadController {
         const email: string = req.body.mail;
         const clave: string = req.body.clave;
         const query = `
-            SELECT u.id, u.clave, u.nombre, u.apellido, r.nombre AS rol, a.id AS id_alumno
+            SELECT u.id, u.clave, u.nombre, u.apellido, r.nombre AS rol, a.id AS id_alumno, u.activo
             FROM usuarios u
             INNER JOIN roles r ON r.id = u.id_rol  
             LEFT JOIN alumnos a ON a.id_usuario = u.id
@@ -26,33 +26,40 @@ export class SeguridadController {
         this.db.oneOrNone(query, [email])
             .then((data) => {
                 if (data) {
-                    bcrypt.compare(clave, data.clave, (err, same) => {
-                        if (err) {
-                            res.status(500).json(err);
-                        } else if (same) {
-                            const token: Token = {
-                                id_usuario: data.id,
-                                id_alumno: data.id_alumno,
-                                rol: data.rol,
-                            }
-                            jwt.sign(token, process.env.JWT, (err, jwt) => {
-                                if (err) {
-                                    res.status(500).json(err);
-                                } else {
-                                    res.status(200).json({
-                                        token: jwt,
-                                        apellido: data.apellido,
-                                        nombre: data.nombre,
-                                        rol: data.rol
-                                    });
+                    if (data.activo) {
+                        bcrypt.compare(clave, data.clave, (err, same) => {
+                            if (err) {
+                                res.status(500).json(err);
+                            } else if (same) {
+                                const token: Token = {
+                                    id_usuario: data.id,
+                                    id_alumno: data.id_alumno,
+                                    rol: data.rol,
                                 }
-                            });
-                        } else {
-                            res.status(401).json({
-                                mensaje: 'Email o contraseña incorrectos',
-                            });
-                        }
-                    });
+                                jwt.sign(token, process.env.JWT, (err, jwt) => {
+                                    if (err) {
+                                        res.status(500).json(err);
+                                    } else {
+                                        res.status(200).json({
+                                            token: jwt,
+                                            apellido: data.apellido,
+                                            nombre: data.nombre,
+                                            rol: data.rol
+                                        });
+                                    }
+                                });
+
+                            } else {
+                                res.status(401).json({
+                                    mensaje: 'Email o contraseña incorrectos',
+                                });
+                            }
+                        });
+                    } else {
+                        res.status(401).json({
+                            mensaje: 'El usuario se encuentra deshabilitado',
+                        });
+                    }
                 } else {
                     res.status(401).json({
                         mensaje: 'Email o contraseña incorrectos',
