@@ -6,4 +6,5 @@ export class Alumno {
     email: string;
     telefono: string;
     fecha_nacimiento: string;
+    domicilio: string;
 }

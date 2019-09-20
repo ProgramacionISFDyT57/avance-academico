@@ -17,6 +17,8 @@ export class UsuariosController {
         this.crear_usuario = this.crear_usuario.bind(this);
         this.editar_usuario = this.editar_usuario.bind(this);
         this.eliminar_usuario = this.eliminar_usuario.bind(this);
+        this.activar_usuario = this.activar_usuario.bind(this);
+        this.desactivar_usuario = this.desactivar_usuario.bind(this);
         // Profesores
         this.listar_profesores = this.listar_profesores.bind(this);
         // Alumnos
@@ -35,7 +37,7 @@ export class UsuariosController {
     public async listar_usuarios(req: Request, res: Response) {
         try {
             const query = `
-                SELECT U.id, U.nombre, U.apellido, U.email, U.fecha_nacimiento, U.fecha_alta, U.telefono, U.dni, R.nombre AS rol
+                SELECT U.id, U.nombre, U.apellido, U.email, U.fecha_nacimiento, U.fecha_alta, U.telefono, U.dni, R.nombre AS rol, U.domicilio, U.activo
                 FROM usuarios U
                 INNER JOIN roles R ON U.id_rol = R.id
                 ORDER BY U.apellido, U.nombre`;
@@ -54,11 +56,11 @@ export class UsuariosController {
             const usuario: Usuario = req.body.usuario;
             const hash = await bcrypt.hash(usuario.dni, 10);
             const query = `
-                INSERT INTO usuarios (email, dni, clave, nombre, apellido, fecha_nacimiento, id_rol, telefono, fecha_alta) 
-                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, current_timestamp) 
+                INSERT INTO usuarios (email, dni, clave, nombre, apellido, fecha_nacimiento, id_rol, telefono, domicilio, fecha_alta) 
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, current_timestamp) 
                 RETURNING ID`;
             const result = await this.db.one(query, [usuario.email, usuario.dni, hash, usuario.nombre,
-                usuario.apellido, usuario.fecha_nacimiento, usuario.id_rol, usuario.telefono]);
+                usuario.apellido, usuario.fecha_nacimiento, usuario.id_rol, usuario.telefono, usuario.domicilio]);
             const id_usuario = result.id;
             if (usuario.id_rol === 4) {
                 await this.db.none('INSERT INTO profesores (id_usuario) VALUES ($1)', [id_usuario])
@@ -85,9 +87,10 @@ export class UsuariosController {
                         dni = $3, 
                         email = $4,
                         telefono = $5,
-                        fecha_nacimiento = $6
-                    WHERE id = $7;`;
-                const result = await this.db.none(query, [a.nombre, a.apellido, a.dni, a.email, a.telefono, a.fecha_nacimiento, a.id]);
+                        fecha_nacimiento = $6,
+                        domicilio = $7
+                    WHERE id = $8;`;
+                await this.db.none(query, [a.nombre, a.apellido, a.dni, a.email, a.telefono, a.fecha_nacimiento, a.domicilio, a.id]);
                 res.status(200).json({
                     mensaje: 'El usuario se editó correctamente'
                 });
@@ -134,6 +137,52 @@ export class UsuariosController {
             });
         }
     }
+    public async activar_usuario(req: Request, res: Response) {
+        try {
+            const id_usuario = +req.params.id_usuario;
+            if (id_usuario) {
+                const query = `
+                    UPDATE usuarios SET activo = true WHERE id = $1;`;
+                await this.db.none(query, [id_usuario]);
+                res.status(200).json({
+                    mensaje: 'El usuario se activó correctamente'
+                });
+            } else {
+                res.status(400).json({
+                    mensaje: 'Datos inválidos',
+                });
+            }
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({
+                mensaje: 'Ocurrio un error al activar el usuario',
+                error
+            });
+        }
+    }
+    public async desactivar_usuario(req: Request, res: Response) {
+        try {
+            const id_usuario = +req.params.id_usuario;
+            if (id_usuario) {
+                const query = `
+                    UPDATE usuarios SET activo = false WHERE id = $1;`;
+                await this.db.none(query, [id_usuario]);
+                res.status(200).json({
+                    mensaje: 'El usuario se desactivó correctamente'
+                });
+            } else {
+                res.status(400).json({
+                    mensaje: 'Datos inválidos',
+                });
+            }
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({
+                mensaje: 'Ocurrio un error al desactivar el usuario',
+                error
+            });
+        }
+    }
     // Profesores
     public async listar_profesores(req: Request, res: Response) {
         try {
@@ -158,7 +207,7 @@ export class UsuariosController {
         try {
             const query = `
                 SELECT a.id AS id_alumno, u.nombre, u.apellido, u.dni, u.fecha_nacimiento, u.email, u.telefono, ca.cohorte, c.nombre AS carrera, 
-                    concat(u.apellido, ', ', u.nombre) AS nombre_completo
+                    concat(u.apellido, ', ', u.nombre) AS nombre_completo, u.domicilio
                 FROM alumnos a
                 INNER JOIN usuarios u ON u.id = a.id_usuario
                 LEFT JOIN inscripciones_carreras ic ON ic.id_alumno = a.id
@@ -206,11 +255,11 @@ export class UsuariosController {
                 const hash = await bcrypt.hash(usuario.dni, 10);
                 usuario.id_rol = 5;
                 let query = `
-                    INSERT INTO usuarios (email, dni, clave, nombre, apellido, fecha_nacimiento, fecha_alta, id_rol, telefono) 
-                    VALUES ($1, $2, $3, $4, $5, $6, current_timestamp, $7, $8) 
+                    INSERT INTO usuarios (email, dni, clave, nombre, apellido, fecha_nacimiento, fecha_alta, id_rol, telefono, domicilio) 
+                    VALUES ($1, $2, $3, $4, $5, $6, current_timestamp, $7, $8, $9) 
                     RETURNING ID`;
                 let result = await this.db.one(query, [usuario.email, usuario.dni, hash, usuario.nombre,
-                usuario.apellido, usuario.fecha_nacimiento, usuario.id_rol, usuario.telefono]);
+                usuario.apellido, usuario.fecha_nacimiento, usuario.id_rol, usuario.telefono, usuario.domicilio]);
                 const id_usuario = result.id;
                 query = 'INSERT INTO alumnos (id_usuario) VALUES ($1) RETURNING ID';
                 result = await this.db.one(query, [id_usuario]);
@@ -262,9 +311,10 @@ export class UsuariosController {
                         dni = $3, 
                         email = $4,
                         telefono = $5,
-                        fecha_nacimiento = $6
-                    WHERE id = $7;`;
-                result = await this.db.none(query, [a.nombre, a.apellido, a.dni, a.email, a.telefono, a.fecha_nacimiento, id_usuario]);
+                        fecha_nacimiento = $6,
+                        domicilio = $7
+                    WHERE id = $8;`;
+                result = await this.db.none(query, [a.nombre, a.apellido, a.dni, a.email, a.telefono, a.fecha_nacimiento, a.domicilio, id_usuario]);
                 res.status(200).json({
                     mensaje: 'El alumno se editó correctamente'
                 });

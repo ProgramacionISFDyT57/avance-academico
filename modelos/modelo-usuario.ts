@@ -9,4 +9,5 @@ export class Usuario {
     fecha_alta: string;
     telefono: string;
     id_rol: number;
+    domicilio: string;
 }
