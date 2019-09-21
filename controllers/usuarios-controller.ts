@@ -207,7 +207,7 @@ export class UsuariosController {
         try {
             const query = `
                 SELECT a.id AS id_alumno, u.nombre, u.apellido, u.dni, u.fecha_nacimiento, u.email, u.telefono, ca.cohorte, c.nombre AS carrera, 
-                    concat(u.apellido, ', ', u.nombre) AS nombre_completo, u.domicilio
+                    concat(u.apellido, ', ', u.nombre) AS nombre_completo, u.domicilio, ic.libro, ic.folio
                 FROM alumnos a
                 INNER JOIN usuarios u ON u.id = a.id_usuario
                 LEFT JOIN inscripciones_carreras ic ON ic.id_alumno = a.id

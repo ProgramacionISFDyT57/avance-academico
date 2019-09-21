@@ -113,7 +113,7 @@ export class CarrerasController {
             const id_carrera_abierta = +req.params.id_carrera_abierta;
             if (id_carrera_abierta) {
                 const query = `
-                    SELECT us.apellido, us.nombre, us.dni, ic.fecha_inscripcion, c.nombre AS carrera, ic.id AS id_inscripcion_carrera, ca.cohorte
+                    SELECT us.apellido, us.nombre, us.dni, ic.fecha_inscripcion, ic.libro, ic.folio, c.nombre AS carrera, ic.id AS id_inscripcion_carrera, ca.cohorte
                     FROM carreras_abiertas ca
                     INNER JOIN carreras c ON c.id = ca.id_carrera
                     INNER JOIN inscripciones_carreras ic ON ic.id_carrera_abierta = ca.id
