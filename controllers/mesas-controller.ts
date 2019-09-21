@@ -392,7 +392,12 @@ export class MesasController {
                         WHERE im.libre = false
                         GROUP BY m.id
                     ) AS ir ON ir.id_mesa = me.id
-
+                    GROUP BY me.id, ma.nombre, ma.anio, me.fecha_inicio, me.fecha_limite, 
+                        me.fecha_examen, ca.nombre, ca.id,
+                        CONCAT_WS(', ', us.apellido, us.nombre), pf.id,
+                        CONCAT_WS(', ', us1.apellido, us1.nombre), v1.id,
+                        CONCAT_WS(', ', us2.apellido, us2.nombre), v2.id,
+                        il.inscripciones_libres, ir.inscripciones_regulares
                     ORDER BY me.fecha_examen DESC, ca.nombre, ma.anio, ma.nombre`;
                 mesas = await this.db.manyOrNone(query);
             }
