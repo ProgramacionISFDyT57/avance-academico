@@ -97,8 +97,6 @@ app.delete("/inscripcion_cursada/:id_inscripcion_cursada", seguridadController.c
 // NOTAS CURSADA (AVANCE ACADEMICO)
 app.post("/notas_cursada", seguridadController.chequear_roles(['directivo', 'preceptor']), cursadasController.cargar_notas_cursada);
 app.delete("/notas_cursada/:id_inscripcion_cursada", seguridadController.chequear_roles(['directivo', 'preceptor']), cursadasController.eliminar_notas_cursada);
-// LISTAR CURSADAS APROBADAS
-app.get("/listar_cursadas_aprobadas", seguridadController.chequear_roles(['alumno']), cursadasController.listar_cursadas_aprobadas);
 //////////////////////////////////////////////////////////////////////////////////////
 // MESAS
 //////////////////////////////////////////////////////////////////////////////////////

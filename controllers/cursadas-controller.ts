@@ -13,15 +13,11 @@ export class CursadasController {
     constructor(db: IDatabase<any>) {
         this.db = db;
         this.helper = new HelperService(db);
+        // Cursadas
         this.crear_cursada = this.crear_cursada.bind(this);
-        this.listar_cursadas_abiertas = this.listar_cursadas_abiertas.bind(this);
+        this.listar_cursadas = this.listar_cursadas.bind(this);
         this.eliminar_cursada = this.eliminar_cursada.bind(this);
-
-        this.ver_cursadas_abiertas_alumno = this.ver_cursadas_abiertas_alumno.bind(this);
-        this.listar_cursadas_aprobadas = this.listar_cursadas_aprobadas.bind(this);
-
-        this.cargar_notas_cursada = this.cargar_notas_cursada.bind(this);
-        this.eliminar_notas_cursada = this.eliminar_notas_cursada.bind(this);
+        // Inscripciones Cursada
         this.crear_inscripcion_cursada = this.crear_inscripcion_cursada.bind(this);
         this.inscribir_alumno_cursada = this.inscribir_alumno_cursada.bind(this);
         this.eliminar_inscripcion_cursada = this.eliminar_inscripcion_cursada.bind(this);
@@ -29,6 +25,10 @@ export class CursadasController {
         this.listar_inscriptos_cursada = this.listar_inscriptos_cursada.bind(this);
         this.listar_inscriptos_cursada2 = this.listar_inscriptos_cursada2.bind(this);
         this.planilla_inscriptos_cursada = this.planilla_inscriptos_cursada.bind(this);
+        // Notas
+        this.cargar_notas_cursada = this.cargar_notas_cursada.bind(this);
+        this.eliminar_notas_cursada = this.eliminar_notas_cursada.bind(this);
+
     }
     public async crear_cursada(req: Request, res: Response) {
         try {
@@ -86,73 +86,7 @@ export class CursadasController {
             });
         }
     }
-    public listar_cursadas_aprobadas(req: Request, res: Response) {
-        const token: Token = res.locals.token;
-        const id_alumno = token.id_alumno;
-        const query = `
-            SELECT m.nombre
-            FROM avance_academico aa
-            INNER JOIN inscripciones_cursadas ic ON ic.id = aa.id_inscripcion_cursada
-            INNER JOIN cursadas c ON c.id = ic.id_cursada
-            INNER JOIN materias m ON m.id = c.id_materia
-            INNER JOIN tipos_materias tm ON tm.id = m.id_tipo
-            WHERE ic.id_alumno = $1
-            AND ((aa.nota_cuat_1 >=4 and aa.nota_cuat_2 >=4) OR (aa.nota_recuperatorio >=4))
-            AND ((tm.id = 2 AND aa.asistencia >= 80) OR (tm.id != 2 AND aa.asistencia >= 60))`;
-        this.db.manyOrNone(query, [id_alumno])
-            .then(resultado => {
-                res.status(200).json(resultado);
-            })
-            .catch(err => {
-                console.error(err);
-                res.status(200).json(err);
-            });
-    }
-    public ver_cursadas_abiertas_alumno(req: Request, res: Response) {
-        const id_alumno: number = req.params.id_alumno;
-        // Buscar las cursadas abiertas de las carreras donde esta inscripto el alumno 
-        // y no la tiene aprobada y si tiene las correlativas o no tiene correlativas
-        this.db.manyOrNone(`
-            SELECT M.id, M.nombre, M.anio FROM materias M
-            INNER JOIN cursadas C ON M.id = C.id_materia
-            LEFT JOIN correlativas CO ON CO.id_materia = M.id
-            WHERE M.id_carrera IN (
-                SELECT CA.id_carrera FROM carreras_abiertas CA
-                INNER JOIN inscripciones_carreras IC ON IC.id_carrera_abierta = CA.id
-                WHERE IC.id_alumno = $1
-                )
-            AND current_timestamp BETWEEN C.fecha_inicio AND fecha_limite
-            AND M.id NOT IN (
-                SELECT M.id FROM materias M
-                INNER JOIN cursadas C ON c.id_materia = M.id
-                INNER JOIN inscripciones_cursadas IC ON IC.id_cursada = C.id
-                INNER JOIN avance_academico AA ON AA.id_inscripcion_cursada = IC,id
-                INNER JOIN tipos_materias TM ON TM.id = M.id_tipo
-                WHERE IC.id_alumno = $1
-                AND ( (AA.nota_cuat_1 >= 4 AND AA.nota_cuat_1 >= 4) OR (AA.nota_recuperatorio >= 4 ) )
-                AND ( (TM.id = 2 AND AA.asistencia >= 80) OR (TM.id != 2 AND AA.asistencia >= 60) )
-                )
-            AND ( CO.id_correlativa IN (
-                SELECT M.id FROM materias M
-                INNER JOIN cursadas C ON c.id_materia = M.id
-                INNER JOIN inscripciones_cursadas IC ON IC.id_cursada = C.id
-                INNER JOIN avance_academico AA ON AA.id_inscripcion_cursada = IC,id
-                INNER JOIN tipos_materias TM ON TM.id = M.id_tipo
-                WHERE IC.id_alumno = $1
-                AND ( (AA.nota_cuat_1 >= 4 AND AA.nota_cuat_1 >= 4) OR (AA.nota_recuperatorio >= 4 ) )
-                AND ( (TM.id = 2 AND AA.asistencia >= 80) OR (TM.id != 2 AND AA.asistencia >= 60) )
-                ) 
-                OR CO.id_correlativa IS NULL )
-            ORDER BY M.nombre`, [id_alumno])
-            .then((data) => {
-                res.status(200).json(data);
-            })
-            .catch((err) => {
-                console.error(err);
-                res.status(500).json(err);
-            });
-    }
-    public async listar_cursadas_abiertas(req: Request, res: Response) {
+    public async listar_cursadas(req: Request, res: Response) {
         try {
             const token: Token = res.locals.token;
             const id_alumno = +token.id_alumno;
@@ -164,7 +98,12 @@ export class CursadasController {
                     SELECT cu.id, cu.anio AS anio_cursada, cu.fecha_inicio, cu.fecha_limite, M.id AS id_materia,
                         M.nombre AS materia, M.anio AS anio_materia, c.nombre AS carrera, c.id AS id_carrera,
                         CONCAT_WS(', ', U.apellido, U.nombre) AS profesor, ic2.id AS id_inscripcion_cursada,
-                        aa.nota_cuat_1, aa.nota_cuat_2, aa.nota_recuperatorio, aa.asistencia, tm.nombre AS tipo_materia
+                        aa.nota_cuat_1, aa.nota_cuat_2, aa.nota_recuperatorio, aa.asistencia, tm.nombre AS tipo_materia,
+                        json_agg(json_build_object( 
+                            'dia', h.dia, 
+                            'hora_inicio', h.hora_inicio, 
+                            'modulos', h.modulos
+                        ) ORDER BY h.dia) AS horarios
                     FROM cursadas cu
                     INNER JOIN materias M ON M.id = cu.id_materia
                     INNER JOIN tipos_materias tm ON tm.id = M.id_tipo
@@ -176,12 +115,20 @@ export class CursadasController {
                     LEFT JOIN inscripciones_cursadas ic ON ic.id_cursada = cu.id
                     LEFT JOIN inscripciones_cursadas ic2 ON ic2.id_cursada = cu.id AND ic2.id_alumno = $1
                     LEFT JOIN avance_academico aa ON aa.id_inscripcion_cursada = ic2.id
+                    LEFT JOIN horarios h ON h.id_cursada = cu.id
                     WHERE ica.id_alumno = $1
                     AND current_timestamp BETWEEN cu.fecha_inicio AND cu.fecha_limite
                     AND cu.anio >= ca.cohorte
+                    GROUP BY cu.id, cu.anio, cu.fecha_inicio, cu.fecha_limite, M.id AS id_materia,
+                        M.nombre, M.anio, c.nombre, c.id,
+                        CONCAT_WS(', ', U.apellido, U.nombre), ic2.id,
+                        aa.nota_cuat_1, aa.nota_cuat_2, aa.nota_recuperatorio, aa.asistencia, tm.nombre
                     ORDER BY cu.anio DESC, c.nombre, M.anio, M.nombre`;
                 const cursadasTodas = await this.db.manyOrNone(query, [id_alumno]);
                 for (const cursada of cursadasTodas) {
+                    if (cursada.horarios[0] === null) {
+                        cursada.horarios = [];
+                    }
                     const cursadaAprobada = await this.helper.cursada_aprobada(cursada.id_materia, id_alumno);
                     if (!cursadaAprobada) {
                         cursadas.push(cursada);
@@ -193,18 +140,29 @@ export class CursadasController {
                     SELECT C.id, C.anio AS anio_cursada, C.fecha_inicio, C.fecha_limite, 
                         M.nombre AS materia, M.anio AS anio_materia, ca.nombre AS carrera, ca.id AS id_carrera,
                         CONCAT_WS(', ', U.apellido, U.nombre) AS profesor,
-                        COUNT(ic.id) AS cant_inscriptos
+                        COUNT(ic.id) AS cant_inscriptos,
+                        json_agg(json_build_object( 
+                            'dia', h.dia, 
+                            'hora_inicio', h.hora_inicio, 
+                            'modulos', h.modulos
+                        ) ORDER BY h.dia) AS horarios
                     FROM cursadas C
                     INNER JOIN materias M ON M.id = C.id_materia
                     INNER JOIN carreras ca ON ca.id = M.id_carrera
                     LEFT JOIN profesores P ON P.id = C.id_profesor
                     LEFT JOIN usuarios U ON U.id = P.id_usuario
                     LEFT JOIN inscripciones_cursadas ic ON ic.id_cursada = C.id
+                    LEFT JOIN horarios h ON h.id_cursada = cu.id
                     GROUP BY C.id, C.anio, C.fecha_inicio, C.fecha_limite, 
                         M.nombre, M.anio, ca.nombre, ca.id,
                         CONCAT_WS(', ', U.apellido, U.nombre)
                     ORDER BY C.anio DESC, ca.nombre, M.anio, M.nombre`;
                 cursadas = await this.db.manyOrNone(query);
+                for (const cursada of cursadas) {
+                    if (cursada.horarios[0] === null) {
+                        cursada.horarios = [];
+                    }
+                }
             }
             res.status(200).json(cursadas);
         } catch (error) {
@@ -249,7 +207,6 @@ export class CursadasController {
             return true;
         }
     }
-
     private asistencia_valida(avance: Avance) {
         if (avance.asistencia) {
             if (avance.asistencia < 0 || avance.asistencia > 100) {
