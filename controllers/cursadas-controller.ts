@@ -161,7 +161,7 @@ export class CursadasController {
                     ) AS h ON h.id_cursada = C.id
                     GROUP BY C.id, C.anio, C.fecha_inicio, C.fecha_limite, 
                         M.nombre, M.anio, ca.nombre, ca.id,
-                        CONCAT_WS(', ', U.apellido, U.nombre), P.id, h.horarios
+                        CONCAT_WS(', ', U.apellido, U.nombre), P.id
                     ORDER BY C.anio DESC, ca.nombre, M.anio, M.nombre`;
                 cursadas = await this.db.manyOrNone(query);
                 for (const cursada of cursadas) {
