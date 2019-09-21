@@ -119,7 +119,7 @@ export class CursadasController {
                     WHERE ica.id_alumno = $1
                     AND current_timestamp BETWEEN cu.fecha_inicio AND cu.fecha_limite
                     AND cu.anio >= ca.cohorte
-                    GROUP BY cu.id, cu.anio, cu.fecha_inicio, cu.fecha_limite, M.id AS id_materia,
+                    GROUP BY cu.id, cu.anio, cu.fecha_inicio, cu.fecha_limite, M.id,
                         M.nombre, M.anio, c.nombre, c.id,
                         CONCAT_WS(', ', U.apellido, U.nombre), ic2.id,
                         aa.nota_cuat_1, aa.nota_cuat_2, aa.nota_recuperatorio, aa.asistencia, tm.nombre
@@ -152,7 +152,7 @@ export class CursadasController {
                     LEFT JOIN profesores P ON P.id = C.id_profesor
                     LEFT JOIN usuarios U ON U.id = P.id_usuario
                     LEFT JOIN inscripciones_cursadas ic ON ic.id_cursada = C.id
-                    LEFT JOIN horarios h ON h.id_cursada = cu.id
+                    LEFT JOIN horarios h ON h.id_cursada = C.id
                     GROUP BY C.id, C.anio, C.fecha_inicio, C.fecha_limite, 
                         M.nombre, M.anio, ca.nombre, ca.id,
                         CONCAT_WS(', ', U.apellido, U.nombre)
