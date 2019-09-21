@@ -529,11 +529,10 @@ export class MesasController {
     public async acta_volante(req: Request, res: Response) {
         try {
             const id_mesa = +req.params.id_mesa;
-            let cursa: boolean = true;
+            let libre: boolean = false;
             if (req.params.libres) {
-                cursa = false;
+                libre = true;
             }
-            const id_materia = await this.helper.get_id_materia_x_mesa(id_mesa);
             if (id_mesa) {
                 const query = `
                     SELECT me.fecha_examen, ma.nombre AS materia, ma.anio AS anio_materia, c.nombre AS carrera, 
@@ -560,30 +559,14 @@ export class MesasController {
                     LEFT JOIN usuarios us ON us.id = al.id_usuario
                     LEFT JOIN inscripciones_carreras ic ON ic.id_alumno = al.id
                     LEFT JOIN carreras_abiertas caa ON caa.id = ic.id_carrera_abierta
-
-                    RIGHT JOIN (
-                        SELECT ic2.id_alumno
-                        FROM materias m
-                        INNER JOIN cursadas c ON c.id_materia = m.id
-                        INNER JOIN inscripciones_cursadas ic2 ON ic2.id_cursada = c.id
-                        WHERE m.id = $2
-                        AND ic2.cursa = $3
-                        AND ic2.fecha_inscripcion = (
-                            SELECT MAX(ic.fecha_inscripcion)
-                            FROM inscripciones_cursadas ic
-                            INNER JOIN cursadas cu ON cu.id = ic.id_cursada
-                            WHERE cu.id_materia = $2
-                            AND ic.id_alumno = ic2.id_alumno
-                        )
-                    ) AS x ON x.id_alumno = al.id
-
                     WHERE me.id = $1
+                    AND im.libre = $2
                     GROUP BY me.fecha_examen, ma.nombre, ma.anio, c.nombre,
                         CONCAT_WS(', ', us0.apellido, us0.nombre),
                         CONCAT_WS(', ', us1.apellido, us1.nombre),
                         CONCAT_WS(', ', us2.apellido, us2.nombre)
                     `;
-                const inscriptos = await this.db.oneOrNone(query, [id_mesa, id_materia, cursa]);
+                const inscriptos = await this.db.oneOrNone(query, [id_mesa, libre]);
                 res.status(200).json(inscriptos);
             } else {
                 res.status(400).json({
