@@ -270,7 +270,7 @@ export class UsuariosController {
         } catch (error) {
             console.error(error);
             res.status(500).json({
-                mensaje: 'Ocurrio un error al listar los profesores del dia',
+                mensaje: 'Ocurrio un error al listar los profesores del año',
                 error
             });
         }
