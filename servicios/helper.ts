@@ -72,6 +72,22 @@ export class HelperService {
         });
     }
 
+    public async get_id_materia_x_mesa(id_mesa: number): Promise<number> {
+        return new Promise(async (resolve, reject) => {
+            try {
+                const query = `
+                    SELECT ma.id AS id_materia
+                    FROM mesas me
+                    INNER JOIN materias ma ON ma.id = me.id_materia
+                    WHERE me.id = $1`;
+                const resultado = await this.db.one(query, [id_mesa]);
+                resolve(resultado.id_materia);
+            } catch (error) {
+                reject(error);
+            }
+        });
+    }
+
     public async carrera_abierta(id_carrera_abierta: number): Promise<true|string> {
         return new Promise(async (resolve, reject) => {
             try {
