@@ -411,7 +411,7 @@ export class UsuariosController {
             }
             if (id_alumno) {
                 const query = `
-                    SELECT c.nombre AS carrera, ca.cohorte, us.apellido, us.nombre, us.dni, us.telefono, us.fecha_nacimiento, ica.libro, ica.folio,
+                    SELECT c.nombre AS carrera, ca.cohorte, us.apellido, us.nombre, us.dni, us.telefono, us.fecha_nacimiento, us.domicilio, ica.libro, ica.folio,
                         json_agg(json_build_object( 
                             'materia', ma.nombre, 
                             'anio', ma.anio, 
@@ -451,7 +451,7 @@ export class UsuariosController {
                         AND fi.nota >= 4 
                     ) c2 ON c2.id_materia = ma.id
                     WHERE al.id = $1
-                    GROUP BY c.nombre, ca.cohorte, us.apellido, us.nombre, us.dni, us.telefono, us.fecha_nacimiento, ica.libro, ica.folio
+                    GROUP BY c.nombre, ca.cohorte, us.apellido, us.nombre, us.dni, us.telefono, us.fecha_nacimiento, us.domicilio, ica.libro, ica.folio
                     ORDER BY c.nombre`;
                 const avance = await this.db.manyOrNone(query, [id_alumno]);
                 res.json(avance);
