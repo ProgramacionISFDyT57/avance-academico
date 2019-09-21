@@ -140,8 +140,8 @@ export class CursadasController {
                 query = `
                     SELECT C.id, C.anio AS anio_cursada, C.fecha_inicio, C.fecha_limite, 
                         M.nombre AS materia, M.anio AS anio_materia, ca.nombre AS carrera, ca.id AS id_carrera,
-                        CONCAT_WS(', ', U.apellido, U.nombre) AS profesor, P.id AS id_profesor,
-                        COUNT(ic.id) AS cant_inscriptos, h.horarios
+                        CONCAT_WS(', ', U.apellido, U.nombre) AS profesor, P.id AS id_profesor, h.horarios,
+                        COUNT(ic.id) AS cant_inscriptos
                     FROM cursadas C
                     INNER JOIN materias M ON M.id = C.id_materia
                     INNER JOIN carreras ca ON ca.id = M.id_carrera
@@ -158,7 +158,7 @@ export class CursadasController {
                         FROM cursadas c
                         LEFT JOIN horarios h ON h.id_cursada = c.id
                         GROUP BY c.id
-                    ) AS horarios h ON h.id_cursada = C.id
+                    ) AS h ON h.id_cursada = C.id
                     GROUP BY C.id, C.anio, C.fecha_inicio, C.fecha_limite, 
                         M.nombre, M.anio, ca.nombre, ca.id,
                         CONCAT_WS(', ', U.apellido, U.nombre), P.id, h.horarios
