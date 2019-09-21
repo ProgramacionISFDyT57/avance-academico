@@ -12,18 +12,23 @@ export class MesasController {
     constructor(db: IDatabase<any>) {
         this.db = db;
         this.helper = new HelperService(db);
+        // Inscripciones a mesas
         this.crear_inscripcion_mesa = this.crear_inscripcion_mesa.bind(this);
         this.inscribir_alumno_mesa = this.inscribir_alumno_mesa.bind(this);
         this.eliminar_inscripcion_mesa = this.eliminar_inscripcion_mesa.bind(this);
         this.eliminar_inscripcion_mesa_alumno = this.eliminar_inscripcion_mesa_alumno.bind(this);
-        this.lista_mesas = this.lista_mesas.bind(this);
-        this.crear_mesa = this.crear_mesa.bind(this);
-        this.eliminar_mesa = this.eliminar_mesa.bind(this);
         this.listar_inscriptos_mesa = this.listar_inscriptos_mesa.bind(this);
         this.listar_inscriptos_mesa2 = this.listar_inscriptos_mesa2.bind(this);
-        this.acta_volante = this.acta_volante.bind(this);
+        // Mesas
+        this.lista_mesas = this.lista_mesas.bind(this);
+        this.crear_mesa = this.crear_mesa.bind(this);
+        this.editar_mesa = this.editar_mesa.bind(this);
+        this.eliminar_mesa = this.eliminar_mesa.bind(this);
+        // Notas
         this.cargar_notas_final = this.cargar_notas_final.bind(this);
         this.eliminar_notas_final = this.eliminar_notas_final.bind(this);
+        //
+        this.acta_volante = this.acta_volante.bind(this);
     }
 
     private async get_id_materia(id_mesa: number): Promise<number> {
@@ -41,7 +46,6 @@ export class MesasController {
             }
         });
     }
-
     private async inscribir_alumno_mesa_service(id_mesa: number, id_alumno: number) {
         return new Promise(async (resolve, reject) => {
             try {
@@ -55,7 +59,7 @@ export class MesasController {
         })
 
     }
-
+    // Inscripciones a mesas
     public async crear_inscripcion_mesa(req: Request, res: Response) {
         try {
             const id_mesa = +req.body.id_mesa;
@@ -116,7 +120,6 @@ export class MesasController {
             });
         }
     }
-
     public async inscribir_alumno_mesa(req: Request, res: Response) {
         try {
             const id_mesa = +req.body.id_mesa;
@@ -171,7 +174,6 @@ export class MesasController {
             });
         }
     }
-
     public async eliminar_inscripcion_mesa(req: Request, res: Response) {
         try {
             const token: Token = res.locals.token;
@@ -234,7 +236,83 @@ export class MesasController {
             });
         }
     }
-
+    // borrar
+    public async listar_inscriptos_mesa(req: Request, res: Response) {
+        try {
+            const id_mesa = +req.params.id_mesa;
+            if (id_mesa) {
+                const query = `
+                SELECT us.apellido, us.nombre, us.dni, im.fecha_inscripcion, ma.nombre AS materia, me.fecha_examen, im.id AS id_inscripcion_mesa,
+                    fi.nota, fi.libro, fi.folio, c.nombre AS carrera, me.id AS id_mesa, c.id AS id_carrera
+                FROM mesas me
+                INNER JOIN materias ma ON ma.id = me.id_materia
+                INNER JOIN carreras c ON c.id = ma.id_carrera
+                INNER JOIN inscripciones_mesa im ON im.id_mesa = me.id
+                INNER JOIN alumnos al ON al.id = im.id_alumno
+                INNER JOIN usuarios us ON us.id = al.id_usuario
+                LEFT JOIN finales fi ON fi.id_inscripcion_mesa = im.id
+                WHERE me.id = $1
+                ORDER BY us.apellido, us.nombre;`;
+                const inscriptos = await this.db.manyOrNone(query, [id_mesa]);
+                res.status(200).json(inscriptos);
+            } else {
+                res.status(400).json({
+                    mensaje: 'ID de mesa invalido'
+                });
+            }
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({
+                mensaje: 'Ocurrio un error al listar los inscriptos a la mesa',
+                error
+            });
+        }
+    }
+    public async listar_inscriptos_mesa2(req: Request, res: Response) {
+        try {
+            const id_mesa = +req.params.id_mesa;
+            if (id_mesa) {
+                const query = `
+                SELECT me.id AS id_mesa, me.fecha_examen, ma.nombre AS materia, c.nombre AS carrera, c.id AS id_carrera,
+                    json_agg(json_build_object( 
+                        'apellido', us.apellido, 
+                        'nombre', us.nombre, 
+                        'dni', us.dni, 
+                        'fecha_inscripcion', im.fecha_inscripcion,
+                        'id_inscripcion_mesa', im.id,
+                        'nota',  fi.nota,
+                        'libro', fi.libro,
+                        'folio', fi.folio
+                    ) ORDER BY us.apellido, us.nombre) AS inscriptos
+                FROM mesas me
+                INNER JOIN materias ma ON ma.id = me.id_materia
+                INNER JOIN carreras c ON c.id = ma.id_carrera
+                LEFT JOIN inscripciones_mesa im ON im.id_mesa = me.id
+                LEFT JOIN alumnos al ON al.id = im.id_alumno
+                LEFT JOIN usuarios us ON us.id = al.id_usuario
+                LEFT JOIN finales fi ON fi.id_inscripcion_mesa = im.id
+                WHERE me.id = $1
+                GROUP BY me.id, me.fecha_examen, ma.nombre, c.nombre, c.id
+                `;
+                const inscriptos = await this.db.one(query, [id_mesa]);
+                if (inscriptos.inscriptos[0].apellido === null) {
+                    inscriptos.inscriptos = [];
+                }
+                res.status(200).json(inscriptos);
+            } else {
+                res.status(400).json({
+                    mensaje: 'ID de mesa invalido'
+                });
+            }
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({
+                mensaje: 'Ocurrio un error al listar los inscriptos a la mesa',
+                error
+            });
+        }
+    }
+    // Mesas
     public async lista_mesas(req: Request, res: Response) {
         try {
             const token: Token = res.locals.token;
@@ -309,7 +387,6 @@ export class MesasController {
             });
         }
     }
-
     public crear_mesa(req: Request, res: Response) {
         const mesa: Mesa = req.body.mesa;
         const query = `
@@ -327,7 +404,31 @@ export class MesasController {
                 res.status(500).json(err);
             });
     }
-
+    public async editar_mesa(req: Request, res: Response) {
+        try {
+            const id_mesa = req.params.id_mesa;
+            const mesa: Mesa = req.body.mesa;
+            const query = `
+                UPDATE mesas SET 
+                    fecha_inicio = $1,
+                    fecha_limite = $2,
+                    fecha_examen = $3,
+                    id_profesor = $4,
+                    id_vocal1 = $5,
+                    id_vocal2 = $6
+                WHERE id = $7`;
+            await this.db.none(query, [mesa.fecha_inicio, mesa.fecha_limite, mesa.fecha_examen, mesa.id_profesor, mesa.id_vocal1, mesa.id_vocal2, id_mesa])
+            res.status(200).json({
+                mensaje: "La mesa se editó correctamente"
+            });
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({
+                mensaje: 'Ocurrio un error al editar la mesa',
+                error
+            });
+        }
+    }
     public async eliminar_mesa(req: Request, res: Response) {
         try {
             const id_mesa = +req.params.id_mesa;
@@ -344,85 +445,63 @@ export class MesasController {
             });
         }
     }
-
-    // Eliminar
-    public async listar_inscriptos_mesa(req: Request, res: Response) {
+    // Notas
+    private nota_valida(nota: number) {
+        if (nota) {
+            if (nota % 1 !== 0) {
+                return 'La nota debe ser un número entero entre 0 y 10';
+            } else if (nota < 0 || nota > 10) {
+                return 'La nota debe ser un número entero entre 0 y 10';
+            }
+        }
+        return true;
+    }
+    public async cargar_notas_final(req: Request, res: Response) {
         try {
-            const id_mesa = +req.params.id_mesa;
-            if (id_mesa) {
+            const final: Final = req.body.final;
+            const nota_valida = this.nota_valida(final.nota);
+            if (nota_valida === true) {
                 const query = `
-                    SELECT us.apellido, us.nombre, us.dni, im.fecha_inscripcion, ma.nombre AS materia, me.fecha_examen, im.id AS id_inscripcion_mesa,
-                        fi.nota, fi.libro, fi.folio, c.nombre AS carrera, me.id AS id_mesa, c.id AS id_carrera
-                    FROM mesas me
-                    INNER JOIN materias ma ON ma.id = me.id_materia
-                    INNER JOIN carreras c ON c.id = ma.id_carrera
-                    INNER JOIN inscripciones_mesa im ON im.id_mesa = me.id
-                    INNER JOIN alumnos al ON al.id = im.id_alumno
-                    INNER JOIN usuarios us ON us.id = al.id_usuario
-                    LEFT JOIN finales fi ON fi.id_inscripcion_mesa = im.id
-                    WHERE me.id = $1
-                    ORDER BY us.apellido, us.nombre;`;
-                const inscriptos = await this.db.manyOrNone(query, [id_mesa]);
-                res.status(200).json(inscriptos);
+                    INSERT INTO finales (id_inscripcion_mesa, nota, libro, folio) 
+                    VALUES ($1, $2, $3, $4) 
+                    ON CONFLICT (id_inscripcion_mesa) 
+                    DO UPDATE 
+                        SET nota = EXCLUDED.nota,
+                            libro = EXCLUDED.libro,
+                            folio = EXCLUDED.folio;`;
+                await this.db.none(query, [final.id_inscripcion_mesa, final.nota, final.libro, final.folio]);
+                res.status(200).json({
+                    mensaje: 'Se cargo la nota correctamente'
+                });
             } else {
                 res.status(400).json({
-                    mensaje: 'ID de mesa invalido'
+                    mensaje: nota_valida
                 });
             }
         } catch (error) {
             console.error(error);
             res.status(500).json({
-                mensaje: 'Ocurrio un error al listar los inscriptos a la mesa',
+                mensaje: 'Ocurrio un error al cargar las notas del final',
                 error
             });
         }
     }
-
-    public async listar_inscriptos_mesa2(req: Request, res: Response) {
+    public async eliminar_notas_final(req: Request, res: Response) {
         try {
-            const id_mesa = +req.params.id_mesa;
-            if (id_mesa) {
-                const query = `
-                    SELECT me.id AS id_mesa, me.fecha_examen, ma.nombre AS materia, c.nombre AS carrera, c.id AS id_carrera,
-                        json_agg(json_build_object( 
-                            'apellido', us.apellido, 
-                            'nombre', us.nombre, 
-                            'dni', us.dni, 
-                            'fecha_inscripcion', im.fecha_inscripcion,
-                            'id_inscripcion_mesa', im.id,
-                            'nota',  fi.nota,
-                            'libro', fi.libro,
-                            'folio', fi.folio
-                        ) ORDER BY us.apellido, us.nombre) AS inscriptos
-                    FROM mesas me
-                    INNER JOIN materias ma ON ma.id = me.id_materia
-                    INNER JOIN carreras c ON c.id = ma.id_carrera
-                    LEFT JOIN inscripciones_mesa im ON im.id_mesa = me.id
-                    LEFT JOIN alumnos al ON al.id = im.id_alumno
-                    LEFT JOIN usuarios us ON us.id = al.id_usuario
-                    LEFT JOIN finales fi ON fi.id_inscripcion_mesa = im.id
-                    WHERE me.id = $1
-                    GROUP BY me.id, me.fecha_examen, ma.nombre, c.nombre, c.id
-                    `;
-                const inscriptos = await this.db.one(query, [id_mesa]);
-                if (inscriptos.inscriptos[0].apellido === null) {
-                    inscriptos.inscriptos = [];
-                }
-                res.status(200).json(inscriptos);
-            } else {
-                res.status(400).json({
-                    mensaje: 'ID de mesa invalido'
-                });
-            }
+            const id_inscripcion_mesa = +req.params.id_inscripcion_mesa;
+            const query = 'DELETE FROM finales WHERE id_inscripcion_mesa = $1;'
+            await this.db.none(query, [id_inscripcion_mesa]);
+            res.status(200).json({
+                mensaje: 'Se eliminó la nota del final',
+            });
         } catch (error) {
             console.error(error);
             res.status(500).json({
-                mensaje: 'Ocurrio un error al listar los inscriptos a la mesa',
+                mensaje: 'Ocurrio un error al eliminar la nota del final',
                 error
             });
         }
     }
-
     public async acta_volante(req: Request, res: Response) {
         try {
             const id_mesa = +req.params.id_mesa;
@@ -495,63 +574,4 @@ export class MesasController {
             });
         }
     }
-
-    private nota_valida(nota: number) {
-        if (nota) {
-            if (nota % 1 !== 0) {
-                return 'La nota debe ser un número entero entre 0 y 10';
-            } else if (nota < 0 || nota > 10) {
-                return 'La nota debe ser un número entero entre 0 y 10';
-            }
-        }
-        return true;
-    }
-
-    public async cargar_notas_final(req: Request, res: Response) {
-        try {
-            const final: Final = req.body.final;
-            const nota_valida = this.nota_valida(final.nota);
-            if (nota_valida === true) {
-                const query = `
-                    INSERT INTO finales (id_inscripcion_mesa, nota, libro, folio) 
-                    VALUES ($1, $2, $3, $4) 
-                    ON CONFLICT (id_inscripcion_mesa) 
-                    DO UPDATE 
-                        SET nota = EXCLUDED.nota,
-                            libro = EXCLUDED.libro,
-                            folio = EXCLUDED.folio;`;
-                await this.db.none(query, [final.id_inscripcion_mesa, final.nota, final.libro, final.folio]);
-                res.status(200).json({
-                    mensaje: 'Se cargo la nota correctamente'
-                });
-            } else {
-                res.status(400).json({
-                    mensaje: nota_valida
-                });
-            }
-        } catch (error) {
-            console.error(error);
-            res.status(500).json({
-                mensaje: 'Ocurrio un error al cargar las notas del final',
-                error
-            });
-        }
-    }
-    public async eliminar_notas_final(req: Request, res: Response) {
-        try {
-            const id_inscripcion_mesa = +req.params.id_inscripcion_mesa;
-            const query = 'DELETE FROM finales WHERE id_inscripcion_mesa = $1;'
-            await this.db.none(query, [id_inscripcion_mesa]);
-            res.status(200).json({
-                mensaje: 'Se eliminó la nota del final',
-            });
-        } catch (error) {
-            console.error(error);
-            res.status(500).json({
-                mensaje: 'Ocurrio un error al eliminar la nota del final',
-                error
-            });
-        }
-    }
-
 }

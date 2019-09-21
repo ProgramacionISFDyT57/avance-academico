@@ -99,6 +99,7 @@ app.delete("/notas_cursada/:id_inscripcion_cursada", seguridadController.chequea
 //////////////////////////////////////////////////////////////////////////////////////
 app.get("/lista_mesas", seguridadController.chequear_roles(), mesasController.lista_mesas);
 app.post("/crear_mesa", seguridadController.chequear_roles(['directivo', 'preceptor']), mesasController.crear_mesa);
+app.put("/mesas/:id_mesa", seguridadController.chequear_roles(['directivo', 'preceptor']), mesasController.editar_mesa);
 app.delete("/mesas/:id_mesa", seguridadController.chequear_roles(['directivo', 'preceptor']), mesasController.eliminar_mesa);
 // INSCRIPCIONES MESAS
 app.get("/inscriptos_mesa/:id_mesa", seguridadController.chequear_roles(['directivo', 'preceptor']), mesasController.listar_inscriptos_mesa); // Borrar
