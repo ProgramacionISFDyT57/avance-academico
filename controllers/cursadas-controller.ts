@@ -64,9 +64,11 @@ export class CursadasController {
                                 INSERT INTO cursadas (id_materia, id_profesor, anio, fecha_inicio, fecha_limite) 
                                 VALUES ($1, $2, $3, $4, $5) RETURNING ID;`;
                             const id_cursada = await this.db.one(query, [cursada.id_materia, cursada.id_profesor, cursada.año, cursada.fecha_inicio, cursada.fecha_limite]);
-                            for (const horario of horarios) {
-                                query = `INSERT INTO horarios (id_cursada, dia, hora_inicio, modulos) VALUES ($1, $2, $3, $4)`;
-                                await this.db.none(query, [id_cursada, horario.dia, horario.hora_inicio, horario.modulos]);
+                            if (horarios && horarios.length) {
+                                for (const horario of horarios) {
+                                    query = `INSERT INTO horarios (id_cursada, dia, hora_inicio, modulos) VALUES ($1, $2, $3, $4)`;
+                                    await this.db.none(query, [id_cursada, horario.dia, horario.hora_inicio, horario.modulos]);
+                                }
                             }
                             res.json({
                                 mensaje: 'Se creo la cursada correctamente'
