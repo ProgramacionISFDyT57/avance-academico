@@ -141,22 +141,27 @@ export class CursadasController {
                     SELECT C.id, C.anio AS anio_cursada, C.fecha_inicio, C.fecha_limite, 
                         M.nombre AS materia, M.anio AS anio_materia, ca.nombre AS carrera, ca.id AS id_carrera,
                         CONCAT_WS(', ', U.apellido, U.nombre) AS profesor, P.id AS id_profesor,
-                        COUNT(ic.id) AS cant_inscriptos,
-                        json_agg(json_build_object( 
-                            'dia', h.dia, 
-                            'hora_inicio', h.hora_inicio, 
-                            'modulos', h.modulos
-                        ) ORDER BY h.dia) AS horarios
+                        COUNT(ic.id) AS cant_inscriptos, h.horarios
                     FROM cursadas C
                     INNER JOIN materias M ON M.id = C.id_materia
                     INNER JOIN carreras ca ON ca.id = M.id_carrera
                     LEFT JOIN profesores P ON P.id = C.id_profesor
                     LEFT JOIN usuarios U ON U.id = P.id_usuario
                     LEFT JOIN inscripciones_cursadas ic ON ic.id_cursada = C.id
-                    LEFT JOIN horarios h ON h.id_cursada = C.id
+                    LEFT JOIN (
+                        SELECT c.id AS id_cursada, 
+                            json_agg(json_build_object( 
+                                'dia', h.dia, 
+                                'hora_inicio', h.hora_inicio, 
+                                'modulos', h.modulos
+                            ) ORDER BY h.dia) AS horarios
+                        FROM cursadas c
+                        LEFT JOIN horarios h ON h.id_cursada = c.id
+                        GROUP BY c.id
+                    ) AS horarios h ON h.id_cursada = C.id
                     GROUP BY C.id, C.anio, C.fecha_inicio, C.fecha_limite, 
                         M.nombre, M.anio, ca.nombre, ca.id,
-                        CONCAT_WS(', ', U.apellido, U.nombre), P.id
+                        CONCAT_WS(', ', U.apellido, U.nombre), P.id, h.horarios
                     ORDER BY C.anio DESC, ca.nombre, M.anio, M.nombre`;
                 cursadas = await this.db.manyOrNone(query);
                 for (const cursada of cursadas) {
