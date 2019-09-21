@@ -39,6 +39,8 @@ app.put("/cambio_password", seguridadController.chequear_roles(), usuariosContro
 app.put("/reset_password/:id_usuario", seguridadController.chequear_roles(['admin']), usuariosController.resetear_contraseña);
 // PROFESORES
 app.get("/profesores", seguridadController.chequear_roles(), usuariosController.listar_profesores);
+app.get("/profesores/:anio", seguridadController.chequear_roles(), usuariosController.listar_profesores_por_anio);
+app.get("/profesores/:anio/:dia", seguridadController.chequear_roles(), usuariosController.listar_profesores_por_dia);
 // ALUMNOS
 app.get("/alumnos", seguridadController.chequear_roles(['directivo', 'preceptor']), usuariosController.listar_alumnos);
 app.get("/alumnos_por_carrera/:id_carrera", seguridadController.chequear_roles(['directivo', 'preceptor']), usuariosController.listar_alumnos_por_carrera);

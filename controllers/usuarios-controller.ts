@@ -21,6 +21,8 @@ export class UsuariosController {
         this.desactivar_usuario = this.desactivar_usuario.bind(this);
         // Profesores
         this.listar_profesores = this.listar_profesores.bind(this);
+        this.listar_profesores_por_dia = this.listar_profesores_por_dia.bind(this);
+        this.listar_profesores_por_anio = this.listar_profesores_por_anio.bind(this);
         // Alumnos
         this.listar_alumnos = this.listar_alumnos.bind(this);
         this.listar_alumnos_por_carrera = this.listar_alumnos_por_carrera.bind(this);
@@ -203,6 +205,72 @@ export class UsuariosController {
             console.error(error);
             res.status(500).json({
                 mensaje: 'Ocurrio un error al listar los profesores',
+                error
+            });
+        }
+    }
+    public async listar_profesores_por_dia(req: Request, res: Response) {
+        try {
+            const anio = req.params.anio;
+            const dia = req.params.dia;
+            const query = `
+            SELECT p.id, u.email, u.nombre, u.apellido, u.dni, CONCAT(u.apellido, ', ', u.nombre) AS nombre_completo,
+                json_agg(json_build_object( 
+                    'dia', h.dia, 
+                    'hora_inicio', h.hora_inicio, 
+                    'modulos', h.modulos, 
+                    'materia', m.nombre, 
+                    'carrera', ca.nombre
+                ) ORDER BY h.dia, h.hora_inicio) AS detalle
+            FROM usuarios u
+            INNER JOIN profesores p ON p.id_usuario = u.id
+            INNER JOIN cursadas c ON c.id_profesor = p.id
+            INNER JOIN horarios h ON h.id_cursada = c.id
+            INNER JOIN materias m ON m.id = c.id_materia
+            INNER JOIN carreras ca ON ca.id = m.id_carrera
+            WHERE u.id_rol = 4
+            AND c.anio = $1
+            AND h.dia = $2
+            GROUP BY p.id, u.email, u.nombre, u.apellido, u.dni, CONCAT(u.apellido, ', ', u.nombre)
+            ORDER BY u.apellido, u.nombre;`;
+            const profesores = await this.db.manyOrNone(query, [anio, dia]);
+            res.json(profesores);
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({
+                mensaje: 'Ocurrio un error al listar los profesores del dia',
+                error
+            });
+        }
+    }
+    public async listar_profesores_por_anio(req: Request, res: Response) {
+        try {
+            const anio = req.params.anio;
+            const query = `
+                SELECT p.id, u.email, u.nombre, u.apellido, u.dni, CONCAT(u.apellido, ', ', u.nombre) AS nombre_completo,
+                    json_agg(json_build_object( 
+                        'dia', h.dia, 
+                        'hora_inicio', h.hora_inicio, 
+                        'modulos', h.modulos, 
+                        'materia', m.nombre, 
+                        'carrera', ca.nombre
+                    ) ORDER BY h.dia, h.hora_inicio) AS detalle
+                FROM usuarios u
+                INNER JOIN profesores p ON p.id_usuario = u.id
+                INNER JOIN cursadas c ON c.id_profesor = p.id
+                INNER JOIN horarios h ON h.id_cursada = c.id
+                INNER JOIN materias m ON m.id = c.id_materia
+                INNER JOIN carreras ca ON ca.id = m.id_carrera
+                WHERE u.id_rol = 4
+                AND c.anio = $1
+                GROUP BY p.id, u.email, u.nombre, u.apellido, u.dni, CONCAT(u.apellido, ', ', u.nombre)
+                ORDER BY u.apellido, u.nombre;`;
+            const profesores = await this.db.manyOrNone(query, [anio]);
+            res.json(profesores);
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({
+                mensaje: 'Ocurrio un error al listar los profesores del dia',
                 error
             });
         }
