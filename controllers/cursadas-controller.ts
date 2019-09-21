@@ -567,7 +567,7 @@ export class CursadasController {
                     AND c.id = $2
                     AND m.anio = $3
                     ORDER BY h.dia, h.hora_inicio;`;
-                const inscriptos = await this.db.one(query, [anio, id_carrera, curso]);
+                const inscriptos = await this.db.manyOrNone(query, [anio, id_carrera, curso]);
                 res.status(200).json(inscriptos);
             } else {
                 res.status(400).json({
@@ -577,7 +577,7 @@ export class CursadasController {
         } catch (error) {
             console.error(error);
             res.status(500).json({
-                mensaje: 'Ocurrio un error al listar los inscriptos a la cursada',
+                mensaje: 'Ocurrio un error al mostrar los horarios',
                 error
             });
         }
