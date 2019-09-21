@@ -90,7 +90,7 @@ export class MateriasController {
     // Materias
     public listar_materias(req: Request, res: Response) {
         const query = `
-            SELECT m.id, m.nombre, m.anio, tm.nombre AS tipo_materia, tm.id AS id_tipo_materia, c.nombre AS carrera, c.id AS id_carrera, c.duracion AS duracion_carrera,
+            SELECT m.id, m.nombre, m.anio, m.horas, tm.nombre AS tipo_materia, tm.id AS id_tipo_materia, c.nombre AS carrera, c.id AS id_carrera, c.duracion AS duracion_carrera,
                 cu.ultima_cursada, me.ultima_mesa, array_agg(mc.nombre) AS correlativas, array_agg(mc.id) AS id_correlativas
             FROM materias m
             INNER JOIN tipos_materias tm ON tm.id = m.id_tipo
@@ -109,7 +109,7 @@ export class MateriasController {
                 INNER JOIN materias m ON m.id = me.id_materia
                 GROUP BY m.id
             ) me ON me.id_materia = m.id
-            GROUP BY m.id, m.nombre, m.anio, tm.nombre, tm.id, c.nombre, c.id, c.duracion, cu.ultima_cursada, me.ultima_mesa
+            GROUP BY m.id, m.nombre, m.anio, m.horas, tm.nombre, tm.id, c.nombre, c.id, c.duracion, cu.ultima_cursada, me.ultima_mesa
             ORDER BY c.nombre, m.anio, m.nombre`;
         this.db.manyOrNone(query)
             .then((materias) => {
@@ -129,14 +129,14 @@ export class MateriasController {
     public ver_materia(req: Request, res: Response) {
         const id = req.params.id;
         const query = `
-            SELECT m.id, m.nombre, m.anio, tm.nombre AS tipo_materia, c.nombre AS carrera, array_agg(mc.nombre) AS correlativas
+            SELECT m.id, m.nombre, m.anio, m.horas, tm.nombre AS tipo_materia, c.nombre AS carrera, array_agg(mc.nombre) AS correlativas
             FROM materias m
             INNER JOIN tipos_materias tm ON tm.id = m.id_tipo
             INNER JOIN carreras c ON c.id = m.id_carrera
             LEFT JOIN correlativas co ON co.id_materia = m.id
             LEFT JOIN materias mc ON mc.id = co.id_correlativa
             WHERE m.id = $1
-            GROUP BY m.id, m.nombre, m.anio, tm.nombre, c.nombre`;
+            GROUP BY m.id, m.nombre, m.anio, m.horas, tm.nombre, c.nombre`;
         this.db.one(query, id)
             .then((materia) => {
                 if (materia.correlativas[0] === null) {
@@ -152,7 +152,7 @@ export class MateriasController {
     public materias_por_carrera(req: Request, res: Response) {
         const id_carrera = req.params.id_carrera;
         const query = `
-            SELECT m.id, m.nombre, m.anio, tm.nombre AS tipo_materia, c.nombre AS carrera, 
+            SELECT m.id, m.nombre, m.anio, m.horas, tm.nombre AS tipo_materia, c.nombre AS carrera, 
                 array_agg(mc.nombre) AS correlativas
             FROM materias m
             INNER JOIN tipos_materias tm ON tm.id = m.id_tipo
@@ -160,7 +160,7 @@ export class MateriasController {
             LEFT JOIN correlativas co ON co.id_materia = m.id
             LEFT JOIN materias mc ON mc.id = co.id_correlativa
             WHERE m.id_carrera = $1
-            GROUP BY m.id, m.nombre, m.anio, tm.nombre, c.nombre
+            GROUP BY m.id, m.nombre, m.anio, m.horas, tm.nombre, c.nombre
             ORDER BY c.nombre, m.anio, m.nombre`;
         this.db.manyOrNone(query, id_carrera)
             .then((materias) => {
@@ -212,7 +212,8 @@ export class MateriasController {
     }
     public crear_materia(req: Request, res: Response) {
         const materia: Materia = req.body.materia;
-        this.db.one(`INSERT INTO materias (nombre, anio, id_carrera, id_tipo) VALUES ($1, $2, $3, $4) RETURNING ID`, [materia.nombre, materia.anio, materia.id_carrera, materia.id_tipo])
+        const query = `INSERT INTO materias (nombre, anio, id_carrera, id_tipo, horas) VALUES ($1, $2, $3, $4, $5) RETURNING ID`;
+        this.db.one(query, [materia.nombre, materia.anio, materia.id_carrera, materia.id_tipo, materia.horas])
             .then((data) => {
                 if (materia.correlativas && materia.correlativas.length) {
                     const id_materia_creada = data.id;
@@ -250,8 +251,8 @@ export class MateriasController {
             const id = +req.params.id;
             const materia: Materia = req.body.materia;
             if (id) {
-                const query = `UPDATE materias SET (nombre, anio, id_carrera, id_tipo) VALUES ($1, $2, $3, $4) WHERE id = $5`;
-                await this.db.none(query, [materia.nombre, materia.anio, materia.id_carrera, materia.id_tipo, id]);
+                const query = `UPDATE materias SET nombre = $1, anio = $2, horas = $3 WHERE id = $4`;
+                await this.db.none(query, [materia.nombre, materia.anio, materia.horas, id]);
                 res.status(200).json({
                     mensaje: "Se modificó la materia correctamente",
                 });
