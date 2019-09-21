@@ -55,6 +55,8 @@ export class UsuariosController {
     public async crear_usuario(req: Request, res: Response) {
         try {
             const usuario: Usuario = req.body.usuario;
+            usuario.email = usuario.email.toLowerCase();
+            usuario.dni = usuario.dni.split('.').join('').split(' ').join();
             const hash = await bcrypt.hash(usuario.dni, 10);
             const query = `
                 INSERT INTO usuarios (email, dni, clave, nombre, apellido, fecha_nacimiento, id_rol, telefono, domicilio, fecha_alta) 
@@ -251,6 +253,8 @@ export class UsuariosController {
     public async crear_alumno(req: Request, res: Response) {
         try {
             const usuario: Usuario = req.body.usuario;
+            usuario.email = usuario.email.toLowerCase();
+            usuario.dni = usuario.dni.split('.').join('').split(' ').join();
             const id_carrera_abierta = +req.body.id_carrera_abierta;
             if (usuario) {
                 const hash = await bcrypt.hash(usuario.dni, 10);

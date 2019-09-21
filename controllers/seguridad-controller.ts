@@ -15,8 +15,9 @@ export class SeguridadController {
     }
 
     public login(req: Request, res: Response) {
-        const email: string = req.body.mail;
+        let email: string = req.body.mail;
         const clave: string = req.body.clave;
+        email = email.toLowerCase();
         const query = `
             SELECT u.id, u.clave, u.nombre, u.apellido, r.nombre AS rol, a.id AS id_alumno, u.activo
             FROM usuarios u
