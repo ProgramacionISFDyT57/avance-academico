@@ -24,6 +24,7 @@ export class CarrerasController {
         this.ver_carreras_abiertas_hoy = this.ver_carreras_abiertas_hoy.bind(this);
         this.crear_carreras_abiertas = this.crear_carreras_abiertas.bind(this);
         this.eliminar_carrera_abierta = this.eliminar_carrera_abierta.bind(this);
+        this.asignar_libro_folio = this.eliminar_carrera_abierta.bind(this);
     }
 
     public async borrar_inscripcion_carrera(req: Request, res: Response) {
@@ -330,6 +331,25 @@ export class CarrerasController {
             console.error(error);
             res.status(500).json({
                 mensaje: 'Ocurrio un error al eliminar la carrera abierta',
+                error
+            });
+        }
+    }
+
+    public async asignar_libro_folio(req: Request, res: Response) {
+        try {
+            const id_inscripcion = +req.params.id_inscripcion;
+            const libro = req.body.libro;
+            const folio = req.body.folio;
+            const query =`UPDATE inscripciones_carreras SET libro = $1, folio = $2 WHERE id = $3;`;
+            await this.db.none(query, [libro, folio, id_inscripcion]);
+            res.status(200).json({
+                mensaje: 'Se asignó correctamente el libro y folio'
+            });
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({
+                mensaje: 'Ocurrio un error al asigar el libro y folio',
                 error
             });
         }

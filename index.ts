@@ -78,6 +78,7 @@ app.delete("/carreras_abiertas/:id_carrera_abierta", seguridadController.chequea
 // INSCRIPCIONES A CARRERAS
 app.get("/inscriptos_carrera/:id_carrera_abierta", seguridadController.chequear_roles(['directivo', 'preceptor']), carrerasController.listar_inscriptos_carrera);
 app.post("/inscripciones_carreras", seguridadController.chequear_roles(['directivo', 'preceptor']), carrerasController.crear_inscripcion_carrera);
+app.put("/inscripciones_carreras/:id_inscripcion", seguridadController.chequear_roles(['directivo', 'preceptor']), carrerasController.asignar_libro_folio);
 app.delete("/inscripciones_carreras/:id_inscripcion", seguridadController.chequear_roles(['directivo', 'preceptor']), carrerasController.borrar_inscripcion_carrera);
 //////////////////////////////////////////////////////////////////////////////////////
 // CURSADAS ABIERTAS
