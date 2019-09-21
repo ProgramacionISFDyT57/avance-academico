@@ -29,6 +29,7 @@ export class UsuariosController {
         this.eliminar_alumno = this.eliminar_alumno.bind(this);
         // Otros
         this.cambiar_contraseña = this.cambiar_contraseña.bind(this);
+        this.resetear_contraseña = this.resetear_contraseña.bind(this);
         this.listar_roles = this.listar_roles.bind(this);
         this.avance_academico = this.avance_academico.bind(this);
     }
@@ -377,7 +378,27 @@ export class UsuariosController {
         } catch (error) {
             console.error(error);
             res.status(500).json({
-                mensaje: 'Ocurrio un error al crear el alumno',
+                mensaje: 'Ocurrio un error al cambiar la contraseña',
+                error
+            });
+        }
+    }
+    public async resetear_contraseña(req: Request, res: Response) {
+        try {
+            const id_usuario = req.params.id_usuario;
+            let query = `SELECT dni FROM usuarios WHERE id = $1`;
+            const result = await this.db.one(query, [id_usuario]);
+            const dni = result.dni;
+            const hash = await bcrypt.hash(dni, 10);
+            query = `UPDATE usuarios SET clave = $1 WHERE id = $2`;
+            await this.db.none(query, [hash, id_usuario]);
+            res.status(200).json({
+                mensaje: "Reseteo de contraseña exitoso",
+            });
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({
+                mensaje: 'Ocurrio un error al resetear la contraseña',
                 error
             });
         }

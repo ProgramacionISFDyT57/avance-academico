@@ -36,6 +36,7 @@ app.put("/usuarios/activar/:id_usuario", seguridadController.chequear_roles(['di
 app.put("/usuarios/desactivar/:id_usuario", seguridadController.chequear_roles(['directivo']), usuariosController.desactivar_usuario);
 app.delete("/usuarios/:id_usuario", seguridadController.chequear_roles(['directivo']), usuariosController.eliminar_usuario);
 app.put("/cambio_password", seguridadController.chequear_roles(), usuariosController.cambiar_contraseña);
+app.put("/reset_password/:id_usuario", seguridadController.chequear_roles(['admin']), usuariosController.resetear_contraseña);
 // PROFESORES
 app.get("/profesores", seguridadController.chequear_roles(), usuariosController.listar_profesores);
 // ALUMNOS
