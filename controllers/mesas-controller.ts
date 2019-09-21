@@ -46,12 +46,12 @@ export class MesasController {
             }
         });
     }
-    private async inscribir_alumno_mesa_service(id_mesa: number, id_alumno: number) {
+    private async inscribir_alumno_mesa_service(id_mesa: number, id_alumno: number, libre: boolean) {
         return new Promise(async (resolve, reject) => {
             try {
-                const query = `INSERT INTO inscripciones_mesa (id_mesa, id_alumno, fecha_inscripcion) 
-                VALUES ($1, $2, current_timestamp);`
-                await this.db.none(query, [id_mesa, id_alumno]);
+                const query = `INSERT INTO inscripciones_mesa (id_mesa, id_alumno, libre, fecha_inscripcion) 
+                VALUES ($1, $2, $3, current_timestamp);`
+                await this.db.none(query, [id_mesa, id_alumno, libre]);
                 resolve();
             } catch (error) {
                 reject(error);
@@ -78,7 +78,11 @@ export class MesasController {
                             if (correlativas_aprobadas === true) {
                                 const final_aprobado = await this.helper.final_aprobado(id_materia, id_alumno);
                                 if (!final_aprobado) {
-                                    await this.inscribir_alumno_mesa_service(id_mesa, id_alumno);
+                                    if (cursada_libre) {
+                                        await this.inscribir_alumno_mesa_service(id_mesa, id_alumno, true);
+                                    } else {
+                                        await this.inscribir_alumno_mesa_service(id_mesa, id_alumno, false);
+                                    }
                                     res.status(200).json({
                                         mensaje: 'Inscripción a final creada!',
                                     });
@@ -135,9 +139,11 @@ export class MesasController {
                         if (correlativas_aprobadas === true) {
                             const final_aprobado = await this.helper.final_aprobado(id_materia, id_alumno);
                             if (!final_aprobado) {
-                                const query = `INSERT INTO inscripciones_mesa (id_mesa, id_alumno, fecha_inscripcion) 
-                                                    VALUES ($1, $2, current_timestamp);`
-                                await this.db.none(query, [id_mesa, id_alumno])
+                                if (cursada_libre) {
+                                    await this.inscribir_alumno_mesa_service(id_mesa, id_alumno, true);
+                                } else {
+                                    await this.inscribir_alumno_mesa_service(id_mesa, id_alumno, false);
+                                }
                                 res.status(200).json({
                                     mensaje: 'Inscripción a final creada!',
                                 });
