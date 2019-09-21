@@ -365,7 +365,8 @@ export class MesasController {
                         CONCAT_WS(', ', us.apellido, us.nombre) AS profesor, pf.id AS id_profesor,
                         CONCAT_WS(', ', us1.apellido, us1.nombre) AS vocal1, v1.id AS id_vocal1,
                         CONCAT_WS(', ', us2.apellido, us2.nombre) AS vocal2, v2.id AS id_vocal2,
-                        il.inscripciones_libres, ir.inscripciones_regulares
+                        COALESCE(il.inscripciones_libres, 0) AS inscripciones_libres, COALESCE(ir.inscripciones_regulares, 0) AS inscripciones_regulares,
+                        (COALESCE(il.inscripciones_libres, 0) + COALESCE(ir.inscripciones_regulares, 0)) AS cant_inscriptos
                     FROM mesas me 
                     LEFT JOIN inscripciones_mesa ic ON ic.id_mesa = me.id
                     INNER JOIN materias ma ON ma.id = me.id_materia
