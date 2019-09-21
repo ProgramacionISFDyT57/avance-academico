@@ -140,14 +140,18 @@ export class CursadasController {
                 query = `
                     SELECT C.id, C.anio AS anio_cursada, C.fecha_inicio, C.fecha_limite, 
                         M.nombre AS materia, M.anio AS anio_materia, ca.nombre AS carrera, ca.id AS id_carrera,
-                        CONCAT_WS(', ', U.apellido, U.nombre) AS profesor, P.id AS id_profesor, h.horarios,
-                        COUNT(ic.id) AS cant_inscriptos
+                        CONCAT_WS(', ', U.apellido, U.nombre) AS profesor, P.id AS id_profesor, h.horarios, ic.cant_inscriptos
                     FROM cursadas C
                     INNER JOIN materias M ON M.id = C.id_materia
                     INNER JOIN carreras ca ON ca.id = M.id_carrera
                     LEFT JOIN profesores P ON P.id = C.id_profesor
                     LEFT JOIN usuarios U ON U.id = P.id_usuario
-                    LEFT JOIN inscripciones_cursadas ic ON ic.id_cursada = C.id
+                    LEFT JOIN (
+                        SELECT c.id AS id_cursada, COUNT(ic.id) AS cant_inscriptos
+                        FROM cursadas c
+                        LEFT JOIN inscripciones_cursadas ic ON ic.id_cursada = c.id
+                        GROUP BY c.id
+                    ) AS ic ON ic.id_cursada = C.id
                     LEFT JOIN (
                         SELECT c.id AS id_cursada, 
                             json_agg(jsonb_build_object( 
@@ -159,9 +163,6 @@ export class CursadasController {
                         LEFT JOIN horarios h ON h.id_cursada = c.id
                         GROUP BY c.id
                     ) AS h ON h.id_cursada = C.id
-                    GROUP BY C.id, C.anio, C.fecha_inicio, C.fecha_limite, 
-                        M.nombre, M.anio, ca.nombre, ca.id,
-                        CONCAT_WS(', ', U.apellido, U.nombre), P.id, h.horarios
                     ORDER BY C.anio DESC, ca.nombre, M.anio, M.nombre`;
                 cursadas = await this.db.manyOrNone(query);
                 for (const cursada of cursadas) {
