@@ -452,11 +452,11 @@ export class MesasController {
                     LEFT JOIN usuarios us2 ON us2.id = v2.id_usuario
                     INNER JOIN materias ma ON ma.id = me.id_materia
                     INNER JOIN carreras c ON c.id = ma.id_carrera
-                    INNER JOIN inscripciones_mesa im ON im.id_mesa = me.id
-                    INNER JOIN alumnos al ON al.id = im.id_alumno
-                    INNER JOIN usuarios us ON us.id = al.id_usuario
-                    INNER JOIN inscripciones_carreras ic ON ic.id_alumno = al.id
-                    INNER JOIN carreras_abiertas caa ON caa.id = ic.id_carrera_abierta
+                    LEFT JOIN inscripciones_mesa im ON im.id_mesa = me.id
+                    LEFT JOIN alumnos al ON al.id = im.id_alumno
+                    LEFT JOIN usuarios us ON us.id = al.id_usuario
+                    LEFT JOIN inscripciones_carreras ic ON ic.id_alumno = al.id
+                    LEFT JOIN carreras_abiertas caa ON caa.id = ic.id_carrera_abierta
 
                     INNER JOIN (
                         SELECT ic2.id_alumno
