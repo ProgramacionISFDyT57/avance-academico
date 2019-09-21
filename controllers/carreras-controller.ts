@@ -24,7 +24,7 @@ export class CarrerasController {
         this.ver_carreras_abiertas_hoy = this.ver_carreras_abiertas_hoy.bind(this);
         this.crear_carreras_abiertas = this.crear_carreras_abiertas.bind(this);
         this.eliminar_carrera_abierta = this.eliminar_carrera_abierta.bind(this);
-        this.asignar_libro_folio = this.eliminar_carrera_abierta.bind(this);
+        this.asignar_libro_folio = this.asignar_libro_folio.bind(this);
     }
 
     public async borrar_inscripcion_carrera(req: Request, res: Response) {
