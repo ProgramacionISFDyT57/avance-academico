@@ -480,7 +480,7 @@ export class MesasController {
                         CONCAT_WS(', ', us1.apellido, us1.nombre),
                         CONCAT_WS(', ', us2.apellido, us2.nombre)
                     `;
-                const inscriptos = await this.db.one(query, [id_mesa, id_materia, cursa]);
+                const inscriptos = await this.db.oneOrNone(query, [id_mesa, id_materia, cursa]);
                 res.status(200).json(inscriptos);
             } else {
                 res.status(400).json({
