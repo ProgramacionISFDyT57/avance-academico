@@ -365,7 +365,7 @@ export class MesasController {
                         CONCAT_WS(', ', us.apellido, us.nombre) AS profesor, pf.id AS id_profesor,
                         CONCAT_WS(', ', us1.apellido, us1.nombre) AS vocal1, v1.id AS id_vocal1,
                         CONCAT_WS(', ', us2.apellido, us2.nombre) AS vocal2, v2.id AS id_vocal2,
-                        COUNT(ic.id) AS cant_inscriptos
+                        il.inscripciones_libres, ir.inscripciones_regulares
                     FROM mesas me 
                     LEFT JOIN inscripciones_mesa ic ON ic.id_mesa = me.id
                     INNER JOIN materias ma ON ma.id = me.id_materia
@@ -376,11 +376,23 @@ export class MesasController {
                     LEFT JOIN usuarios us1 ON us1.id = v1.id_usuario
                     LEFT JOIN profesores v2 ON v2.id = me.id_vocal2
                     LEFT JOIN usuarios us2 ON us2.id = v2.id_usuario
-                    GROUP BY me.id, ma.nombre, ma.anio, me.fecha_inicio, me.fecha_limite,
-                        me.fecha_examen, ca.nombre, ca.id,
-                        CONCAT_WS(', ', us.apellido, us.nombre), pf.id,
-                        CONCAT_WS(', ', us1.apellido, us1.nombre), v1.id,
-                        CONCAT_WS(', ', us2.apellido, us2.nombre), v2.id
+
+                    LEFT JOIN (
+                        SELECT m.id AS id_mesa, COUNT(im.id) AS inscripciones_libres
+                        FROM mesas m
+                        LEFT JOIN inscripciones_mesa im ON im.id_mesa = m.id
+                        WHERE im.libre = true
+                        GROUP BY m.id
+                    ) AS il ON il.id_mesa = me.id
+
+                    LEFT JOIN (
+                        SELECT m.id AS id_mesa, COUNT(im.id) AS inscripciones_regulares
+                        FROM mesas m
+                        LEFT JOIN inscripciones_mesa im ON im.id_mesa = m.id
+                        WHERE im.libre = false
+                        GROUP BY m.id
+                    ) AS ir ON ir.id_mesa = me.id
+
                     ORDER BY me.fecha_examen DESC, ca.nombre, ma.anio, ma.nombre`;
                 mesas = await this.db.manyOrNone(query);
             }
