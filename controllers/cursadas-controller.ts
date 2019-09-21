@@ -215,7 +215,7 @@ export class CursadasController {
                         });
                     } else {
                         let query = `UPDATE cursadas SET id_profesor = $1, anio = $2, fecha_inicio = $3, fecha_limite = $4 WHERE id = $5;`;
-                        const resp = await this.db.one(query, [cursada.id_profesor, cursada.año, cursada.fecha_inicio, cursada.fecha_limite, id_cursada]);
+                        await this.db.none(query, [cursada.id_profesor, cursada.año, cursada.fecha_inicio, cursada.fecha_limite, id_cursada]);
                         query = 'DELETE FROM horarios WHERE id_cursada = $1';
                         await this.db.none(query, [id_cursada]);
                         if (horarios && horarios.length) {
