@@ -411,7 +411,7 @@ export class UsuariosController {
             }
             if (id_alumno) {
                 const query = `
-                    SELECT c.nombre AS carrera, ca.cohorte, us.apellido, us.nombre, us.dni, us.telefono, us.fecha_nacimiento, ica.libro, ica.folio
+                    SELECT c.nombre AS carrera, ca.cohorte, us.apellido, us.nombre, us.dni, us.telefono, us.fecha_nacimiento, ica.libro, ica.folio,
                         json_agg(json_build_object( 
                             'materia', ma.nombre, 
                             'anio', ma.anio, 
