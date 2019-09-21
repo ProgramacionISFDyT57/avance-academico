@@ -8,19 +8,17 @@ export class MateriasController {
 
     constructor(db: IDatabase<any>) {
         this.db = db;
+        // Tipos de materias
         this.ver_tipos_materias = this.ver_tipos_materias.bind(this);
         this.crear_tipo_materia = this.crear_tipo_materia.bind(this);
         this.modificar_tipo_materia = this.modificar_tipo_materia.bind(this);
         this.borrar_tipo_materia = this.borrar_tipo_materia.bind(this);
-        //
+        // Materias
         this.listar_materias = this.listar_materias.bind(this);
-        this.ver_materia = this.ver_materia.bind(this);
         this.materias_por_carrera = this.materias_por_carrera.bind(this);
         this.crear_materia = this.crear_materia.bind(this);
         this.modificar_materia = this.modificar_materia.bind(this);
         this.borrar_materia = this.borrar_materia.bind(this);
-        this.crear_correlativas = this.crear_correlativas.bind(this);
-        this.borrar_correlativas = this.borrar_correlativas.bind(this);
     }
 
     // Tipos de materias
@@ -120,29 +118,6 @@ export class MateriasController {
                     }
                 }
                 res.status(200).json(materias);
-            })
-            .catch((error) => {
-                console.error(error);
-                res.status(500).json(error);
-            });
-    }
-    public ver_materia(req: Request, res: Response) {
-        const id = req.params.id;
-        const query = `
-            SELECT m.id, m.nombre, m.anio, m.horas, tm.nombre AS tipo_materia, c.nombre AS carrera, array_agg(mc.nombre) AS correlativas
-            FROM materias m
-            INNER JOIN tipos_materias tm ON tm.id = m.id_tipo
-            INNER JOIN carreras c ON c.id = m.id_carrera
-            LEFT JOIN correlativas co ON co.id_materia = m.id
-            LEFT JOIN materias mc ON mc.id = co.id_correlativa
-            WHERE m.id = $1
-            GROUP BY m.id, m.nombre, m.anio, m.horas, tm.nombre, c.nombre`;
-        this.db.one(query, id)
-            .then((materia) => {
-                if (materia.correlativas[0] === null) {
-                    materia.correlativas = [];
-                }
-                res.status(200).json(materia);
             })
             .catch((error) => {
                 console.error(error);
@@ -290,78 +265,5 @@ export class MateriasController {
             });
         }
 
-    }
-    // Correlativas
-    public crear_correlativas(req: Request, res: Response) {
-        const id_materia = req.body.id_materia
-        const id_correlativa = req.body.id_correlativa
-        this.db.one(`SELECT id_carrera, anio 
-            FROM materias WHERE id =$1`, [id_materia])
-            .then(resultado1 => {
-                this.db.one(`SELECT id_carrera, anio
-                    FROM materias WHERE id =$2`, [id_correlativa])
-                    .then(resultado2 => {
-                        if (resultado1.id_carrera === resultado2.id_carrera) {
-                            if (resultado2.año > resultado1.año) {
-                                this.db.none(`INSERT INTO correlativas (id_materia, id_correlativa) 
-                                    VALUES ($1, $2)`, [id_materia, id_correlativa])
-                                    .then(() => {
-                                        res.status(200).json({
-                                            mensaje: 'Se creo la correlativa correctamente',
-                                        });
-                                    })
-                            } else {
-                                res.status(400).json({
-                                    mensaje: 'Correlativa ilógica',
-                                })
-                            }
-                        }
-                        else {
-                            res.status(400).json({
-                                mensaje: 'Materias de diferentes carreras',
-                            })
-                        }
-                    })
-                    .catch((error) => {
-                        console.error(error);
-                        res.status(500).json(error);
-                    });
-            })
-            .catch((error) => {
-                console.error(error);
-                res.status(500).json(error);
-            });
-    }
-    public borrar_correlativas(req: Request, res: Response) {
-        const id_materia = req.body.id_materia
-        const id_correlativa = req.body.id_correlativa
-        const query = `DELETE FROM corrrelativas WHERE id_materia =$1 AND id_correlativa = $2`;
-        this.db.none(query, [id_materia, id_correlativa])
-            .then(() => {
-                res.status(200).json({
-                    mensaje: 'Se elimino la correlativa correctamente',
-                });
-            })
-            .catch((error) => {
-                console.error(error);
-                res.status(500).json(error);
-            });
-    }
-    public ver_correlativas(req: Request, res: Response) {
-        const id_materia = +req.params.id_materia
-        const query = `
-            SELECT M.id, M.nombre, M.anio
-            FROM materias M 
-            INNER JOIN correlativas C ON C.id_correlativa = M.id
-            WHERE C.id_materia = $1`;
-        this.db.manyOrNone(query, [id_materia])
-            .then((data) => {
-
-                res.status(200).json(data);
-            })
-            .catch((error) => {
-                console.error(error);
-                res.status(500).json(error);
-            });
     }
 }

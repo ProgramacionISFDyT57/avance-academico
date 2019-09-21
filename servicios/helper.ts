@@ -1,11 +1,69 @@
 import { IDatabase } from 'pg-promise';
 import { CursadaAlumno } from '../modelos/cursada-alumno';
+import { Avance } from '../modelos/modelo-avance-academico';
 
 export class HelperService {
     private db: IDatabase<any>;
 
     constructor(db: IDatabase<any>) {
         this.db = db;
+    }
+
+    public notas_validas(avance: Avance) {
+        if (avance.nota_cuat_1 >= 4 && avance.nota_cuat_2 >= 4 && avance.nota_recuperatorio) {
+            return 'No es posible tener nota de recuperatorio con los dos cuatrimestres aprobados';
+        } else if (avance.nota_cuat_1 < 4 && avance.nota_cuat_2 < 4 && avance.nota_recuperatorio) {
+            return 'No es posible tener nota de recuperatorio con los dos cuatrimestres desaprobados';
+        } else if (avance.nota_cuat_1 % 1 !== 0 || avance.nota_cuat_2 % 1 !== 0 || avance.nota_recuperatorio % 1 !== 0) {
+            return 'Las notas deben ser números enteros';
+        } else if (
+            ((avance.nota_cuat_1) && (avance.nota_cuat_1 < 1 || avance.nota_cuat_1 > 10)) ||
+            ((avance.nota_cuat_2) && (avance.nota_cuat_2 < 1 || avance.nota_cuat_2 > 10)) ||
+            ((avance.nota_recuperatorio) && (avance.nota_recuperatorio < 1 || avance.nota_recuperatorio > 10))
+        ) {
+            return 'Las notas deben ser entre 1 y 10';
+        } else {
+            return true;
+        }
+    }
+    public asistencia_valida(avance: Avance) {
+        if (avance.asistencia) {
+            if (avance.asistencia < 0 || avance.asistencia > 100) {
+                return 'La asistencia debe ser un número entero entre 0 y 100';
+            } else if (avance.asistencia % 1 !== 0 || avance.asistencia % 1 !== 0) {
+                return 'La asistencia debe ser un número entero entre 0 y 100';
+            }
+        }
+        return true;
+    }
+
+    public async get_id_materia(id_cursada: number): Promise<number> {
+        return new Promise(async (resolve, reject) => {
+            try {
+                const query = `
+                    SELECT ma.id
+                    FROM cursadas cu
+                    INNER JOIN materias ma ON ma.id = cu.id_materia
+                    WHERE cu.id = $1;`
+                const mesa = await this.db.one(query, id_cursada);
+                resolve(mesa.id);
+            } catch (error) {
+                reject(error);
+            }
+        });
+    }
+
+    public async realizar_inscripcion_cursada(id_alumno: number, id_cursada: number, cursa: boolean, equivalencia: boolean) {
+        return new Promise(async (resolve, reject) => {
+            try {
+                const query = `INSERT INTO inscripciones_cursadas (id_alumno, id_cursada, cursa, equivalencia, fecha_inscripcion) 
+                                VALUES ($1, $2, $3, $4, current_timestamp);`
+                await this.db.none(query, [id_alumno, id_cursada, cursa, equivalencia]);
+                resolve();
+            } catch (error) {
+                reject(error);
+            }
+        })
     }
     
     public async get_id_materias_correlativas(id_materia: number): Promise<{id:number, nombre:string}[]> {

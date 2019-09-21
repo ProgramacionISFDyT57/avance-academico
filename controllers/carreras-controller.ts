@@ -12,21 +12,210 @@ export class CarrerasController {
     constructor(db: IDatabase<any>) {
         this.db = db;
         this.helper = new HelperService(db);
-        this.borrar_inscripcion_carrera = this.borrar_inscripcion_carrera.bind(this);
-        this.crear_inscripcion_carrera = this.crear_inscripcion_carrera.bind(this);
-        this.listar_inscriptos_carrera = this.listar_inscriptos_carrera.bind(this);
-        this.ver_carreras = this.ver_carreras.bind(this);
-        this.ver_carrera = this.ver_carrera.bind(this);
+
+        // Carreras
+        this.listar_carreras = this.listar_carreras.bind(this);
         this.crear_carrera = this.crear_carrera.bind(this);
         this.modificar_carrera = this.modificar_carrera.bind(this);
         this.borrar_carrera = this.borrar_carrera.bind(this);
+        // Carreras Abiertas
         this.ver_carreras_abiertas = this.ver_carreras_abiertas.bind(this);
         this.ver_carreras_abiertas_hoy = this.ver_carreras_abiertas_hoy.bind(this);
         this.crear_carreras_abiertas = this.crear_carreras_abiertas.bind(this);
         this.eliminar_carrera_abierta = this.eliminar_carrera_abierta.bind(this);
+        // Inscripciones a carreras
+        this.listar_inscriptos_carrera = this.listar_inscriptos_carrera.bind(this);
+        this.crear_inscripcion_carrera = this.crear_inscripcion_carrera.bind(this);
+        this.borrar_inscripcion_carrera = this.borrar_inscripcion_carrera.bind(this);
+        //
         this.asignar_libro_folio = this.asignar_libro_folio.bind(this);
     }
 
+    // Carreras
+    public listar_carreras(req: Request, res: Response) {
+        const query = `
+            SELECT c.id, c.nombre, c.resolucion, c.duracion, c.cantidad_materias, COUNT(m.id) AS materias_cargadas
+            FROM carreras c
+            LEFT JOIN materias m ON m.id_carrera = c.id
+            GROUP BY c.id, c.nombre, c.resolucion, c.duracion, c.cantidad_materias
+            ORDER BY nombre ASC;`
+        this.db.manyOrNone(query)
+            .then(datos => {
+                res.json(datos);
+            })
+            .catch(err => {
+                console.error(err);
+                res.status(500).json({
+                    mensaje: err.detail,
+                    datos: err
+                })
+            })
+    }
+    public crear_carrera(req: Request, res: Response) {
+        const carrera: Carrera = req.body.carrera;
+        this.db.one('INSERT INTO carreras (nombre, duracion, cantidad_materias, resolucion) VALUES ($1, $2, $3, $4) RETURNING ID;',
+            [carrera.nombre, carrera.duracion, carrera.cantidad_materias, carrera.resolucion])
+            .then((data) => {
+                res.status(200).json({
+                    mensaje: 'Se creó la carrera correctamente'
+                });
+            })
+            .catch((err) => {
+                console.error(err);
+                res.status(500).json({
+                    mensaje: err,
+                    datos: null
+                });
+            });
+    }
+    public async modificar_carrera(req: Request, res: Response) {
+        try {
+            const id = +req.params.id;
+            const carrera: Carrera = req.body.carrera;
+            if (id) {
+                const query = 'UPDATE carreras SET nombre = $1, duracion = $2, cantidad_materias = $3 , resolucion = $4 WHERE id = $5';
+                await this.db.none(query, [carrera.nombre, carrera.duracion, carrera.cantidad_materias, carrera.resolucion, id]);
+                res.status(200).json({
+                    mensaje: 'La carrera se modificó correctamente',
+                });
+            } else {
+                res.status(400).json({
+                    mensaje: 'ID de carrera incorrecto',
+                });
+            }
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({
+                mensaje: 'Ocurrio un error al modificar la carrera',
+                error
+            });
+        }
+    }
+    public borrar_carrera(req: Request, res: Response) {
+        const id = +req.params.id;
+        if (id) {
+            this.db.none('DELETE FROM carreras WHERE id = $1', [id])
+                .then((data) => {
+                    res.status(200).json({
+                        mensaje: 'La carrera se eliminó correctamente'
+                    });
+                })
+                .catch((error) => {
+                    console.error(error);
+                    res.status(500).json({
+                        mensaje: 'Ocurrió un error al eliminar la carrera',
+                        error
+                    });
+                });
+        } else {
+            res.status(400).json({
+                mensaje: 'ID Incorrecto',
+                datos: null
+            });
+        }
+    }
+
+    // Carreras Abiertas
+    public ver_carreras_abiertas(req: Request, res: Response) {
+        const query = `
+            SELECT CA.id, C.nombre, C.resolucion, C.duracion, CA.cohorte, CA.fecha_inicio, CA.fecha_limite,
+                COUNT(ic.id) AS cant_inscriptos
+            FROM carreras_abiertas CA
+            INNER JOIN carreras C ON C.id = CA.id_carrera
+            LEFT JOIN inscripciones_carreras ic ON ic.id_carrera_abierta = CA.id
+            GROUP BY CA.id, C.nombre, C.resolucion, C.duracion, CA.cohorte, CA.fecha_inicio, CA.fecha_limite
+            ORDER BY CA.cohorte DESC, C.nombre`;
+        this.db.manyOrNone(query)
+            .then((data) => {
+                res.status(200).json(data);
+            })
+            .catch((err) => {
+                console.error(err);
+                res.status(500).json(err);
+            });
+    }
+    public ver_carreras_abiertas_hoy(req: Request, res: Response) {
+        const query = `
+            SELECT CA.id, C.nombre, C.resolucion, C.duracion, CA.cohorte, CA.fecha_inicio, CA.fecha_limite
+            FROM carreras_abiertas CA
+            INNER JOIN carreras C ON C.id = CA.id_carrera
+            WHERE current_timestamp BETWEEN CA.fecha_inicio AND CA.fecha_limite
+            ORDER BY C.nombre`;
+        this.db.manyOrNone(query)
+            .then((data) => {
+                res.status(200).json(data);
+            })
+            .catch((err) => {
+                console.error(err);
+                res.status(500).json(err);
+            });
+    }
+    public async crear_carreras_abiertas(req: Request, res: Response) {
+        try {
+            const ca: CarreraAbierta = req.body.carreras_abiertas;
+            const año = new Date().getFullYear();
+            if (ca.cohorte < (año-6)) {
+                res.status(400).json({
+                    mensaje: 'La cohorte no puede ser menor que el año actual',
+                });
+            } else {
+                const fecha_inicio = new Date(ca.fecha_inicio);
+                const fecha_limite = new Date(ca.fecha_limite);
+                if (fecha_inicio > fecha_limite) {
+                    res.status(400).json({
+                        mensaje: 'La fecha de inicio no puede ser superior a la fecha límite',
+                    });
+                } else {
+                    const fecha_actual = new Date();
+                    if (fecha_actual > fecha_limite) {
+                        res.status(400).json({
+                            mensaje: 'La fecha límite no puede ser menor a la fecha actual',
+                        });
+                    } else {
+                        let query = `SELECT id FROM carreras_abiertas WHERE id_carrera = $1 AND cohorte = $2`;
+                        let result = await this.db.oneOrNone(query, [ca.id_carrera, ca.cohorte]);
+                        if (result) {
+                            res.status(400).json({
+                                mensaje: 'Ya está abierta la carrera en la cohorte seleccionada',
+                            });
+                        } else {
+                            query = `
+                                INSERT INTO carreras_abiertas (id_carrera, cohorte, fecha_inicio, fecha_limite) 
+                                VALUES ($1, $2, $3, $4);`;
+                            await this.db.none(query, [ca.id_carrera, ca.cohorte, ca.fecha_inicio, ca.fecha_limite]);
+                            res.status(200).json({
+                                mensaje: 'Se abrió la inscripción a la carrera correctamente'
+                            });
+                        }
+                    }
+                }
+            }
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({
+                mensaje: 'Ocurrio un error al abrir la carrera',
+                error
+            });
+        }
+    }
+    public async eliminar_carrera_abierta(req: Request, res: Response) {
+        try {
+            const id_carrera_abierta = +req.params.id_carrera_abierta;
+            const query = 'DELETE FROM carreras_abiertas WHERE id = $1;'
+            await this.db.none(query, [id_carrera_abierta]);
+            res.status(200).json({
+                mensaje: 'Se eliminó la carrera abierta',
+            });
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({
+                mensaje: 'Ocurrio un error al eliminar la carrera abierta',
+                error
+            });
+        }
+    }
+
+    // Inscripciones a carreras
     public async borrar_inscripcion_carrera(req: Request, res: Response) {
         try {
             const id_inscripcion = +req.params.id_inscripcion;
@@ -137,205 +326,7 @@ export class CarrerasController {
         }
     }
 
-
-    public ver_carreras(req: Request, res: Response) {
-        const query = `
-            SELECT c.id, c.nombre, c.resolucion, c.duracion, c.cantidad_materias, COUNT(m.id) AS materias_cargadas
-            FROM carreras c
-            LEFT JOIN materias m ON m.id_carrera = c.id
-            GROUP BY c.id, c.nombre, c.resolucion, c.duracion, c.cantidad_materias
-            ORDER BY nombre ASC;`
-        this.db.manyOrNone(query)
-            .then(datos => {
-                res.json(datos);
-            })
-            .catch(err => {
-                console.error(err);
-                res.status(500).json({
-                    mensaje: err.detail,
-                    datos: err
-                })
-            })
-    }
-    public ver_carrera(req: Request, res: Response) {
-        const id = req.params.id;
-        const query = `
-            SELECT c.id, c.nombre, c.resolucion, c.duracion, c.cantidad_materias, COUNT(m.id) AS materias_cargadas
-            FROM carreras c
-            LEFT JOIN materias m ON m.id_carrera = c.id
-            WHERE c.id = $1
-            GROUP BY c.id, c.nombre, c.resolucion, c.duracion, c.cantidad_materias;`
-        this.db.one(query, id)
-            .then(datos => {
-                res.json(datos);
-            })
-            .catch((error) => {
-                console.error(error);
-                res.status(500).json(error);
-            })
-    }
-    public crear_carrera(req: Request, res: Response) {
-        const carrera: Carrera = req.body.carrera;
-        this.db.one('INSERT INTO carreras (nombre, duracion, cantidad_materias, resolucion) VALUES ($1, $2, $3, $4) RETURNING ID;',
-            [carrera.nombre, carrera.duracion, carrera.cantidad_materias, carrera.resolucion])
-            .then((data) => {
-                res.status(200).json({
-                    mensaje: 'Se creó la carrera correctamente'
-                });
-            })
-            .catch((err) => {
-                console.error(err);
-                res.status(500).json({
-                    mensaje: err,
-                    datos: null
-                });
-            });
-    }
-    public async modificar_carrera(req: Request, res: Response) {
-        try {
-            const id = +req.params.id;
-            const carrera: Carrera = req.body.carrera;
-            if (id) {
-                const query = 'UPDATE carreras SET nombre = $1, duracion = $2, cantidad_materias = $3 , resolucion = $4 WHERE id = $5';
-                await this.db.none(query, [carrera.nombre, carrera.duracion, carrera.cantidad_materias, carrera.resolucion, id]);
-                res.status(200).json({
-                    mensaje: 'La carrera se modificó correctamente',
-                });
-            } else {
-                res.status(400).json({
-                    mensaje: 'ID de carrera incorrecto',
-                });
-            }
-        } catch (error) {
-            console.error(error);
-            res.status(500).json({
-                mensaje: 'Ocurrio un error al modificar la carrera',
-                error
-            });
-        }
-    }
-    public borrar_carrera(req: Request, res: Response) {
-        const id = +req.params.id;
-        if (id) {
-            this.db.none('DELETE FROM carreras WHERE id = $1', [id])
-                .then((data) => {
-                    res.status(200).json({
-                        mensaje: 'La carrera se eliminó correctamente'
-                    });
-                })
-                .catch((error) => {
-                    console.error(error);
-                    res.status(500).json({
-                        mensaje: 'Ocurrió un error al eliminar la carrera',
-                        error
-                    });
-                });
-        } else {
-            res.status(400).json({
-                mensaje: 'ID Incorrecto',
-                datos: null
-            });
-        }
-    }
-    public ver_carreras_abiertas(req: Request, res: Response) {
-        const query = `
-            SELECT CA.id, C.nombre, C.resolucion, C.duracion, CA.cohorte, CA.fecha_inicio, CA.fecha_limite,
-                COUNT(ic.id) AS cant_inscriptos
-            FROM carreras_abiertas CA
-            INNER JOIN carreras C ON C.id = CA.id_carrera
-            LEFT JOIN inscripciones_carreras ic ON ic.id_carrera_abierta = CA.id
-            GROUP BY CA.id, C.nombre, C.resolucion, C.duracion, CA.cohorte, CA.fecha_inicio, CA.fecha_limite
-            ORDER BY CA.cohorte DESC, C.nombre`;
-        this.db.manyOrNone(query)
-            .then((data) => {
-                res.status(200).json(data);
-            })
-            .catch((err) => {
-                console.error(err);
-                res.status(500).json(err);
-            });
-    }
-    public ver_carreras_abiertas_hoy(req: Request, res: Response) {
-        const query = `
-            SELECT CA.id, C.nombre, C.resolucion, C.duracion, CA.cohorte, CA.fecha_inicio, CA.fecha_limite
-            FROM carreras_abiertas CA
-            INNER JOIN carreras C ON C.id = CA.id_carrera
-            WHERE current_timestamp BETWEEN CA.fecha_inicio AND CA.fecha_limite
-            ORDER BY C.nombre`;
-        this.db.manyOrNone(query)
-            .then((data) => {
-                res.status(200).json(data);
-            })
-            .catch((err) => {
-                console.error(err);
-                res.status(500).json(err);
-            });
-    }
-    public async crear_carreras_abiertas(req: Request, res: Response) {
-        try {
-            const ca: CarreraAbierta = req.body.carreras_abiertas;
-            const año = new Date().getFullYear();
-            if (ca.cohorte < (año-6)) {
-                res.status(400).json({
-                    mensaje: 'La cohorte no puede ser menor que el año actual',
-                });
-            } else {
-                const fecha_inicio = new Date(ca.fecha_inicio);
-                const fecha_limite = new Date(ca.fecha_limite);
-                if (fecha_inicio > fecha_limite) {
-                    res.status(400).json({
-                        mensaje: 'La fecha de inicio no puede ser superior a la fecha límite',
-                    });
-                } else {
-                    const fecha_actual = new Date();
-                    if (fecha_actual > fecha_limite) {
-                        res.status(400).json({
-                            mensaje: 'La fecha límite no puede ser menor a la fecha actual',
-                        });
-                    } else {
-                        let query = `SELECT id FROM carreras_abiertas WHERE id_carrera = $1 AND cohorte = $2`;
-                        let result = await this.db.oneOrNone(query, [ca.id_carrera, ca.cohorte]);
-                        if (result) {
-                            res.status(400).json({
-                                mensaje: 'Ya está abierta la carrera en la cohorte seleccionada',
-                            });
-                        } else {
-                            query = `
-                                INSERT INTO carreras_abiertas (id_carrera, cohorte, fecha_inicio, fecha_limite) 
-                                VALUES ($1, $2, $3, $4);`;
-                            await this.db.none(query, [ca.id_carrera, ca.cohorte, ca.fecha_inicio, ca.fecha_limite]);
-                            res.status(200).json({
-                                mensaje: 'Se abrió la inscripción a la carrera correctamente'
-                            });
-                        }
-                    }
-                }
-            }
-        } catch (error) {
-            console.error(error);
-            res.status(500).json({
-                mensaje: 'Ocurrio un error al abrir la carrera',
-                error
-            });
-        }
-    }
-    public async eliminar_carrera_abierta(req: Request, res: Response) {
-        try {
-            const id_carrera_abierta = +req.params.id_carrera_abierta;
-            const query = 'DELETE FROM carreras_abiertas WHERE id = $1;'
-            await this.db.none(query, [id_carrera_abierta]);
-            res.status(200).json({
-                mensaje: 'Se eliminó la carrera abierta',
-            });
-        } catch (error) {
-            console.error(error);
-            res.status(500).json({
-                mensaje: 'Ocurrio un error al eliminar la carrera abierta',
-                error
-            });
-        }
-    }
-
+    //
     public async asignar_libro_folio(req: Request, res: Response) {
         try {
             const id_inscripcion = +req.params.id_inscripcion;

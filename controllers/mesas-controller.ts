@@ -526,6 +526,7 @@ export class MesasController {
             });
         }
     }
+    //
     public async acta_volante(req: Request, res: Response) {
         try {
             const id_mesa = +req.params.id_mesa;

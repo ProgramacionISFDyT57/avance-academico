@@ -23,14 +23,14 @@ export class CursadasController {
         this.inscribir_alumno_cursada = this.inscribir_alumno_cursada.bind(this);
         this.eliminar_inscripcion_cursada = this.eliminar_inscripcion_cursada.bind(this);
         this.eliminar_inscripcion_cursada_alumno = this.eliminar_inscripcion_cursada_alumno.bind(this);
-        this.listar_inscriptos_cursada = this.listar_inscriptos_cursada.bind(this);
         this.listar_inscriptos_cursada2 = this.listar_inscriptos_cursada2.bind(this);
         this.planilla_inscriptos_cursada = this.planilla_inscriptos_cursada.bind(this);
         // Notas
         this.cargar_notas_cursada = this.cargar_notas_cursada.bind(this);
         this.eliminar_notas_cursada = this.eliminar_notas_cursada.bind(this);
-
     }
+
+    // Cursadas
     public async crear_cursada(req: Request, res: Response) {
         try {
             const cursada: Cursada = req.body.cursada;
@@ -244,42 +244,13 @@ export class CursadasController {
             });
         }
     }
-
-
-    private notas_validas(avance: Avance) {
-        if (avance.nota_cuat_1 >= 4 && avance.nota_cuat_2 >= 4 && avance.nota_recuperatorio) {
-            return 'No es posible tener nota de recuperatorio con los dos cuatrimestres aprobados';
-        } else if (avance.nota_cuat_1 < 4 && avance.nota_cuat_2 < 4 && avance.nota_recuperatorio) {
-            return 'No es posible tener nota de recuperatorio con los dos cuatrimestres desaprobados';
-        } else if (avance.nota_cuat_1 % 1 !== 0 || avance.nota_cuat_2 % 1 !== 0 || avance.nota_recuperatorio % 1 !== 0) {
-            return 'Las notas deben ser números enteros';
-        } else if (
-            ((avance.nota_cuat_1) && (avance.nota_cuat_1 < 1 || avance.nota_cuat_1 > 10)) ||
-            ((avance.nota_cuat_2) && (avance.nota_cuat_2 < 1 || avance.nota_cuat_2 > 10)) ||
-            ((avance.nota_recuperatorio) && (avance.nota_recuperatorio < 1 || avance.nota_recuperatorio > 10))
-        ) {
-            return 'Las notas deben ser entre 1 y 10';
-        } else {
-            return true;
-        }
-    }
-    private asistencia_valida(avance: Avance) {
-        if (avance.asistencia) {
-            if (avance.asistencia < 0 || avance.asistencia > 100) {
-                return 'La asistencia debe ser un número entero entre 0 y 100';
-            } else if (avance.asistencia % 1 !== 0 || avance.asistencia % 1 !== 0) {
-                return 'La asistencia debe ser un número entero entre 0 y 100';
-            }
-        }
-        return true;
-    }
-
+    // Notas
     public async cargar_notas_cursada(req: Request, res: Response) {
         try {
             const avance: Avance = req.body.avance_academico;
-            const notas_validas = this.notas_validas(avance);
+            const notas_validas = this.helper.notas_validas(avance);
             if (notas_validas === true) {
-                const asistencia_valida = this.asistencia_valida(avance);
+                const asistencia_valida = this.helper.asistencia_valida(avance);
                 if (asistencia_valida === true) {
                     const query =
                         `INSERT INTO avance_academico (id_inscripcion_cursada, nota_cuat_1, nota_cuat_2, nota_recuperatorio, asistencia) 
@@ -328,36 +299,7 @@ export class CursadasController {
             });
         }
     }
-
-    private async get_id_materia(id_cursada: number): Promise<number> {
-        return new Promise(async (resolve, reject) => {
-            try {
-                const query = `
-                    SELECT ma.id
-                    FROM cursadas cu
-                    INNER JOIN materias ma ON ma.id = cu.id_materia
-                    WHERE cu.id = $1;`
-                const mesa = await this.db.one(query, id_cursada);
-                resolve(mesa.id);
-            } catch (error) {
-                reject(error);
-            }
-        });
-    }
-
-    private async realizar_inscripcion_cursada(id_alumno: number, id_cursada: number, cursa: boolean, equivalencia: boolean) {
-        return new Promise(async (resolve, reject) => {
-            try {
-                const query = `INSERT INTO inscripciones_cursadas (id_alumno, id_cursada, cursa, equivalencia, fecha_inscripcion) 
-                                VALUES ($1, $2, $3, $4, current_timestamp);`
-                await this.db.none(query, [id_alumno, id_cursada, cursa, equivalencia]);
-                resolve();
-            } catch (error) {
-                reject(error);
-            }
-        })
-    }
-
+    // Inscripciones Cursada
     public async crear_inscripcion_cursada(req: Request, res: Response) {
         try {
             const id_cursada = +req.body.id_cursada;
@@ -369,13 +311,13 @@ export class CursadasController {
                 if (id_cursada) {
                     const cursada_abierta = await this.helper.cursada_abierta(id_cursada);
                     if (cursada_abierta === true) {
-                        const id_materia = await this.get_id_materia(id_cursada);
+                        const id_materia = await this.helper.get_id_materia(id_cursada);
                         const correlativas_aprobadas = await this.helper.cursadas_correlativas_aprobadas(id_materia, id_alumno);
                         if (correlativas_aprobadas === true) {
                             if (!cursa) {
                                 const permite_libre = await this.helper.permite_inscripcion_libre(id_materia);
                                 if (permite_libre) {
-                                    await this.realizar_inscripcion_cursada(id_alumno, id_cursada, cursa, equivalencia);
+                                    await this.helper.realizar_inscripcion_cursada(id_alumno, id_cursada, cursa, equivalencia);
                                     res.status(200).json({
                                         mensaje: 'Inscripción a cursada creada!',
                                     });
@@ -385,7 +327,7 @@ export class CursadasController {
                                     });
                                 }
                             } else {
-                                await this.realizar_inscripcion_cursada(id_alumno, id_cursada, cursa, equivalencia);
+                                await this.helper.realizar_inscripcion_cursada(id_alumno, id_cursada, cursa, equivalencia);
                                 res.status(200).json({
                                     mensaje: 'Inscripción a cursada creada!',
                                 });
@@ -418,7 +360,6 @@ export class CursadasController {
             });
         }
     }
-
     public async inscribir_alumno_cursada(req: Request, res: Response) {
         try {
             const id_cursada = +req.body.id_cursada;
@@ -427,10 +368,10 @@ export class CursadasController {
             const id_alumno = +req.body.id_alumno;
             if (id_alumno) {
                 if (id_cursada) {
-                    const id_materia = await this.get_id_materia(id_cursada);
+                    const id_materia = await this.helper.get_id_materia(id_cursada);
                     const correlativas_aprobadas = await this.helper.cursadas_correlativas_aprobadas(id_materia, id_alumno);
                     if (correlativas_aprobadas === true) {
-                        await this.realizar_inscripcion_cursada(id_alumno, id_cursada, cursa, equivalencia);
+                        await this.helper.realizar_inscripcion_cursada(id_alumno, id_cursada, cursa, equivalencia);
                         res.status(200).json({
                             mensaje: 'Inscripción a cursada creada!',
                         });
@@ -457,7 +398,6 @@ export class CursadasController {
             });
         }
     }
-
     public async eliminar_inscripcion_cursada(req: Request, res: Response) {
         try {
             const token: Token = res.locals.token;
@@ -519,41 +459,6 @@ export class CursadasController {
             });
         }
     }
-
-    // Borrar
-    public async listar_inscriptos_cursada(req: Request, res: Response) {
-        try {
-            const id_cursada = +req.params.id_cursada;
-            if (id_cursada) {
-                const query = `
-                    SELECT us.apellido, us.nombre, us.dni, ic.fecha_inscripcion, ma.nombre AS materia, cu.anio AS anio_cursada,
-                        aa.nota_cuat_1, aa.nota_cuat_2, aa.nota_recuperatorio, aa.asistencia, ic.id AS id_inscripcion_cursada,
-                        ic.cursa, ic.equivalencia, c.nombre AS carrera, c.id AS id_carrera
-                    FROM cursadas cu
-                    INNER JOIN materias ma ON ma.id = cu.id_materia
-                    INNER JOIN carreras c ON c.id = ma.id_carrera
-                    INNER JOIN inscripciones_cursadas ic ON ic.id_cursada = cu.id
-                    INNER JOIN alumnos al ON al.id = ic.id_alumno
-                    INNER JOIN usuarios us ON us.id = al.id_usuario
-                    LEFT JOIN avance_academico aa ON aa.id_inscripcion_cursada = ic.id
-                    WHERE cu.id = $1
-                    ORDER BY us.apellido, us.nombre;`;
-                const inscriptos = await this.db.manyOrNone(query, [id_cursada]);
-                res.status(200).json(inscriptos);
-            } else {
-                res.status(400).json({
-                    mensaje: 'ID de cursada inválido'
-                });
-            }
-        } catch (error) {
-            console.error(error);
-            res.status(500).json({
-                mensaje: 'Ocurrio un error al listar los inscriptos a la cursada',
-                error
-            });
-        }
-    }
-
     public async listar_inscriptos_cursada2(req: Request, res: Response) {
         try {
             const id_cursada = +req.params.id_cursada;
@@ -600,7 +505,7 @@ export class CursadasController {
             });
         }
     }
-
+    //
     public async planilla_inscriptos_cursada(req: Request, res: Response) {
         try {
             const id_cursada = +req.params.id_cursada;
