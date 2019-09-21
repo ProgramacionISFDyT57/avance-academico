@@ -339,8 +339,8 @@ export class CarrerasController {
     public async asignar_libro_folio(req: Request, res: Response) {
         try {
             const id_inscripcion = +req.params.id_inscripcion;
-            const libro = req.body.libro;
-            const folio = req.body.folio;
+            const libro = +req.body.libro;
+            const folio = +req.body.folio;
             const query =`UPDATE inscripciones_carreras SET libro = $1, folio = $2 WHERE id = $3;`;
             await this.db.none(query, [libro, folio, id_inscripcion]);
             res.status(200).json({
