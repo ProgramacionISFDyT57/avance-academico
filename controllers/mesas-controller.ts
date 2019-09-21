@@ -356,9 +356,9 @@ export class MesasController {
                 query = `
                     SELECT me.id, ma.nombre AS materia, ma.anio AS anio_materia, me.fecha_inicio, me.fecha_limite, 
                         me.fecha_examen, ca.nombre AS carrera, ca.id AS id_carrera,
-                        CONCAT_WS(', ', us.apellido, us.nombre) AS profesor,
-                        CONCAT_WS(', ', us1.apellido, us1.nombre) AS vocal1,
-                        CONCAT_WS(', ', us2.apellido, us2.nombre) AS vocal2,
+                        CONCAT_WS(', ', us.apellido, us.nombre) AS profesor, pf.id AS id_profesor,
+                        CONCAT_WS(', ', us1.apellido, us1.nombre) AS vocal1, v1.id AS id_vocal1,
+                        CONCAT_WS(', ', us2.apellido, us2.nombre) AS vocal2, v2.id AS id_vocal2,
                         COUNT(ic.id) AS cant_inscriptos
                     FROM mesas me 
                     LEFT JOIN inscripciones_mesa ic ON ic.id_mesa = me.id
@@ -372,9 +372,9 @@ export class MesasController {
                     LEFT JOIN usuarios us2 ON us2.id = v2.id_usuario
                     GROUP BY me.id, ma.nombre, ma.anio, me.fecha_inicio, me.fecha_limite,
                         me.fecha_examen, ca.nombre, ca.id,
-                        CONCAT_WS(', ', us.apellido, us.nombre),
-                        CONCAT_WS(', ', us1.apellido, us1.nombre),
-                        CONCAT_WS(', ', us2.apellido, us2.nombre)
+                        CONCAT_WS(', ', us.apellido, us.nombre), pf.id,
+                        CONCAT_WS(', ', us1.apellido, us1.nombre), v1.id,
+                        CONCAT_WS(', ', us2.apellido, us2.nombre), v2.id
                     ORDER BY me.fecha_examen DESC, ca.nombre, ma.anio, ma.nombre`;
                 mesas = await this.db.manyOrNone(query);
             }
