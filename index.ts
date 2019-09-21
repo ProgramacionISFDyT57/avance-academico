@@ -83,7 +83,7 @@ app.delete("/inscripciones_carreras/:id_inscripcion", seguridadController.cheque
 //////////////////////////////////////////////////////////////////////////////////////
 // CURSADAS ABIERTAS
 //////////////////////////////////////////////////////////////////////////////////////
-app.get("/cursadas_abiertas", seguridadController.chequear_roles(), cursadasController.listar_cursadas_abiertas);
+app.get("/cursadas_abiertas", seguridadController.chequear_roles(), cursadasController.listar_cursadas);
 app.post("/cursadas", seguridadController.chequear_roles(['directivo', 'preceptor']), cursadasController.crear_cursada);
 app.delete("/cursadas/:id_cursada", seguridadController.chequear_roles(['directivo', 'preceptor']), cursadasController.eliminar_cursada);
 // INCRIPCIONES CURSADAS
