@@ -458,7 +458,7 @@ export class MesasController {
                     LEFT JOIN inscripciones_carreras ic ON ic.id_alumno = al.id
                     LEFT JOIN carreras_abiertas caa ON caa.id = ic.id_carrera_abierta
 
-                    INNER JOIN (
+                    RIGHT JOIN (
                         SELECT ic2.id_alumno
                         FROM materias m
                         INNER JOIN cursadas c ON c.id_materia = m.id
