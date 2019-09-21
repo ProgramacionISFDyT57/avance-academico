@@ -150,7 +150,7 @@ export class CursadasController {
                     LEFT JOIN inscripciones_cursadas ic ON ic.id_cursada = C.id
                     LEFT JOIN (
                         SELECT c.id AS id_cursada, 
-                            json_agg(json_build_object( 
+                            json_agg(jsonb_build_object( 
                                 'dia', h.dia, 
                                 'hora_inicio', h.hora_inicio, 
                                 'modulos', h.modulos
@@ -161,7 +161,7 @@ export class CursadasController {
                     ) AS h ON h.id_cursada = C.id
                     GROUP BY C.id, C.anio, C.fecha_inicio, C.fecha_limite, 
                         M.nombre, M.anio, ca.nombre, ca.id,
-                        CONCAT_WS(', ', U.apellido, U.nombre), P.id
+                        CONCAT_WS(', ', U.apellido, U.nombre), P.id, h.horarios
                     ORDER BY C.anio DESC, ca.nombre, M.anio, M.nombre`;
                 cursadas = await this.db.manyOrNone(query);
                 for (const cursada of cursadas) {
