@@ -51,10 +51,6 @@ app.get("/roles", seguridadController.chequear_roles(['directivo']), usuariosCon
 // app.post("/tipos_materia", materiasController.crear_tipo_materia);
 // app.put("/tipos_materia/:id", materiasController.modificar_tipo_materia);
 // app.delete("/tipos_materia/:id", materiasController.borrar_tipo_materia);
-// CORRELATIVAS
-// app.post('/correlativas', materiasController.crear_correlativas);
-// app.delete('/correlativas', materiasController.borrar_correlativas);
-// app.get("/correlativas/:id_materia", materiasController.ver_correlativas);
 // MATERIAS
 app.get("/materias", materiasController.listar_materias);
 // app.get("/materia/:id", materiasController.ver_materia); //borrar
@@ -85,6 +81,7 @@ app.delete("/inscripciones_carreras/:id_inscripcion", seguridadController.cheque
 //////////////////////////////////////////////////////////////////////////////////////
 app.get("/cursadas_abiertas", seguridadController.chequear_roles(), cursadasController.listar_cursadas);
 app.post("/cursadas", seguridadController.chequear_roles(['directivo', 'preceptor']), cursadasController.crear_cursada);
+app.put("/cursadas/:id_cursada", seguridadController.chequear_roles(['directivo', 'preceptor']), cursadasController.editar_cursada);
 app.delete("/cursadas/:id_cursada", seguridadController.chequear_roles(['directivo', 'preceptor']), cursadasController.eliminar_cursada);
 // INCRIPCIONES CURSADAS
 app.get("/inscriptos_cursada/:id_cursada", seguridadController.chequear_roles(['directivo', 'preceptor']), cursadasController.listar_inscriptos_cursada); // Borrar

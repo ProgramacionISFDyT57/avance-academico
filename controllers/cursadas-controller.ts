@@ -17,6 +17,7 @@ export class CursadasController {
         this.crear_cursada = this.crear_cursada.bind(this);
         this.listar_cursadas = this.listar_cursadas.bind(this);
         this.eliminar_cursada = this.eliminar_cursada.bind(this);
+        this.editar_cursada = this.editar_cursada.bind(this);
         // Inscripciones Cursada
         this.crear_inscripcion_cursada = this.crear_inscripcion_cursada.bind(this);
         this.inscribir_alumno_cursada = this.inscribir_alumno_cursada.bind(this);
@@ -35,7 +36,7 @@ export class CursadasController {
             const cursada: Cursada = req.body.cursada;
             const horarios: Horario[] = req.body.horarios;
             const año = new Date().getFullYear();
-            if (cursada.año < (año-6)) {
+            if (cursada.año < (año - 6)) {
                 res.status(400).json({
                     mensaje: 'El año no puede ser menor que el año actual',
                 });
@@ -189,6 +190,55 @@ export class CursadasController {
             });
         }
     }
+    public async editar_cursada(req: Request, res: Response) {
+        try {
+            const id_cursada = req.params.id_cursada
+            const cursada: Cursada = req.body.cursada;
+            const horarios: Horario[] = req.body.horarios;
+            const año = new Date().getFullYear();
+            if (cursada.año < (año - 6)) {
+                res.status(400).json({
+                    mensaje: 'El año no puede ser menor que el año actual',
+                });
+            } else {
+                const fecha_inicio = new Date(cursada.fecha_inicio);
+                const fecha_limite = new Date(cursada.fecha_limite);
+                if (fecha_inicio > fecha_limite) {
+                    res.status(400).json({
+                        mensaje: 'La fecha de inicio no puede ser superior a la fecha límite',
+                    });
+                } else {
+                    const fecha_actual = new Date();
+                    if (fecha_actual > fecha_limite) {
+                        res.status(400).json({
+                            mensaje: 'La fecha límite no puede ser menor a la actual',
+                        });
+                    } else {
+                        let query = `UPDATE cursadas SET id_profesor = $1, anio = $2, fecha_inicio = $3, fecha_limite = $4 WHERE id = $5;`;
+                        const resp = await this.db.one(query, [cursada.id_profesor, cursada.año, cursada.fecha_inicio, cursada.fecha_limite, id_cursada]);
+                        query = 'DELETE FROM horarios WHERE id_cursada = $1';
+                        await this.db.none(query, [id_cursada]);
+                        if (horarios && horarios.length) {
+                            for (const horario of horarios) {
+                                query = `INSERT INTO horarios (id_cursada, dia, hora_inicio, modulos) VALUES ($1, $2, $3, $4);`;
+                                await this.db.none(query, [id_cursada, horario.dia, horario.hora_inicio, horario.modulos]);
+                            }
+                        }
+                        res.json({
+                            mensaje: 'Se editó la cursada correctamente'
+                        });
+                    }
+                }
+            }
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({
+                mensaje: 'Ocurrio un error al editar la cursada',
+                error
+            });
+        }
+    }
+
 
     private notas_validas(avance: Avance) {
         if (avance.nota_cuat_1 >= 4 && avance.nota_cuat_2 >= 4 && avance.nota_recuperatorio) {
