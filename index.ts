@@ -84,6 +84,7 @@ app.get("/cursadas_abiertas", seguridadController.chequear_roles(), cursadasCont
 app.post("/cursadas", seguridadController.chequear_roles(['directivo', 'preceptor']), cursadasController.crear_cursada);
 app.put("/cursadas/:id_cursada", seguridadController.chequear_roles(['directivo', 'preceptor']), cursadasController.editar_cursada);
 app.delete("/cursadas/:id_cursada", seguridadController.chequear_roles(['directivo', 'preceptor']), cursadasController.eliminar_cursada);
+app.get("/horarios/:anio/:id_carrera/:curso", seguridadController.chequear_roles(), cursadasController.horarios);
 // INCRIPCIONES CURSADAS
 app.get("/inscriptos_cursada2/:id_cursada", seguridadController.chequear_roles(['directivo', 'preceptor']), cursadasController.listar_inscriptos_cursada2);
 app.get("/planilla_inscriptos_cursada/:id_cursada", seguridadController.chequear_roles(['directivo', 'preceptor']), cursadasController.planilla_inscriptos_cursada);

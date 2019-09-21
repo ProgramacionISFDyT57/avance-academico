@@ -24,10 +24,12 @@ export class CursadasController {
         this.eliminar_inscripcion_cursada = this.eliminar_inscripcion_cursada.bind(this);
         this.eliminar_inscripcion_cursada_alumno = this.eliminar_inscripcion_cursada_alumno.bind(this);
         this.listar_inscriptos_cursada2 = this.listar_inscriptos_cursada2.bind(this);
-        this.planilla_inscriptos_cursada = this.planilla_inscriptos_cursada.bind(this);
         // Notas
         this.cargar_notas_cursada = this.cargar_notas_cursada.bind(this);
         this.eliminar_notas_cursada = this.eliminar_notas_cursada.bind(this);
+        //
+        this.planilla_inscriptos_cursada = this.planilla_inscriptos_cursada.bind(this);
+        this.horarios = this.horarios.bind(this);
     }
 
     // Cursadas
@@ -532,6 +534,40 @@ export class CursadasController {
                     WHERE cu.id = $1
                     GROUP BY ma.nombre, ma.anio, cu.anio, c.nombre, CONCAT_WS(', ', usp.apellido, usp.nombre)`;
                 const inscriptos = await this.db.one(query, [id_cursada]);
+                res.status(200).json(inscriptos);
+            } else {
+                res.status(400).json({
+                    mensaje: 'ID de cursada inválido'
+                });
+            }
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({
+                mensaje: 'Ocurrio un error al listar los inscriptos a la cursada',
+                error
+            });
+        }
+    }
+    //
+    public async horarios(req: Request, res: Response) {
+        try {
+            const anio = +req.params.anio;
+            const id_carrera = +req.params.id_carrera;
+            const curso = +req.params.curso;
+            if (anio && id_carrera && curso) {
+                const query = `
+                    SELECT c.nombre AS carrera, m.nombre AS materia, cu.anio AS anio_cursada, h.dia, h.hora_inicio, h.modulos, CONCAT_WS(', ', u.apellido, u.nombre) AS profesor
+                    FROM carreras c
+                    INNER JOIN materias m ON m.id_carrera = c.id
+                    INNER JOIN cursadas cu ON cu.id_materia = m.id
+                    LEFT JOIN horarios h ON h.id_cursada = cu.id
+                    LEFT JOIN profesores p ON p.id = cu.id_profesor
+                    LEFT JOIN usuarios u ON u.id = p.id_usuario
+                    WHERE cu.anio = $1
+                    AND c.id = $2
+                    AND m.anio = $3
+                    ORDER BY h.dia, h.hora_inicio;`;
+                const inscriptos = await this.db.one(query, [anio, id_carrera, curso]);
                 res.status(200).json(inscriptos);
             } else {
                 res.status(400).json({
