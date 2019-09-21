@@ -82,6 +82,8 @@ export class UsuariosController {
     public async editar_usuario(req: Request, res: Response) {
         try {
             const a: Usuario = req.body.usuario;
+            a.email = a.email.toLowerCase();
+            a.dni = a.dni.split('.').join('').split(' ').join();
             if (a) {
                 const query = `
                     UPDATE usuarios SET 
@@ -305,6 +307,8 @@ export class UsuariosController {
     public async editar_alumno(req: Request, res: Response) {
         try {
             const a: Alumno = req.body.alumno;
+            a.email = a.email.toLowerCase();
+            a.dni = a.dni.split('.').join('').split(' ').join();
             if (a) {
                 let query = `SELECT id_usuario FROM alumnos WHERE id = $1`;
                 let result = await this.db.one(query, [a.id_alumno]);
