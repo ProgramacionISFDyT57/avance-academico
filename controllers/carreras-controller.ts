@@ -139,10 +139,10 @@ export class CarrerasController {
 
     public ver_carreras(req: Request, res: Response) {
         const query = `
-            SELECT c.id, c.nombre, c.duracion, c.cantidad_materias, COUNT(m.id) AS materias_cargadas
+            SELECT c.id, c.nombre, c.resolucion, c.duracion, c.cantidad_materias, COUNT(m.id) AS materias_cargadas
             FROM carreras c
             LEFT JOIN materias m ON m.id_carrera = c.id
-            GROUP BY c.id, c.nombre, c.duracion, c.cantidad_materias
+            GROUP BY c.id, c.nombre, c.resolucion, c.duracion, c.cantidad_materias
             ORDER BY nombre ASC;`
         this.db.manyOrNone(query)
             .then(datos => {
@@ -159,11 +159,11 @@ export class CarrerasController {
     public ver_carrera(req: Request, res: Response) {
         const id = req.params.id;
         const query = `
-            SELECT c.id, c.nombre, c.duracion, c.cantidad_materias, COUNT(m.id) AS materias_cargadas
+            SELECT c.id, c.nombre, c.resolucion, c.duracion, c.cantidad_materias, COUNT(m.id) AS materias_cargadas
             FROM carreras c
             LEFT JOIN materias m ON m.id_carrera = c.id
             WHERE c.id = $1
-            GROUP BY c.id, c.nombre, c.duracion, c.cantidad_materias;`
+            GROUP BY c.id, c.nombre, c.resolucion, c.duracion, c.cantidad_materias;`
         this.db.one(query, id)
             .then(datos => {
                 res.json(datos);
@@ -175,8 +175,8 @@ export class CarrerasController {
     }
     public crear_carrera(req: Request, res: Response) {
         const carrera: Carrera = req.body.carrera;
-        this.db.one('INSERT INTO carreras (nombre, duracion, cantidad_materias) VALUES ($1, $2, $3) RETURNING ID;',
-            [carrera.nombre, carrera.duracion, carrera.cantidad_materias])
+        this.db.one('INSERT INTO carreras (nombre, duracion, cantidad_materias, resolucion) VALUES ($1, $2, $3, $4) RETURNING ID;',
+            [carrera.nombre, carrera.duracion, carrera.cantidad_materias, carrera.resolucion])
             .then((data) => {
                 res.status(200).json({
                     mensaje: 'Se creó la carrera correctamente'
@@ -195,8 +195,8 @@ export class CarrerasController {
             const id = +req.params.id;
             const carrera: Carrera = req.body.carrera;
             if (id) {
-                const query = 'UPDATE carreras SET nombre = $1, duracion = $2, cantidad_materias = $3 WHERE id = $4';
-                await this.db.none(query, [carrera.nombre, carrera.duracion, carrera.cantidad_materias, id]);
+                const query = 'UPDATE carreras SET nombre = $1, duracion = $2, cantidad_materias = $3 , resolucion = $4 WHERE id = $5';
+                await this.db.none(query, [carrera.nombre, carrera.duracion, carrera.cantidad_materias, carrera.resolucion, id]);
                 res.status(200).json({
                     mensaje: 'La carrera se modificó correctamente',
                 });
@@ -238,12 +238,12 @@ export class CarrerasController {
     }
     public ver_carreras_abiertas(req: Request, res: Response) {
         const query = `
-            SELECT CA.id, C.nombre, C.duracion, CA.cohorte, CA.fecha_inicio, CA.fecha_limite,
+            SELECT CA.id, C.nombre, C.resolucion, C.duracion, CA.cohorte, CA.fecha_inicio, CA.fecha_limite,
                 COUNT(ic.id) AS cant_inscriptos
             FROM carreras_abiertas CA
             INNER JOIN carreras C ON C.id = CA.id_carrera
             LEFT JOIN inscripciones_carreras ic ON ic.id_carrera_abierta = CA.id
-            GROUP BY CA.id, C.nombre, C.duracion, CA.cohorte, CA.fecha_inicio, CA.fecha_limite
+            GROUP BY CA.id, C.nombre, C.resolucion, C.duracion, CA.cohorte, CA.fecha_inicio, CA.fecha_limite
             ORDER BY CA.cohorte DESC, C.nombre`;
         this.db.manyOrNone(query)
             .then((data) => {
@@ -256,7 +256,7 @@ export class CarrerasController {
     }
     public ver_carreras_abiertas_hoy(req: Request, res: Response) {
         const query = `
-            SELECT CA.id, C.nombre, C.duracion, CA.cohorte, CA.fecha_inicio, CA.fecha_limite
+            SELECT CA.id, C.nombre, C.resolucion, C.duracion, CA.cohorte, CA.fecha_inicio, CA.fecha_limite
             FROM carreras_abiertas CA
             INNER JOIN carreras C ON C.id = CA.id_carrera
             WHERE current_timestamp BETWEEN CA.fecha_inicio AND CA.fecha_limite
