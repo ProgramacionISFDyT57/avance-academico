@@ -126,7 +126,7 @@ export class CursadasController {
                     ORDER BY cu.anio DESC, c.nombre, M.anio, M.nombre`;
                 const cursadasTodas = await this.db.manyOrNone(query, [id_alumno]);
                 for (const cursada of cursadasTodas) {
-                    if (cursada.horarios[0] === null) {
+                    if (cursada.horarios[0].dia === null) {
                         cursada.horarios = [];
                     }
                     const cursadaAprobada = await this.helper.cursada_aprobada(cursada.id_materia, id_alumno);
@@ -159,7 +159,7 @@ export class CursadasController {
                     ORDER BY C.anio DESC, ca.nombre, M.anio, M.nombre`;
                 cursadas = await this.db.manyOrNone(query);
                 for (const cursada of cursadas) {
-                    if (cursada.horarios[0] === null) {
+                    if (cursada.horarios[0].dia === null) {
                         cursada.horarios = [];
                     }
                 }
