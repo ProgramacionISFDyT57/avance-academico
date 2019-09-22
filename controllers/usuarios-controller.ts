@@ -225,7 +225,7 @@ export class UsuariosController {
             FROM usuarios u
             INNER JOIN profesores p ON p.id_usuario = u.id
             INNER JOIN cursadas c ON c.id_profesor = p.id
-            INNER JOIN horarios h ON h.id_cursada = c.id
+            LEFT JOIN horarios h ON h.id_cursada = c.id
             INNER JOIN materias m ON m.id = c.id_materia
             INNER JOIN carreras ca ON ca.id = m.id_carrera
             WHERE u.id_rol = 4
@@ -258,7 +258,7 @@ export class UsuariosController {
                 FROM usuarios u
                 INNER JOIN profesores p ON p.id_usuario = u.id
                 INNER JOIN cursadas c ON c.id_profesor = p.id
-                INNER JOIN horarios h ON h.id_cursada = c.id
+                LEFT JOIN horarios h ON h.id_cursada = c.id
                 INNER JOIN materias m ON m.id = c.id_materia
                 INNER JOIN carreras ca ON ca.id = m.id_carrera
                 WHERE u.id_rol = 4
