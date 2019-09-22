@@ -220,6 +220,7 @@ export class UsuariosController {
                     'hora_inicio', h.hora_inicio, 
                     'modulos', h.modulos, 
                     'materia', m.nombre, 
+                    'anio', m.anio,
                     'carrera', ca.nombre
                 ) ORDER BY h.dia, h.hora_inicio) AS detalle
             FROM usuarios u
@@ -253,6 +254,7 @@ export class UsuariosController {
                         'hora_inicio', h.hora_inicio, 
                         'modulos', h.modulos, 
                         'materia', m.nombre, 
+                        'anio', m.anio,
                         'carrera', ca.nombre
                     ) ORDER BY h.dia, h.hora_inicio) AS detalle
                 FROM usuarios u
