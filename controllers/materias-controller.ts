@@ -9,7 +9,7 @@ export class MateriasController {
     constructor(db: IDatabase<any>) {
         this.db = db;
         // Tipos de materias
-        this.ver_tipos_materias = this.ver_tipos_materias.bind(this);
+        this.listar_tipos_materias = this.listar_tipos_materias.bind(this);
         this.crear_tipo_materia = this.crear_tipo_materia.bind(this);
         this.modificar_tipo_materia = this.modificar_tipo_materia.bind(this);
         this.borrar_tipo_materia = this.borrar_tipo_materia.bind(this);
@@ -22,66 +22,66 @@ export class MateriasController {
     }
 
     // Tipos de materias
-    public ver_tipos_materias(req: Request, res: Response) {
-        this.db.manyOrNone('SELECT id, nombre FROM tipos_materias ORDER BY nombre')
-            .then((data) => {
-                res.status(200).json(data);
-            })
-            .catch((error) => {
-                console.error(error);
-                res.status(500).json(error);
-            });
-    }
-    public crear_tipo_materia(req: Request, res: Response) {
-        const tipo_materia: TipoMateria = req.body.tipo_materia;
-        this.db.one('INSERT INTO tipos_materias (nombre) VALUES ($1) RETURNING ID', [tipo_materia.nombre])
-            .then((data) => {
-                res.status(200).json({
-                    mensaje: 'Se creo el tipo de materia ' + tipo_materia.nombre,
-                    datos: data
-                });
-            })
-            .catch((error) => {
-                console.error(error);
-                res.status(500).json(error);
-            });
-    }
-    public modificar_tipo_materia(req: Request, res: Response) {
-        const id = +req.params.id;
-        const tipo_materia: TipoMateria = req.body.tipo_materia;
-        if (id) {
-            this.db.none('UPDATE tipos_materias SET nombre = $1 WHERE id = $2', [tipo_materia.nombre, id])
-                .then(() => {
-                    res.status(200).json({
-                        mensaje: 'Se modificó el tipo de materia',
-                    });
-                })
-                .catch((error) => {
-                    console.error(error);
-                    res.status(500).json(error);
-                });
-        } else {
-            res.status(400).json({
-                mensaje: 'ID Incorrecto'
+    public async listar_tipos_materias(req: Request, res: Response) {
+        try {
+            const query = 'SELECT id, nombre, libre, asistencia FROM tipos_materias ORDER BY nombre;';
+            const result = await this.db.manyOrNone(query);
+            res.status(200).json(result);
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({
+                mensaje: 'Ocurrio un error al listar los tipos de materias',
+                error
             });
         }
     }
-    public borrar_tipo_materia(req: Request, res: Response) {
-        const id = +req.params.id;
-        if (id) {
-            this.db.none('DELETE FROM tipos_materias WHERE id = $1', [id])
-                .then(() => {
-                    res.status(200).json({
-                        mensaje: "Se eliminó el tipo de materia",
-                    });
-                })
-                .catch((error) => {
-                    console.error(error);
-                    res.status(500).json(error);
-                });
-        } else {
-            res.status(400).json({
-                mensaje: 'ID Incorrecto',
+    public async crear_tipo_materia(req: Request, res: Response) {
+        try {
+            const tm: TipoMateria = req.body.tipo_materia;
+            const query = 'INSERT INTO tipos_materias (nombre, libre, asistencia) VALUES ($1, $2, $3)';
+            await this.db.none(query, [tm.nombre, tm.libre, tm.asistencia]);
+            res.status(200).json({
+                mensaje: 'Se creó el tipo de materia'
+            });
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({
+                mensaje: 'Ocurrio un error al crear el tipo de materia',
+                error
+            });
+        }
+    }
+    public async modificar_tipo_materia(req: Request, res: Response) {
+        try {
+            const id = +req.params.id;
+            const tm: TipoMateria = req.body.tipo_materia;
+            const query = 'UPDATE tipos_materias SET nombre = $1, libre = $2, asistencia = $3 WHERE id = $4';
+            await this.db.none(query, [tm.nombre, tm.libre, tm.asistencia, id]);
+            res.status(200).json({
+                mensaje: 'Se modificó el tipo de materia'
+            });
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({
+                mensaje: 'Ocurrio un error al modificar el tipo de materia',
+                error
+            });
+        }
+    }
+    public async borrar_tipo_materia(req: Request, res: Response) {
+        try {
+            const id = +req.params.id;
+            const tm: TipoMateria = req.body.tipo_materia;
+            const query = 'DELETE FROM tipos_materias WHERE id = $1';
+            await this.db.none(query, [id]);
+            res.status(200).json({
+                mensaje: 'Se eliminó el tipo de materia'
+            });
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({
+                mensaje: 'Ocurrio un error al eliminar el tipo de materia',
+                error
             });
         }
     }
