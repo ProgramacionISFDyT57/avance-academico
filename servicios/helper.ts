@@ -65,8 +65,8 @@ export class HelperService {
             }
         })
     }
-    
-    public async get_id_materias_correlativas(id_materia: number): Promise<{id:number, nombre:string}[]> {
+
+    public async get_id_materias_correlativas(id_materia: number): Promise<{ id: number, nombre: string }[]> {
         return new Promise(async (resolve, reject) => {
             try {
                 const query = `
@@ -146,7 +146,7 @@ export class HelperService {
         });
     }
 
-    public async carrera_abierta(id_carrera_abierta: number): Promise<true|string> {
+    public async carrera_abierta(id_carrera_abierta: number): Promise<true | string> {
         return new Promise(async (resolve, reject) => {
             try {
                 const query = `
@@ -164,10 +164,10 @@ export class HelperService {
                     if (fecha_limite >= fecha_actual) {
                         resolve(true);
                     } else {
-                        resolve('Ya finalizó la inscripción a la carrera, fecha límite: ' + fecha_limite_texto + ' // Fecha actual: ' + fecha_actual_texto);    
+                        resolve('Ya finalizó la inscripción a la carrera, fecha límite: ' + fecha_limite_texto + ' // Fecha actual: ' + fecha_actual_texto);
                     }
                 } else {
-                    resolve('Aun no inició la inscripción a la carrera, fecha de inicio: ' + fecha_inicio_texto + ' // Fecha actual: ' + fecha_actual_texto);    
+                    resolve('Aun no inició la inscripción a la carrera, fecha de inicio: ' + fecha_inicio_texto + ' // Fecha actual: ' + fecha_actual_texto);
                 }
             } catch (error) {
                 reject(error);
@@ -175,7 +175,7 @@ export class HelperService {
         });
     }
 
-    public async mesa_abierta(id_mesa: number): Promise<true|string> {
+    public async mesa_abierta(id_mesa: number): Promise<true | string> {
         return new Promise(async (resolve, reject) => {
             try {
                 const query = `
@@ -193,10 +193,10 @@ export class HelperService {
                     if (fecha_limite >= fecha_actual) {
                         resolve(true);
                     } else {
-                        resolve('Ya finalizó la inscripción a la mesa, fecha límite: ' + fecha_limite_texto + ' // Fecha actual: ' + fecha_actual_texto);    
+                        resolve('Ya finalizó la inscripción a la mesa, fecha límite: ' + fecha_limite_texto + ' // Fecha actual: ' + fecha_actual_texto);
                     }
                 } else {
-                    resolve('Aun no inició la inscripción a la mesa, fecha de inicio: ' + fecha_inicio_texto + ' // Fecha actual: ' + fecha_actual_texto);    
+                    resolve('Aun no inició la inscripción a la mesa, fecha de inicio: ' + fecha_inicio_texto + ' // Fecha actual: ' + fecha_actual_texto);
                 }
             } catch (error) {
                 reject(error);
@@ -204,7 +204,7 @@ export class HelperService {
         });
     }
 
-    public async cursada_abierta(id_cursada: number): Promise<true|string> {
+    public async cursada_abierta(id_cursada: number): Promise<true | string> {
         return new Promise(async (resolve, reject) => {
             try {
                 const query = `
@@ -222,10 +222,10 @@ export class HelperService {
                     if (fecha_limite >= fecha_actual) {
                         resolve(true);
                     } else {
-                        resolve('Ya finalizó la inscripción a la cursada, fecha límite: ' + fecha_limite_texto + ' // Fecha actual: ' + fecha_actual_texto);    
+                        resolve('Ya finalizó la inscripción a la cursada, fecha límite: ' + fecha_limite_texto + ' // Fecha actual: ' + fecha_actual_texto);
                     }
                 } else {
-                    resolve('Aun no inició la inscripción a la cursada, fecha de inicio: ' + fecha_inicio_texto + ' // Fecha actual: ' + fecha_actual_texto);    
+                    resolve('Aun no inició la inscripción a la cursada, fecha de inicio: ' + fecha_inicio_texto + ' // Fecha actual: ' + fecha_actual_texto);
                 }
             } catch (error) {
                 reject(error);
@@ -265,7 +265,7 @@ export class HelperService {
                     resolve(true);
                 } else {
                     const query = `
-                        SELECT ma.id
+                        SELECT cu.anio
                         FROM materias ma
                         INNER JOIN tipos_materias tm ON tm.id = ma.id_tipo
                         INNER JOIN cursadas cu ON cu.id_materia = ma.id
@@ -274,10 +274,17 @@ export class HelperService {
                         WHERE ma.id = $1
                         AND ic.id_alumno = $2
                         AND ((aa.nota_cuat_1 >=4 and aa.nota_cuat_2 >=4) OR (aa.nota_recuperatorio >=4))
-                        AND ((tm.id = 2 AND aa.asistencia >= 80) OR (tm.id != 2 AND aa.asistencia >= 60))`;
-                    const resultados = await this.db.manyOrNone(query, [id_materia, id_alumno]);
-                    if (resultados.length) {
-                        resolve(true);
+                        AND aa.asistencia >= tm.asistencia;`;
+                    const respuesta = await this.db.oneOrNone<{anio: number}>(query, [id_materia, id_alumno]);
+                    if (respuesta) {
+                        const año_cursada = respuesta.anio;
+                        const fecha_limite = new Date('1/5/' + (año_cursada + 6));
+                        const fecha_actual = new Date();
+                        if (fecha_actual < fecha_limite) {
+                            resolve(true);
+                        } else {
+                            resolve(false);
+                        }
                     } else {
                         resolve(false);
                     }
@@ -290,7 +297,7 @@ export class HelperService {
 
     public async finales_correlativos_aprobados(id_materia: number, id_alumno: number): Promise<boolean | string> {
         return new Promise(async (resolve, reject) => {
-            try {                
+            try {
                 const correlativas = await this.get_id_materias_correlativas(id_materia);
                 if (!correlativas.length) {
                     resolve(true);
@@ -316,7 +323,7 @@ export class HelperService {
 
     public async cursadas_correlativas_aprobadas(id_materia: number, id_alumno: number): Promise<boolean | string> {
         return new Promise(async (resolve, reject) => {
-            try {                
+            try {
                 const correlativas = await this.get_id_materias_correlativas(id_materia);
                 if (!correlativas.length) {
                     resolve(true);
@@ -344,16 +351,12 @@ export class HelperService {
         return new Promise(async (resolve, reject) => {
             try {
                 const query = `
-                    SELECT tm.nombre AS tipo_materia
+                    SELECT tm.libre
                     FROM materias ma
                     INNER JOIN tipos_materias tm ON tm.id = ma.id_tipo
                     WHERE ma.id = $1;`
-                const respuesta = await this.db.one(query, [id_materia]);
-                if (respuesta.tipo_materia.toLowerCase() === 'curricular') {
-                    resolve(true);
-                } else {
-                    resolve(false);
-                }
+                const respuesta = await this.db.one<{libre: boolean}>(query, [id_materia]);
+                resolve(respuesta.libre);
             } catch (error) {
                 reject(error);
             }
@@ -389,5 +392,5 @@ export class HelperService {
             }
         });
     }
-    
+
 }
