@@ -50,10 +50,10 @@ app.delete("/alumnos/:id_alumno", seguridadController.chequear_roles(['directivo
 // ROLES
 app.get("/roles", seguridadController.chequear_roles(['directivo']), usuariosController.listar_roles);
 // TIPOS DE MATERIAS
-app.get("/tipos_materia", materiasController.listar_tipos_materias);
-app.post("/tipos_materia", materiasController.crear_tipo_materia);
-app.put("/tipos_materia/:id", materiasController.modificar_tipo_materia);
-app.delete("/tipos_materia/:id", materiasController.borrar_tipo_materia);
+app.get("/tipos_materia", seguridadController.chequear_roles(['preceptor', 'directivo']), materiasController.listar_tipos_materias);
+app.post("/tipos_materia", seguridadController.chequear_roles(['directivo']), materiasController.crear_tipo_materia);
+app.put("/tipos_materia/:id", seguridadController.chequear_roles(['directivo']), materiasController.modificar_tipo_materia);
+app.delete("/tipos_materia/:id", seguridadController.chequear_roles(['directivo']), materiasController.borrar_tipo_materia);
 // MATERIAS
 app.get("/materias", materiasController.listar_materias);
 app.get("/materias_por_carrera/:id_carrera", materiasController.materias_por_carrera);
