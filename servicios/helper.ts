@@ -420,7 +420,7 @@ export class HelperService {
         return new Promise(async (resolve, reject) => {
             try {
                 const query = `
-                    SELECT tm.libre
+                    SELECT ic.id
                     FROM materias m
                     INNER JOIN cursadas c ON c.id_materia = m.id
                     INNER JOIN inscripciones_cursadas ic ON ic.id_cursada = c.id
