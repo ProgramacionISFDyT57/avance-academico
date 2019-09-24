@@ -306,7 +306,6 @@ export class CursadasController {
         try {
             const id_cursada = +req.body.id_cursada;
             const cursa = req.body.cursa;
-            const equivalencia = req.body.equivalencia;
             const token: Token = res.locals.token;
             const id_alumno = token.id_alumno;
             if (id_alumno) {
@@ -325,7 +324,7 @@ export class CursadasController {
                                     if (!cursa) {
                                         const permite_libre = await this.helper.permite_inscripcion_libre(id_materia, id_alumno, año_cursada, recursa);
                                         if (permite_libre === true) {
-                                            await this.helper.realizar_inscripcion_cursada(id_alumno, id_cursada, cursa, equivalencia, recursa);
+                                            await this.helper.realizar_inscripcion_cursada(id_alumno, id_cursada, cursa, false, recursa);
                                             res.status(200).json({
                                                 mensaje: 'Inscripción a cursada creada!',
                                             });
@@ -335,7 +334,7 @@ export class CursadasController {
                                             });
                                         }
                                     } else {
-                                        await this.helper.realizar_inscripcion_cursada(id_alumno, id_cursada, cursa, equivalencia, recursa);
+                                        await this.helper.realizar_inscripcion_cursada(id_alumno, id_cursada, cursa, false, recursa);
                                         res.status(200).json({
                                             mensaje: 'Inscripción a cursada creada!',
                                         });
