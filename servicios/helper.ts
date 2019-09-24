@@ -424,7 +424,7 @@ export class HelperService {
                     FROM materias m
                     INNER JOIN cursadas c ON c.id_materia = m.id
                     INNER JOIN inscripciones_cursadas ic ON ic.id_cursada = c.id
-                    WHERE ma.id = $1
+                    WHERE m.id = $1
                     AND ic.id_alumno = $2
                     AND c.anio < $3;`
                 const respuesta = await this.db.manyOrNone(query, [id_materia, id_alumno, año]);
