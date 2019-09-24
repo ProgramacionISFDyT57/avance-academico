@@ -18,7 +18,6 @@ export class MesasController {
         this.eliminar_inscripcion_mesa = this.eliminar_inscripcion_mesa.bind(this);
         this.eliminar_inscripcion_mesa_alumno = this.eliminar_inscripcion_mesa_alumno.bind(this);
         this.listar_inscriptos_mesa = this.listar_inscriptos_mesa.bind(this);
-        this.listar_inscriptos_mesa2 = this.listar_inscriptos_mesa2.bind(this);
         // Mesas
         this.lista_mesas = this.lista_mesas.bind(this);
         this.crear_mesa = this.crear_mesa.bind(this);
@@ -242,39 +241,7 @@ export class MesasController {
             });
         }
     }
-    // borrar
     public async listar_inscriptos_mesa(req: Request, res: Response) {
-        try {
-            const id_mesa = +req.params.id_mesa;
-            if (id_mesa) {
-                const query = `
-                SELECT us.apellido, us.nombre, us.dni, im.fecha_inscripcion, ma.nombre AS materia, me.fecha_examen, im.id AS id_inscripcion_mesa,
-                    fi.nota, fi.libro, fi.folio, c.nombre AS carrera, me.id AS id_mesa, c.id AS id_carrera
-                FROM mesas me
-                INNER JOIN materias ma ON ma.id = me.id_materia
-                INNER JOIN carreras c ON c.id = ma.id_carrera
-                INNER JOIN inscripciones_mesa im ON im.id_mesa = me.id
-                INNER JOIN alumnos al ON al.id = im.id_alumno
-                INNER JOIN usuarios us ON us.id = al.id_usuario
-                LEFT JOIN finales fi ON fi.id_inscripcion_mesa = im.id
-                WHERE me.id = $1
-                ORDER BY us.apellido, us.nombre;`;
-                const inscriptos = await this.db.manyOrNone(query, [id_mesa]);
-                res.status(200).json(inscriptos);
-            } else {
-                res.status(400).json({
-                    mensaje: 'ID de mesa invalido'
-                });
-            }
-        } catch (error) {
-            console.error(error);
-            res.status(500).json({
-                mensaje: 'Ocurrio un error al listar los inscriptos a la mesa',
-                error
-            });
-        }
-    }
-    public async listar_inscriptos_mesa2(req: Request, res: Response) {
         try {
             const id_mesa = +req.params.id_mesa;
             if (id_mesa) {

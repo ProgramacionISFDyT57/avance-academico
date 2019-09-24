@@ -53,17 +53,17 @@ export class HelperService {
         });
     }
 
-    public async realizar_inscripcion_cursada(id_alumno: number, id_cursada: number, cursa: boolean, equivalencia: boolean) {
+    public async realizar_inscripcion_cursada(id_alumno: number, id_cursada: number, cursa: boolean, equivalencia: boolean, recursa: boolean) {
         return new Promise(async (resolve, reject) => {
             try {
-                const query = `INSERT INTO inscripciones_cursadas (id_alumno, id_cursada, cursa, equivalencia, fecha_inscripcion) 
-                                VALUES ($1, $2, $3, $4, current_timestamp);`
-                await this.db.none(query, [id_alumno, id_cursada, cursa, equivalencia]);
+                const query = `INSERT INTO inscripciones_cursadas (id_alumno, id_cursada, cursa, equivalencia, recursa, fecha_inscripcion) 
+                                VALUES ($1, $2, $3, $4, $5, current_timestamp);`
+                await this.db.none(query, [id_alumno, id_cursada, cursa, equivalencia, recursa]);
                 resolve();
             } catch (error) {
                 reject(error);
             }
-        })
+        });
     }
 
     public async get_id_materias_correlativas(id_materia: number): Promise<{ id: number, nombre: string }[]> {
@@ -93,6 +93,21 @@ export class HelperService {
                     WHERE ic.id = $1`;
                 const resultado = await this.db.one(query, [id_inscripcion_cursada]);
                 resolve(resultado.id);
+            } catch (error) {
+                reject(error);
+            }
+        });
+    }
+
+    public async get_año_cursada(id_cursada: number): Promise<number> {
+        return new Promise(async (resolve, reject) => {
+            try {
+                const query = `
+                    SELECT c.anio
+                    FROM cursadas c 
+                    WHERE c.id = $1`;
+                const resultado = await this.db.one<{anio: number}>(query, [id_cursada]);
+                resolve(resultado.anio);
             } catch (error) {
                 reject(error);
             }
@@ -347,7 +362,7 @@ export class HelperService {
         });
     }
 
-    public async permite_inscripcion_libre(id_materia: number): Promise<boolean> {
+    private async materia_permite_insc_libre(id_materia: number): Promise<boolean> {
         return new Promise(async (resolve, reject) => {
             try {
                 const query = `
@@ -357,6 +372,93 @@ export class HelperService {
                     WHERE ma.id = $1;`
                 const respuesta = await this.db.one<{libre: boolean}>(query, [id_materia]);
                 resolve(respuesta.libre);
+            } catch (error) {
+                reject(error);
+            }
+        });
+    }
+
+    private async cant_materia_anio(id_materia: number): Promise<number> {
+        return new Promise(async (resolve, reject) => {
+            try {
+                const query = `
+                    SELECT COUNT(m.id) AS cantidad
+                    FROM materias m
+                    INNER JOIN (
+                        SELECT m.anio, m.id_carrera
+                        FROM materias m
+                        WHERE m.id = $1
+                    ) AS m2 ON m2.anio = m.anio AND m2.id_carrera = m.id_carrera;`;
+                const respuesta = await this.db.one<{cantidad: number}>(query, [id_materia]);
+                resolve(respuesta.cantidad);
+            } catch (error) {
+                reject(error);
+            }
+        });
+    }
+
+    private async cant_inscripciones_libres(id_alumno: number, año: number): Promise<number> {
+        return new Promise(async (resolve, reject) => {
+            try {
+                const query = `
+                    SELECT COUNT(ic.id) AS cantidad
+                    FROM inscripciones_cursadas ic
+                    INNER JOIN cursadas c ON c.id = ic.id_cursada
+                    WHERE ic.id_alumno = $1
+                    AND ic.cursa = false
+                    AND ic.recursa = false
+                    AND c.anio = $2`;
+                const respuesta = await this.db.one<{cantidad: number}>(query, [id_alumno, año]);
+                resolve(respuesta.cantidad);
+            } catch (error) {
+                reject(error);
+            }
+        });
+    }
+
+    public async recursa(id_materia: number, id_alumno: number, año: number): Promise<boolean> {
+        return new Promise(async (resolve, reject) => {
+            try {
+                const query = `
+                    SELECT tm.libre
+                    FROM materias m
+                    INNER JOIN cursadas c ON c.id_materia = m.id
+                    INNER JOIN inscripciones_cursadas ic ON ic.id_cursada = c.id
+                    WHERE ma.id = $1
+                    AND ic.id_alumno = $2
+                    AND c.anio < $3;`
+                const respuesta = await this.db.manyOrNone(query, [id_materia, id_alumno, año]);
+                if (respuesta.length) {
+                    resolve(true);
+                } else {
+                    resolve(false);
+                }
+            } catch (error) {
+                reject(error);
+            }
+        });
+    }
+
+    public async permite_inscripcion_libre(id_materia: number, id_alumno: number, año: number, recursa: boolean): Promise<true | string> {
+        return new Promise(async (resolve, reject) => {
+            try {
+                const materia_permite = await this.materia_permite_insc_libre(id_materia);
+                if (materia_permite) {
+                    if (!recursa) {
+                        const cant_materias_año = await this.cant_materia_anio(id_materia);
+                        const cant_inscripciones_libres = await this.cant_inscripciones_libres(id_alumno, año);
+                        const max_insc_libres = Math.ceil(0.3 * cant_materias_año);
+                        if (cant_inscripciones_libres < max_insc_libres) {
+                            resolve(true);
+                        } else {
+                            resolve('Superó la maxima cantidad de materias libre este año');
+                        }
+                    } else {
+                        resolve(true);
+                    }
+                } else {
+                    resolve('La materia no permite inscripción libre');
+                }
             } catch (error) {
                 reject(error);
             }

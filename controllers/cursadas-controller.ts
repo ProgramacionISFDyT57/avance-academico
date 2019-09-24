@@ -23,7 +23,7 @@ export class CursadasController {
         this.inscribir_alumno_cursada = this.inscribir_alumno_cursada.bind(this);
         this.eliminar_inscripcion_cursada = this.eliminar_inscripcion_cursada.bind(this);
         this.eliminar_inscripcion_cursada_alumno = this.eliminar_inscripcion_cursada_alumno.bind(this);
-        this.listar_inscriptos_cursada2 = this.listar_inscriptos_cursada2.bind(this);
+        this.listar_inscriptos_cursada = this.listar_inscriptos_cursada.bind(this);
         // Notas
         this.cargar_notas_cursada = this.cargar_notas_cursada.bind(this);
         this.eliminar_notas_cursada = this.eliminar_notas_cursada.bind(this);
@@ -314,29 +314,38 @@ export class CursadasController {
                     const cursada_abierta = await this.helper.cursada_abierta(id_cursada);
                     if (cursada_abierta === true) {
                         const id_materia = await this.helper.get_id_materia(id_cursada);
-                        const correlativas_aprobadas = await this.helper.cursadas_correlativas_aprobadas(id_materia, id_alumno);
-                        if (correlativas_aprobadas === true) {
-                            if (!cursa) {
-                                const permite_libre = await this.helper.permite_inscripcion_libre(id_materia);
-                                if (permite_libre) {
-                                    await this.helper.realizar_inscripcion_cursada(id_alumno, id_cursada, cursa, equivalencia);
+                        const cursada_aprobada = await this.helper.cursada_aprobada(id_materia, id_alumno);
+                        if (!cursada_aprobada) {
+                            const correlativas_aprobadas = await this.helper.cursadas_correlativas_aprobadas(id_materia, id_alumno);
+                            if (correlativas_aprobadas === true) {
+                                const año_cursada = await this.helper.get_año_cursada(id_cursada);
+                                const recursa = await this.helper.recursa(id_materia, id_alumno, año_cursada);
+                                if (!cursa) {
+                                    const permite_libre = await this.helper.permite_inscripcion_libre(id_materia, id_alumno, año_cursada, recursa);
+                                    if (permite_libre === true) {
+                                        await this.helper.realizar_inscripcion_cursada(id_alumno, id_cursada, cursa, equivalencia, recursa);
+                                        res.status(200).json({
+                                            mensaje: 'Inscripción a cursada creada!',
+                                        });
+                                    } else {
+                                        res.status(400).json({
+                                            mensaje: permite_libre,
+                                        });
+                                    }
+                                } else {
+                                    await this.helper.realizar_inscripcion_cursada(id_alumno, id_cursada, cursa, equivalencia, recursa);
                                     res.status(200).json({
                                         mensaje: 'Inscripción a cursada creada!',
                                     });
-                                } else {
-                                    res.status(400).json({
-                                        mensaje: 'La materia no permite inscripción libre',
-                                    });
                                 }
                             } else {
-                                await this.helper.realizar_inscripcion_cursada(id_alumno, id_cursada, cursa, equivalencia);
-                                res.status(200).json({
-                                    mensaje: 'Inscripción a cursada creada!',
+                                res.status(400).json({
+                                    mensaje: 'No posee las siguientes correlativas aprobadas: ' + correlativas_aprobadas,
                                 });
                             }
                         } else {
                             res.status(400).json({
-                                mensaje: 'No posee las siguientes correlativas aprobadas: ' + correlativas_aprobadas,
+                                mensaje: 'Ya posee la cursada aprobada'
                             });
                         }
                     } else {
@@ -372,8 +381,10 @@ export class CursadasController {
                 if (id_cursada) {
                     const id_materia = await this.helper.get_id_materia(id_cursada);
                     const correlativas_aprobadas = await this.helper.cursadas_correlativas_aprobadas(id_materia, id_alumno);
+                    const año_cursada = await this.helper.get_año_cursada(id_cursada);
+                    const recursa = await this.helper.recursa(id_materia, id_alumno, año_cursada);
                     if (correlativas_aprobadas === true) {
-                        await this.helper.realizar_inscripcion_cursada(id_alumno, id_cursada, cursa, equivalencia);
+                        await this.helper.realizar_inscripcion_cursada(id_alumno, id_cursada, cursa, equivalencia, recursa);
                         res.status(200).json({
                             mensaje: 'Inscripción a cursada creada!',
                         });
@@ -461,7 +472,7 @@ export class CursadasController {
             });
         }
     }
-    public async listar_inscriptos_cursada2(req: Request, res: Response) {
+    public async listar_inscriptos_cursada(req: Request, res: Response) {
         try {
             const id_cursada = +req.params.id_cursada;
             if (id_cursada) {
@@ -474,6 +485,7 @@ export class CursadasController {
                             'fecha_inscripcion', ic.fecha_inscripcion,
                             'id_inscripcion_cursada', ic.id,
                             'cursa', ic.cursa,
+                            'recursa', ic.recursa,
                             'equivalencia', ic.equivalencia,
                             'nota_cuat_1',  aa.nota_cuat_1,
                             'nota_cuat_2',  aa.nota_cuat_2,
@@ -519,6 +531,7 @@ export class CursadasController {
                             'nombre', us.nombre, 
                             'fecha_inscripcion', ic.fecha_inscripcion, 
                             'cursa', ic.cursa,
+                            'recursa', ic.recursa,
                             'cohorte', caa.cohorte
                         ) ORDER BY us.apellido, us.nombre) AS inscriptos
                     FROM cursadas cu

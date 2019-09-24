@@ -86,7 +86,7 @@ app.put("/cursadas/:id_cursada", seguridadController.chequear_roles(['directivo'
 app.delete("/cursadas/:id_cursada", seguridadController.chequear_roles(['directivo', 'preceptor']), cursadasController.eliminar_cursada);
 app.get("/horarios/:anio/:id_carrera/:curso", seguridadController.chequear_roles(), cursadasController.horarios);
 // INCRIPCIONES CURSADAS
-app.get("/inscriptos_cursada2/:id_cursada", seguridadController.chequear_roles(['directivo', 'preceptor']), cursadasController.listar_inscriptos_cursada2);
+app.get("/inscriptos_cursada2/:id_cursada", seguridadController.chequear_roles(['directivo', 'preceptor']), cursadasController.listar_inscriptos_cursada);
 app.get("/planilla_inscriptos_cursada/:id_cursada", seguridadController.chequear_roles(['directivo', 'preceptor']), cursadasController.planilla_inscriptos_cursada);
 app.post("/inscripcion_cursada", seguridadController.chequear_roles(['alumno']), cursadasController.crear_inscripcion_cursada);
 app.post("/inscribir_alumno_cursada", seguridadController.chequear_roles(['directivo', 'preceptor']), cursadasController.inscribir_alumno_cursada);
@@ -103,7 +103,7 @@ app.post("/crear_mesa", seguridadController.chequear_roles(['directivo', 'precep
 app.put("/mesas/:id_mesa", seguridadController.chequear_roles(['directivo', 'preceptor']), mesasController.editar_mesa);
 app.delete("/mesas/:id_mesa", seguridadController.chequear_roles(['directivo', 'preceptor']), mesasController.eliminar_mesa);
 // INSCRIPCIONES MESAS
-app.get("/inscriptos_mesa2/:id_mesa", seguridadController.chequear_roles(['directivo', 'preceptor']), mesasController.listar_inscriptos_mesa2);
+app.get("/inscriptos_mesa2/:id_mesa", seguridadController.chequear_roles(['directivo', 'preceptor']), mesasController.listar_inscriptos_mesa);
 app.get("/acta_volante/:id_mesa", seguridadController.chequear_roles(['directivo', 'preceptor']), mesasController.acta_volante);
 app.get("/acta_volante/:id_mesa/:libres", seguridadController.chequear_roles(['directivo', 'preceptor']), mesasController.acta_volante);
 app.post("/inscripciones_mesas", seguridadController.chequear_roles(['alumno']), mesasController.crear_inscripcion_mesa);
