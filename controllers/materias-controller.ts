@@ -88,7 +88,7 @@ export class MateriasController {
     // Materias
     public listar_materias(req: Request, res: Response) {
         const query = `
-            SELECT m.id, m.nombre, m.anio, m.horas, tm.nombre AS tipo_materia, tm.id AS id_tipo, c.nombre AS carrera, c.nombre_corto, c.id AS id_carrera, c.duracion AS duracion_carrera,
+            SELECT m.id, m.nombre, m.anio, m.horas, tm.nombre AS tipo_materia, tm.id AS id_tipo, c.nombre AS carrera, c.nombre_corto, c.resolucion, c.id AS id_carrera, c.duracion AS duracion_carrera,
                 cu.ultima_cursada, me.ultima_mesa, array_agg(mc.nombre) AS correlativas, array_agg(mc.id) AS id_correlativas
             FROM materias m
             INNER JOIN tipos_materias tm ON tm.id = m.id_tipo
@@ -107,7 +107,7 @@ export class MateriasController {
                 INNER JOIN materias m ON m.id = me.id_materia
                 GROUP BY m.id
             ) me ON me.id_materia = m.id
-            GROUP BY m.id, m.nombre, m.anio, m.horas, tm.nombre, tm.id, c.nombre, c.nombre_corto, c.id, c.duracion, cu.ultima_cursada, me.ultima_mesa
+            GROUP BY m.id, m.nombre, m.anio, m.horas, tm.nombre, tm.id, c.nombre, c.nombre_corto, c.resolucion, c.id, c.duracion, cu.ultima_cursada, me.ultima_mesa
             ORDER BY c.nombre, m.anio, m.nombre`;
         this.db.manyOrNone(query)
             .then((materias) => {
