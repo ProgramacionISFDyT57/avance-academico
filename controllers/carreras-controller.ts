@@ -32,49 +32,47 @@ export class CarrerasController {
     }
 
     // Carreras
-    public listar_carreras(req: Request, res: Response) {
-        const query = `
-            SELECT c.id, c.nombre, c.resolucion, c.duracion, c.cantidad_materias, COUNT(m.id) AS materias_cargadas
+    public async listar_carreras(req: Request, res: Response) {
+        try {
+            const query = `
+            SELECT c.id, c.nombre, c.nombre_corto, c.resolucion, c.duracion, c.cantidad_materias, c.descripcion, COUNT(m.id) AS materias_cargadas
             FROM carreras c
             LEFT JOIN materias m ON m.id_carrera = c.id
-            GROUP BY c.id, c.nombre, c.resolucion, c.duracion, c.cantidad_materias
+            GROUP BY c.id, c.nombre, c.nombre_corto, c.resolucion, c.duracion, c.cantidad_materias, c.descripcion
             ORDER BY nombre ASC;`
-        this.db.manyOrNone(query)
-            .then(datos => {
-                res.json(datos);
-            })
-            .catch(err => {
-                console.error(err);
-                res.status(500).json({
-                    mensaje: err.detail,
-                    datos: err
-                })
-            })
-    }
-    public crear_carrera(req: Request, res: Response) {
-        const carrera: Carrera = req.body.carrera;
-        this.db.one('INSERT INTO carreras (nombre, duracion, cantidad_materias, resolucion) VALUES ($1, $2, $3, $4) RETURNING ID;',
-            [carrera.nombre, carrera.duracion, carrera.cantidad_materias, carrera.resolucion])
-            .then((data) => {
-                res.status(200).json({
-                    mensaje: 'Se creó la carrera correctamente'
-                });
-            })
-            .catch((err) => {
-                console.error(err);
-                res.status(500).json({
-                    mensaje: err,
-                    datos: null
-                });
+            const carreras = await this.db.manyOrNone(query);
+            res.json(carreras);
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({
+                mensaje: 'Ocurrió un error al listar las carreras',
+                error
             });
+        }
+    }
+    public async crear_carrera(req: Request, res: Response) {
+        try {
+            const carrera: Carrera = req.body.carrera;
+            const query = 'INSERT INTO carreras (nombre, nombre_corto, duracion, cantidad_materias, resolucion, descripcion) VALUES ($1, $2, $3, $4, $5, $6);';
+            await this.db.none(query, [carrera.nombre, carrera.nombre_corto, carrera.duracion, carrera.cantidad_materias, carrera.resolucion, carrera.descripcion]);
+            res.status(200).json({
+                mensaje: 'Se creó la carrera correctamente'
+            });
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({
+                mensaje: 'Ocurrió un error al crear la carrera',
+                error
+            });
+        }
     }
     public async modificar_carrera(req: Request, res: Response) {
         try {
             const id = +req.params.id;
             const carrera: Carrera = req.body.carrera;
             if (id) {
-                const query = 'UPDATE carreras SET nombre = $1, duracion = $2, cantidad_materias = $3 , resolucion = $4 WHERE id = $5';
-                await this.db.none(query, [carrera.nombre, carrera.duracion, carrera.cantidad_materias, carrera.resolucion, id]);
+                const query = 'UPDATE carreras SET nombre = $1, nombre_corto = $2, duracion = $3, cantidad_materias = $4, resolucion = $5, descripcion = $6 WHERE id = $7';
+                await this.db.none(query, [carrera.nombre, carrera.nombre_corto, carrera.duracion, carrera.cantidad_materias, carrera.resolucion, carrera.descripcion, id]);
                 res.status(200).json({
                     mensaje: 'La carrera se modificó correctamente',
                 });
@@ -91,26 +89,19 @@ export class CarrerasController {
             });
         }
     }
-    public borrar_carrera(req: Request, res: Response) {
-        const id = +req.params.id;
-        if (id) {
-            this.db.none('DELETE FROM carreras WHERE id = $1', [id])
-                .then((data) => {
-                    res.status(200).json({
-                        mensaje: 'La carrera se eliminó correctamente'
-                    });
-                })
-                .catch((error) => {
-                    console.error(error);
-                    res.status(500).json({
-                        mensaje: 'Ocurrió un error al eliminar la carrera',
-                        error
-                    });
-                });
-        } else {
-            res.status(400).json({
-                mensaje: 'ID Incorrecto',
-                datos: null
+    public async borrar_carrera(req: Request, res: Response) {
+        try {
+            const id = +req.params.id;
+            const query = `DELETE FROM carreras WHERE id = $1';`
+            await this.db.none(query, [id]);
+            res.status(200).json({
+                mensaje: 'La carrera se eliminó correctamente'
+            });
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({
+                mensaje: 'Ocurrió un error al eliminar la carrera',
+                error
             });
         }
     }
@@ -154,7 +145,7 @@ export class CarrerasController {
         try {
             const ca: CarreraAbierta = req.body.carreras_abiertas;
             const año = new Date().getFullYear();
-            if (ca.cohorte < (año-6)) {
+            if (ca.cohorte < (año - 6)) {
                 res.status(400).json({
                     mensaje: 'La cohorte no puede ser menor que el año actual',
                 });
@@ -332,7 +323,7 @@ export class CarrerasController {
             const id_inscripcion = +req.params.id_inscripcion;
             const libro = +req.body.libro;
             const folio = +req.body.folio;
-            const query =`UPDATE inscripciones_carreras SET libro = $1, folio = $2 WHERE id = $3;`;
+            const query = `UPDATE inscripciones_carreras SET libro = $1, folio = $2 WHERE id = $3;`;
             await this.db.none(query, [libro, folio, id_inscripcion]);
             res.status(200).json({
                 mensaje: 'Se asignó correctamente el libro y folio'
