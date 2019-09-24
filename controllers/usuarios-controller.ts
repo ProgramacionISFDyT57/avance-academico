@@ -538,7 +538,7 @@ export class UsuariosController {
                         LEFT JOIN avance_academico aa ON aa.id_inscripcion_cursada = icu.id
                         WHERE icu.id_alumno = $1
                         AND ((aa.nota_cuat_1 >=4 and aa.nota_cuat_2 >=4) OR (aa.nota_recuperatorio >=4))
-                        AND ((tm.id = 2 AND aa.asistencia >= 80) OR (tm.id != 2 AND aa.asistencia >= 60))
+                        AND aa.asistencia >= tm.asistencia
                     ) c1 ON c1.id_materia = ma.id
                     LEFT JOIN (
                         SELECT ma.id AS id_materia, fi.nota, fi.libro, fi.folio
