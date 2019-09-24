@@ -141,7 +141,7 @@ export class CursadasController {
                 // Muestra todas las cursadas
                 query = `
                     SELECT C.id, C.anio AS anio_cursada, C.fecha_inicio, C.fecha_limite, 
-                        M.nombre AS materia, M.anio AS anio_materia, ca.nombre AS carrera, ca.id AS id_carrera, c.nombre_corto, c.resolucion,
+                        M.nombre AS materia, M.anio AS anio_materia, ca.nombre AS carrera, ca.id AS id_carrera, ca.nombre_corto, ca.resolucion,
                         CONCAT_WS(', ', U.apellido, U.nombre) AS profesor, P.id AS id_profesor, h.horarios, ic.cant_inscriptos
                     FROM cursadas C
                     INNER JOIN materias M ON M.id = C.id_materia
