@@ -328,7 +328,7 @@ export class MesasController {
             } else {
                 query = `
                     SELECT me.id, ma.nombre AS materia, ma.anio AS anio_materia, me.fecha_inicio, me.fecha_limite, 
-                        me.fecha_examen, ca.nombre AS carrera, ca.id AS id_carrera,
+                        me.fecha_examen, ca.nombre AS carrera, ca.id AS id_carrera, ca.nombre_corto, ca.resolucion,
                         CONCAT_WS(', ', us.apellido, us.nombre) AS profesor, pf.id AS id_profesor,
                         CONCAT_WS(', ', us1.apellido, us1.nombre) AS vocal1, v1.id AS id_vocal1,
                         CONCAT_WS(', ', us2.apellido, us2.nombre) AS vocal2, v2.id AS id_vocal2,
@@ -361,7 +361,7 @@ export class MesasController {
                         GROUP BY m.id
                     ) AS ir ON ir.id_mesa = me.id
                     GROUP BY me.id, ma.nombre, ma.anio, me.fecha_inicio, me.fecha_limite, 
-                        me.fecha_examen, ca.nombre, ca.id,
+                        me.fecha_examen, ca.nombre, ca.id, ca.nombre_corto, ca.resolucion,
                         CONCAT_WS(', ', us.apellido, us.nombre), pf.id,
                         CONCAT_WS(', ', us1.apellido, us1.nombre), v1.id,
                         CONCAT_WS(', ', us2.apellido, us2.nombre), v2.id,
