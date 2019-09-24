@@ -226,8 +226,8 @@ export class MateriasController {
             const id = +req.params.id;
             const materia: Materia = req.body.materia;
             if (id) {
-                const query = `UPDATE materias SET nombre = $1, anio = $2, horas = $3 WHERE id = $4`;
-                await this.db.none(query, [materia.nombre, materia.anio, materia.horas, id]);
+                const query = `UPDATE materias SET nombre = $1, anio = $2, horas = $3, id_tipo = $4 WHERE id = $5`;
+                await this.db.none(query, [materia.nombre, materia.anio, materia.horas, materia.id_tipo, id]);
                 res.status(200).json({
                     mensaje: "Se modificó la materia correctamente",
                 });
