@@ -106,7 +106,7 @@ export class HelperService {
                     SELECT c.anio
                     FROM cursadas c 
                     WHERE c.id = $1`;
-                const resultado = await this.db.one<{anio: number}>(query, [id_cursada]);
+                const resultado = await this.db.one<{ anio: number }>(query, [id_cursada]);
                 resolve(resultado.anio);
             } catch (error) {
                 reject(error);
@@ -290,7 +290,7 @@ export class HelperService {
                         AND ic.id_alumno = $2
                         AND ((aa.nota_cuat_1 >=4 and aa.nota_cuat_2 >=4) OR (aa.nota_recuperatorio >=4))
                         AND aa.asistencia >= tm.asistencia;`;
-                    const respuesta = await this.db.oneOrNone<{anio: number}>(query, [id_materia, id_alumno]);
+                    const respuesta = await this.db.oneOrNone<{ anio: number }>(query, [id_materia, id_alumno]);
                     if (respuesta) {
                         const año_cursada = respuesta.anio;
                         const fecha_limite = new Date('1/5/' + (año_cursada + 6));
@@ -370,7 +370,7 @@ export class HelperService {
                     FROM materias ma
                     INNER JOIN tipos_materias tm ON tm.id = ma.id_tipo
                     WHERE ma.id = $1;`
-                const respuesta = await this.db.one<{libre: boolean}>(query, [id_materia]);
+                const respuesta = await this.db.one<{ libre: boolean }>(query, [id_materia]);
                 resolve(respuesta.libre);
             } catch (error) {
                 reject(error);
@@ -389,7 +389,7 @@ export class HelperService {
                         FROM materias m
                         WHERE m.id = $1
                     ) AS m2 ON m2.anio = m.anio AND m2.id_carrera = m.id_carrera;`;
-                const respuesta = await this.db.one<{cantidad: number}>(query, [id_materia]);
+                const respuesta = await this.db.one<{ cantidad: number }>(query, [id_materia]);
                 resolve(respuesta.cantidad);
             } catch (error) {
                 reject(error);
@@ -408,7 +408,7 @@ export class HelperService {
                     AND ic.cursa = false
                     AND ic.recursa = false
                     AND c.anio = $2`;
-                const respuesta = await this.db.one<{cantidad: number}>(query, [id_alumno, año]);
+                const respuesta = await this.db.one<{ cantidad: number }>(query, [id_alumno, año]);
                 resolve(respuesta.cantidad);
             } catch (error) {
                 reject(error);
@@ -464,6 +464,80 @@ export class HelperService {
             }
         });
     }
+
+    private async materias_por_año(id_materia: number, año: number): Promise<{id: number, nombre: string}[]> {
+        return new Promise(async (resolve, reject) => {
+            try {
+                const query = `
+                        SELECT m.id, m.nombre
+                        FROM materias m
+                        INNER JOIN (
+                            SELECT c.id AS id_carrera
+                            FROM carreras c
+                            INNER JOIN materias m ON m.id_carrera = c.id
+                            WHERE m.id = $1
+                        ) AS m2 ON m2.id_carrera = m.id_carrera
+                        WHERE m.anio = $2;`
+                const materias = await this.db.manyOrNone(query, [id_materia, año]);
+                resolve(materias);
+            } catch (error) {
+                reject(error);
+            }
+        });
+    }
+
+    public async cursadas_año_aprobadas(id_alumno: number, id_materia: number, año: number): Promise<true | string> {
+        return new Promise(async (resolve, reject) => {
+            try {
+                if (año - 2 > 0) {
+                    const materias = await this.materias_por_año(id_materia, año-2);
+                    let respuesta: true | string = true;
+                    for (const materia of materias) {
+                        const aprobada = await this.cursada_aprobada(materia.id, id_alumno);
+                        if (!aprobada) {
+                            if (respuesta === true) {
+                                respuesta = materia.nombre
+                            } else {
+                                respuesta = respuesta + ', ' + materia.nombre;
+                            }
+                        }
+                    }
+                    resolve(respuesta)
+                } else {
+                    resolve(true);
+                }
+            } catch (error) {
+                reject(error);
+            }
+        });
+    }
+
+    public async finales_año_aprobadas(id_alumno: number, id_materia: number, año: number): Promise<true | string> {
+        return new Promise(async (resolve, reject) => {
+            try {
+                if (año - 2 > 0) {
+                    const materias = await this.materias_por_año(id_materia, año-2);
+                    let respuesta: true | string = true;
+                    for (const materia of materias) {
+                        const aprobada = await this.final_aprobado(materia.id, id_alumno);
+                        if (!aprobada) {
+                            if (respuesta === true) {
+                                respuesta = materia.nombre
+                            } else {
+                                respuesta = respuesta + ', ' + materia.nombre;
+                            }
+                        }
+                    }
+                    resolve(respuesta)
+                } else {
+                    resolve(true);
+                }
+            } catch (error) {
+                reject(error);
+            }
+        });
+    }
+
 
     public async final_libre(id_materia: number, id_alumno: number, fecha_examen: string): Promise<boolean> {
         return new Promise(async (resolve, reject) => {

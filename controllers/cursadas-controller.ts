@@ -319,23 +319,30 @@ export class CursadasController {
                             const correlativas_aprobadas = await this.helper.cursadas_correlativas_aprobadas(id_materia, id_alumno);
                             if (correlativas_aprobadas === true) {
                                 const año_cursada = await this.helper.get_año_cursada(id_cursada);
-                                const recursa = await this.helper.recursa(id_materia, id_alumno, año_cursada);
-                                if (!cursa) {
-                                    const permite_libre = await this.helper.permite_inscripcion_libre(id_materia, id_alumno, año_cursada, recursa);
-                                    if (permite_libre === true) {
+                                const cursadas_años_anteriores_aprobadas = await this.helper.cursadas_año_aprobadas(id_alumno, id_materia, año_cursada);
+                                if (cursadas_años_anteriores_aprobadas === true) {
+                                    const recursa = await this.helper.recursa(id_materia, id_alumno, año_cursada);
+                                    if (!cursa) {
+                                        const permite_libre = await this.helper.permite_inscripcion_libre(id_materia, id_alumno, año_cursada, recursa);
+                                        if (permite_libre === true) {
+                                            await this.helper.realizar_inscripcion_cursada(id_alumno, id_cursada, cursa, equivalencia, recursa);
+                                            res.status(200).json({
+                                                mensaje: 'Inscripción a cursada creada!',
+                                            });
+                                        } else {
+                                            res.status(400).json({
+                                                mensaje: permite_libre,
+                                            });
+                                        }
+                                    } else {
                                         await this.helper.realizar_inscripcion_cursada(id_alumno, id_cursada, cursa, equivalencia, recursa);
                                         res.status(200).json({
                                             mensaje: 'Inscripción a cursada creada!',
                                         });
-                                    } else {
-                                        res.status(400).json({
-                                            mensaje: permite_libre,
-                                        });
                                     }
                                 } else {
-                                    await this.helper.realizar_inscripcion_cursada(id_alumno, id_cursada, cursa, equivalencia, recursa);
-                                    res.status(200).json({
-                                        mensaje: 'Inscripción a cursada creada!',
+                                    res.status(400).json({
+                                        mensaje: 'No posee las siguientes cursadas de ' + (año_cursada-2) + ' aprobadas ' + cursadas_años_anteriores_aprobadas,
                                     });
                                 }
                             } else {
