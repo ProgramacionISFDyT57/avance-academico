@@ -549,7 +549,9 @@ export class HelperService {
                     INNER JOIN materias m ON m.id = c.id_materia
                     WHERE m.id = $1
                     AND ic.cursa = false
-                    AND ic.id_alumno = $2;`
+                    AND ic.id_alumno = $2
+                    ORDER BY c.anio DESC
+                    LIMIT 1;`
                 const respuesta = await this.db.oneOrNone(query, [id_materia, id_alumno]);
                 if (respuesta) {
                     const año_cursada = respuesta.anio;
