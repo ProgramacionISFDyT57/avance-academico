@@ -295,14 +295,12 @@ export class MesasController {
             if (id_alumno) {
                 query = `
                     SELECT me.id, ma.nombre AS materia, ma.anio AS anio_materia, me.fecha_inicio, me.fecha_limite, 
-                        me.fecha_examen, ca.nombre AS carrera, ca.id AS id_carrera, im2.id AS id_inscripcion_mesa, ca.nombre_corto, ca.resolucion,
+                        me.fecha_examen, ca.nombre AS carrera, ca.id AS id_carrera, im.id AS id_inscripcion_mesa, ca.nombre_corto, ca.resolucion,
                         CONCAT_WS(', ', us.apellido, us.nombre) AS profesor,
                         CONCAT_WS(', ', us1.apellido, us1.nombre) AS vocal1,
                         CONCAT_WS(', ', us2.apellido, us2.nombre) AS vocal2,
                         fi.nota, fi.libro, fi.folio, ma.id AS id_materia
                     FROM mesas me 
-                    LEFT JOIN inscripciones_mesa im ON im.id_mesa = me.id
-                    LEFT JOIN inscripciones_mesa im2 ON im2.id_mesa = me.id AND im2.id_alumno = $1
                     INNER JOIN materias ma ON ma.id = me.id_materia
                     INNER JOIN carreras ca ON ca.id = ma.id_carrera
                     INNER JOIN carreras_abiertas caa ON caa.id_carrera = ca.id
@@ -313,11 +311,12 @@ export class MesasController {
                     LEFT JOIN usuarios us1 ON us1.id = v1.id_usuario
                     LEFT JOIN profesores v2 ON v2.id = me.id_vocal2
                     LEFT JOIN usuarios us2 ON us2.id = v2.id_usuario
-                    LEFT JOIN finales fi ON fi.id_inscripcion_mesa = im2.id
+                    LEFT JOIN inscripciones_mesa im ON im.id_mesa = me.id AND im.id_alumno = $1
+                    LEFT JOIN finales fi ON fi.id_inscripcion_mesa = im.id
                     WHERE ica.id_alumno = $1
                     AND current_timestamp BETWEEN me.fecha_inicio AND me.fecha_limite
                     AND date_part('year', me.fecha_examen) >= caa.cohorte
-                    ORDER BY me.fecha_examen DESC, ca.nombre, ma.anio, ma.nombre`;
+                    ORDER BY me.fecha_examen DESC, ca.nombre, ma.anio, ma.nombre;`;
                 const mesasTodas = await this.db.manyOrNone(query, [id_alumno]);
                 for (const mesa of mesasTodas) {
                     const finalAprobado = await this.helper.final_aprobado(mesa.id_materia, id_alumno);
