@@ -293,7 +293,7 @@ export class HelperService {
                     const respuesta = await this.db.oneOrNone<{ anio: number }>(query, [id_materia, id_alumno]);
                     if (respuesta) {
                         const año_cursada = respuesta.anio;
-                        const fecha_limite = new Date('1/5/' + (año_cursada + 6));
+                        const fecha_limite = new Date('5/5/' + (año_cursada + 6));
                         const fecha_actual = new Date();
                         if (fecha_actual < fecha_limite) {
                             resolve(true);
@@ -555,7 +555,7 @@ export class HelperService {
                 const respuesta = await this.db.oneOrNone(query, [id_materia, id_alumno]);
                 if (respuesta) {
                     const año_cursada = respuesta.anio;
-                    const fecha_limite = new Date('1/5/' + (año_cursada + 1));
+                    const fecha_limite = new Date('5/5/' + (año_cursada + 1));
                     const f_examen = new Date(fecha_examen);
                     if (f_examen < fecha_limite) {
                         resolve(true);
