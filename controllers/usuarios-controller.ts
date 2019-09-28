@@ -522,7 +522,8 @@ export class UsuariosController {
                             'asistencia', c1.asistencia, 
                             'final', c2.nota,
                             'libro', c2.libro,
-                            'folio', c2.folio
+                            'folio', c2.folio,
+                            'fecha_examen', c2.fecha_examen
                         ) ORDER BY ma.anio, ma.nombre) AS materias
                     FROM alumnos al
                     INNER JOIN usuarios us ON us.id = al.id_usuario               
@@ -543,7 +544,7 @@ export class UsuariosController {
                         AND aa.asistencia >= tm.asistencia
                     ) c1 ON c1.id_materia = ma.id
                     LEFT JOIN (
-                        SELECT ma.id AS id_materia, fi.nota, fi.libro, fi.folio
+                        SELECT ma.id AS id_materia, fi.nota, fi.libro, fi.folio, me.fecha_examen
                         FROM inscripciones_mesa ime
                         INNER JOIN mesas me ON me.id = ime.id_mesa
                         INNER JOIN materias ma ON ma.id = me.id_materia
