@@ -317,7 +317,6 @@ export class MesasController {
                     WHERE ica.id_alumno = $1
                     AND current_timestamp BETWEEN me.fecha_inicio AND me.fecha_limite
                     AND date_part('year', me.fecha_examen) >= caa.cohorte
-                    AND date_part('year', me.fecha_examen) = $2
                     ORDER BY me.fecha_examen DESC, ca.nombre, ma.anio, ma.nombre;`;
                 const mesasTodas = await this.db.manyOrNone(query, [id_alumno, anio]);
                 for (const mesa of mesasTodas) {

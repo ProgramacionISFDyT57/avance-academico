@@ -123,7 +123,6 @@ export class CursadasController {
                     WHERE ica.id_alumno = $1
                     AND current_timestamp BETWEEN cu.fecha_inicio AND cu.fecha_limite
                     AND cu.anio >= ca.cohorte
-                    AND cu.anio = $2
                     GROUP BY cu.id, cu.anio, cu.fecha_inicio, cu.fecha_limite, M.id,
                         M.nombre, M.anio, c.nombre, c.id, c.nombre_corto, c.resolucion,
                         CONCAT_WS(', ', U.apellido, U.nombre), ic2.id, ic2.cursa,
