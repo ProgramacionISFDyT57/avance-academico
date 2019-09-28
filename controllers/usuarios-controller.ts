@@ -32,6 +32,7 @@ export class UsuariosController {
         // Otros
         this.cambiar_contraseña = this.cambiar_contraseña.bind(this);
         this.resetear_contraseña = this.resetear_contraseña.bind(this);
+        this.resetear_contraseña_alumno = this.resetear_contraseña_alumno.bind(this);
         this.listar_roles = this.listar_roles.bind(this);
         this.avance_academico = this.avance_academico.bind(this);
     }
@@ -469,6 +470,31 @@ export class UsuariosController {
             let query = `SELECT dni FROM usuarios WHERE id = $1`;
             const result = await this.db.one(query, [id_usuario]);
             const dni = result.dni;
+            const hash = await bcrypt.hash(dni, 10);
+            query = `UPDATE usuarios SET clave = $1 WHERE id = $2`;
+            await this.db.none(query, [hash, id_usuario]);
+            res.status(200).json({
+                mensaje: "Reseteo de contraseña exitoso",
+            });
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({
+                mensaje: 'Ocurrio un error al resetear la contraseña',
+                error
+            });
+        }
+    }
+    public async resetear_contraseña_alumno(req: Request, res: Response) {
+        try {
+            const id_alumno = req.params.id_alumno;
+            let query = `
+                SELECT u.dni, u.id
+                FROM usuarios u
+                INNER JOIN alumnos a ON a.id_usuario = u.id
+                WHERE a.id = $1`;
+            const result = await this.db.one(query, [id_alumno]);
+            const dni = result.dni;
+            const id_usuario = result.id;
             const hash = await bcrypt.hash(dni, 10);
             query = `UPDATE usuarios SET clave = $1 WHERE id = $2`;
             await this.db.none(query, [hash, id_usuario]);
