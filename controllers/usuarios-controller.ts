@@ -44,6 +44,8 @@ export class UsuariosController {
                 SELECT U.id, U.nombre, U.apellido, U.email, U.fecha_nacimiento, U.fecha_alta, U.telefono, U.dni, R.nombre AS rol, U.domicilio, U.activo
                 FROM usuarios U
                 INNER JOIN roles R ON U.id_rol = R.id
+                WHERE R.nombre != 'alumno'
+                AND R.nombre != 'admin'
                 ORDER BY U.apellido, U.nombre`;
             const usuarios = await this.db.manyOrNone(query);
             res.json(usuarios);
