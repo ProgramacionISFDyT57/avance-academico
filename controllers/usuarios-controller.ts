@@ -25,6 +25,7 @@ export class UsuariosController {
         this.listar_profesores_por_anio = this.listar_profesores_por_anio.bind(this);
         // Alumnos
         this.listar_alumnos = this.listar_alumnos.bind(this);
+        this.listar_alumnos_inscripcion = this.listar_alumnos_inscripcion.bind(this);
         this.listar_alumnos_por_carrera = this.listar_alumnos_por_carrera.bind(this);
         this.crear_alumno = this.crear_alumno.bind(this);
         this.editar_alumno = this.editar_alumno.bind(this);
@@ -300,6 +301,23 @@ export class UsuariosController {
             console.error(error);
             res.status(500).json({
                 mensaje: 'Ocurrio un error al listar los alumnos',
+                error
+            });
+        }
+    }
+    public async listar_alumnos_inscripcion(req: Request, res: Response) {
+        try {
+            const query = `
+                SELECT a.id AS id_alumno, concat(u.apellido, ', ', u.nombre, ' (', u.dni ,')') AS nombre_completo,
+                FROM alumnos a
+                INNER JOIN usuarios u ON u.id = a.id_usuario
+                ORDER BY concat(u.apellido, ', ', u.nombre, ' (', u.dni ,')');`
+            const alumnos = await this.db.manyOrNone(query);
+            res.json(alumnos);
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({
+                mensaje: 'Ocurrio un error al listar los alumnos para inscripción',
                 error
             });
         }

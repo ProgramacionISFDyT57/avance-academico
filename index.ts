@@ -44,6 +44,7 @@ app.get("/profesores/:anio", seguridadController.chequear_roles(), usuariosContr
 app.get("/profesores/:anio/:dia", seguridadController.chequear_roles(), usuariosController.listar_profesores_por_dia);
 // ALUMNOS
 app.get("/alumnos", seguridadController.chequear_roles(['directivo', 'preceptor']), usuariosController.listar_alumnos);
+app.get("/alumnos_inscripcion", seguridadController.chequear_roles(['directivo', 'preceptor']), usuariosController.listar_alumnos_inscripcion);
 app.get("/alumnos_por_carrera/:id_carrera", seguridadController.chequear_roles(['directivo', 'preceptor']), usuariosController.listar_alumnos_por_carrera);
 app.post("/alumnos", seguridadController.chequear_roles(['directivo', 'preceptor']), usuariosController.crear_alumno);
 app.put("/alumnos/:id_alumno", seguridadController.chequear_roles(['directivo', 'preceptor']), usuariosController.editar_alumno);
