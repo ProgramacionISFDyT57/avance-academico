@@ -91,6 +91,7 @@ export class CursadasController {
     }
     public async listar_cursadas(req: Request, res: Response) {
         try {
+            const anio = req.params.anio || new Date().getFullYear();
             const token: Token = res.locals.token;
             const id_alumno = +token.id_alumno;
             let query;
@@ -122,12 +123,13 @@ export class CursadasController {
                     WHERE ica.id_alumno = $1
                     AND current_timestamp BETWEEN cu.fecha_inicio AND cu.fecha_limite
                     AND cu.anio >= ca.cohorte
+                    AND cu.anio = $2
                     GROUP BY cu.id, cu.anio, cu.fecha_inicio, cu.fecha_limite, M.id,
                         M.nombre, M.anio, c.nombre, c.id, c.nombre_corto, c.resolucion,
                         CONCAT_WS(', ', U.apellido, U.nombre), ic2.id, ic2.cursa,
                         aa.nota_cuat_1, aa.nota_cuat_2, aa.nota_recuperatorio, aa.asistencia, tm.nombre
                     ORDER BY cu.anio DESC, c.nombre, M.anio, M.nombre`;
-                const cursadasTodas = await this.db.manyOrNone(query, [id_alumno]);
+                const cursadasTodas = await this.db.manyOrNone(query, [id_alumno, anio]);
                 for (const cursada of cursadasTodas) {
                     if (cursada.horarios[0].dia === null) {
                         cursada.horarios = [];
@@ -165,8 +167,9 @@ export class CursadasController {
                         LEFT JOIN horarios h ON h.id_cursada = c.id
                         GROUP BY c.id
                     ) AS h ON h.id_cursada = C.id
+                    WHERE C.anio = $1
                     ORDER BY C.anio DESC, ca.nombre, M.anio, M.nombre`;
-                cursadas = await this.db.manyOrNone(query);
+                cursadas = await this.db.manyOrNone(query, [anio]);
                 for (const cursada of cursadas) {
                     if (cursada.horarios[0].dia === null) {
                         cursada.horarios = [];

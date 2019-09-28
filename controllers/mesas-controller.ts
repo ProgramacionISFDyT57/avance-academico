@@ -288,6 +288,7 @@ export class MesasController {
     // Mesas
     public async lista_mesas(req: Request, res: Response) {
         try {
+            const anio = req.params.anio || new Date().getFullYear();
             const token: Token = res.locals.token;
             const id_alumno = +token.id_alumno;
             let query;
@@ -316,8 +317,9 @@ export class MesasController {
                     WHERE ica.id_alumno = $1
                     AND current_timestamp BETWEEN me.fecha_inicio AND me.fecha_limite
                     AND date_part('year', me.fecha_examen) >= caa.cohorte
+                    AND date_part('year', me.fecha_examen) = $2
                     ORDER BY me.fecha_examen DESC, ca.nombre, ma.anio, ma.nombre;`;
-                const mesasTodas = await this.db.manyOrNone(query, [id_alumno]);
+                const mesasTodas = await this.db.manyOrNone(query, [id_alumno, anio]);
                 for (const mesa of mesasTodas) {
                     const finalAprobado = await this.helper.final_aprobado(mesa.id_materia, id_alumno);
                     if (!finalAprobado) {
@@ -359,6 +361,7 @@ export class MesasController {
                         WHERE im.libre = false
                         GROUP BY m.id
                     ) AS ir ON ir.id_mesa = me.id
+                    WHERE date_part('year', me.fecha_examen) = $1
                     GROUP BY me.id, ma.nombre, ma.anio, me.fecha_inicio, me.fecha_limite, 
                         me.fecha_examen, ca.nombre, ca.id, ca.nombre_corto, ca.resolucion,
                         CONCAT_WS(', ', us.apellido, us.nombre), pf.id,
@@ -366,7 +369,7 @@ export class MesasController {
                         CONCAT_WS(', ', us2.apellido, us2.nombre), v2.id,
                         il.inscripciones_libres, ir.inscripciones_regulares
                     ORDER BY me.fecha_examen DESC, ca.nombre, ma.anio, ma.nombre`;
-                mesas = await this.db.manyOrNone(query);
+                mesas = await this.db.manyOrNone(query, [anio]);
             }
             res.status(200).json(mesas);
         } catch (error) {

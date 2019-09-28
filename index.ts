@@ -81,6 +81,7 @@ app.delete("/inscripciones_carreras/:id_inscripcion", seguridadController.cheque
 // CURSADAS ABIERTAS
 //////////////////////////////////////////////////////////////////////////////////////
 app.get("/cursadas_abiertas", seguridadController.chequear_roles(), cursadasController.listar_cursadas);
+app.get("/cursadas_abiertas/:anio", seguridadController.chequear_roles(), cursadasController.listar_cursadas);
 app.post("/cursadas", seguridadController.chequear_roles(['directivo', 'preceptor']), cursadasController.crear_cursada);
 app.put("/cursadas/:id_cursada", seguridadController.chequear_roles(['directivo', 'preceptor']), cursadasController.editar_cursada);
 app.delete("/cursadas/:id_cursada", seguridadController.chequear_roles(['directivo', 'preceptor']), cursadasController.eliminar_cursada);
@@ -99,6 +100,7 @@ app.delete("/notas_cursada/:id_inscripcion_cursada", seguridadController.chequea
 // MESAS
 //////////////////////////////////////////////////////////////////////////////////////
 app.get("/lista_mesas", seguridadController.chequear_roles(), mesasController.lista_mesas);
+app.get("/lista_mesas/:anio", seguridadController.chequear_roles(), mesasController.lista_mesas);
 app.post("/crear_mesa", seguridadController.chequear_roles(['directivo', 'preceptor']), mesasController.crear_mesa);
 app.put("/mesas/:id_mesa", seguridadController.chequear_roles(['directivo', 'preceptor']), mesasController.editar_mesa);
 app.delete("/mesas/:id_mesa", seguridadController.chequear_roles(['directivo', 'preceptor']), mesasController.eliminar_mesa);
