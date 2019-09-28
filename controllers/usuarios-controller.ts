@@ -221,7 +221,8 @@ export class UsuariosController {
                     'modulos', h.modulos, 
                     'materia', m.nombre, 
                     'anio', m.anio,
-                    'carrera', ca.nombre
+                    'carrera', ca.nombre,
+                    'carrera_nombre_corto', ca.nombre_corto
                 ) ORDER BY h.dia, h.hora_inicio) AS detalle
             FROM usuarios u
             INNER JOIN profesores p ON p.id_usuario = u.id
@@ -255,7 +256,8 @@ export class UsuariosController {
                         'modulos', h.modulos, 
                         'materia', m.nombre, 
                         'anio', m.anio,
-                        'carrera', ca.nombre
+                        'carrera', ca.nombre,
+                        'carrera_nombre_corto', ca.nombre_corto
                     ) ORDER BY h.dia, h.hora_inicio) AS detalle
                 FROM usuarios u
                 INNER JOIN profesores p ON p.id_usuario = u.id
