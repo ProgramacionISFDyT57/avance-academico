@@ -308,7 +308,7 @@ export class UsuariosController {
     public async listar_alumnos_inscripcion(req: Request, res: Response) {
         try {
             const query = `
-                SELECT a.id AS id_alumno, concat(u.apellido, ', ', u.nombre, ' (', u.dni ,')') AS nombre_completo,
+                SELECT a.id AS id_alumno, concat(u.apellido, ', ', u.nombre, ' (', u.dni ,')') AS nombre_completo
                 FROM alumnos a
                 INNER JOIN usuarios u ON u.id = a.id_usuario
                 ORDER BY concat(u.apellido, ', ', u.nombre, ' (', u.dni ,')');`
