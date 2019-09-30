@@ -388,17 +388,24 @@ export class CursadasController {
             if (id_alumno) {
                 if (id_cursada) {
                     const id_materia = await this.helper.get_id_materia(id_cursada);
-                    const correlativas_aprobadas = await this.helper.cursadas_correlativas_aprobadas(id_materia, id_alumno);
-                    const año_cursada = await this.helper.get_año_cursada(id_cursada);
-                    const recursa = await this.helper.recursa(id_materia, id_alumno, año_cursada);
-                    if (correlativas_aprobadas === true) {
-                        await this.helper.realizar_inscripcion_cursada(id_alumno, id_cursada, cursa, equivalencia, recursa);
-                        res.status(200).json({
-                            mensaje: 'Inscripción a cursada creada!',
-                        });
+                    const cursada_aprobada = await this.helper.cursada_aprobada(id_materia, id_alumno);
+                    if (!cursada_aprobada) {
+                        const correlativas_aprobadas = await this.helper.cursadas_correlativas_aprobadas(id_materia, id_alumno);
+                        const año_cursada = await this.helper.get_año_cursada(id_cursada);
+                        const recursa = await this.helper.recursa(id_materia, id_alumno, año_cursada);
+                        if (correlativas_aprobadas === true) {
+                            await this.helper.realizar_inscripcion_cursada(id_alumno, id_cursada, cursa, equivalencia, recursa);
+                            res.status(200).json({
+                                mensaje: 'Inscripción a cursada creada!',
+                            });
+                        } else {
+                            res.status(400).json({
+                                mensaje: 'No posee las siguientes correlativas aprobadas: ' + correlativas_aprobadas,
+                            });
+                        }
                     } else {
                         res.status(400).json({
-                            mensaje: 'No posee las siguientes correlativas aprobadas: ' + correlativas_aprobadas,
+                            mensaje: 'Ya posee la materia aprobada',
                         });
                     }
                 } else {
@@ -408,7 +415,7 @@ export class CursadasController {
                 }
             } else {
                 res.status(400).json({
-                    mensaje: 'El usuario no es un alumno',
+                    mensaje: 'ID de alumno inválido',
                 });
             }
         } catch (error) {
