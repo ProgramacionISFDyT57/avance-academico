@@ -101,7 +101,7 @@ export class CursadasController {
                 query = `
                     SELECT cu.id, cu.anio AS anio_cursada, cu.fecha_inicio, cu.fecha_limite, M.id AS id_materia,
                         M.nombre AS materia, M.anio AS anio_materia, c.nombre AS carrera, c.id AS id_carrera, c.nombre_corto, c.resolucion,
-                        CONCAT_WS(', ', U.apellido, U.nombre) AS profesor, ic2.id AS id_inscripcion_cursada, ic2.cursa,
+                        CONCAT_WS(', ', U.apellido, U.nombre) AS profesor, ic.id AS id_inscripcion_cursada, ic.cursa,
                         aa.nota_cuat_1, aa.nota_cuat_2, aa.nota_recuperatorio, aa.asistencia, tm.nombre AS tipo_materia,
                         json_agg(json_build_object( 
                             'dia', h.dia, 
@@ -116,16 +116,15 @@ export class CursadasController {
                     INNER JOIN inscripciones_carreras ica ON ica.id_carrera_abierta = ca.id
                     LEFT JOIN profesores P ON P.id = cu.id_profesor
                     LEFT JOIN usuarios U ON U.id = P.id_usuario
-                    LEFT JOIN inscripciones_cursadas ic ON ic.id_cursada = cu.id
-                    LEFT JOIN inscripciones_cursadas ic2 ON ic2.id_cursada = cu.id AND ic2.id_alumno = $1
-                    LEFT JOIN avance_academico aa ON aa.id_inscripcion_cursada = ic2.id
+                    LEFT JOIN inscripciones_cursadas ic ON ic.id_cursada = cu.id AND ic.id_alumno = $1
+                    LEFT JOIN avance_academico aa ON aa.id_inscripcion_cursada = ic.id
                     LEFT JOIN horarios h ON h.id_cursada = cu.id
                     WHERE ica.id_alumno = $1
                     AND current_timestamp BETWEEN cu.fecha_inicio AND cu.fecha_limite
                     AND cu.anio >= ca.cohorte
                     GROUP BY cu.id, cu.anio, cu.fecha_inicio, cu.fecha_limite, M.id,
                         M.nombre, M.anio, c.nombre, c.id, c.nombre_corto, c.resolucion,
-                        CONCAT_WS(', ', U.apellido, U.nombre), ic2.id, ic2.cursa,
+                        CONCAT_WS(', ', U.apellido, U.nombre), ic.id, ic.cursa,
                         aa.nota_cuat_1, aa.nota_cuat_2, aa.nota_recuperatorio, aa.asistencia, tm.nombre
                     ORDER BY cu.anio DESC, c.nombre, M.anio, M.nombre`;
                 const cursadasTodas = await this.db.manyOrNone(query, [id_alumno, anio]);
