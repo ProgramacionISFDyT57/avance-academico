@@ -14,7 +14,7 @@
   "dependencies": {
     "bcrypt": "^3.0.2",
     "cors": "^2.8.5",
-    "express": "^4.16.3",
+    "express": "^4.17.3",
     "jsonwebtoken": "^8.3.0",
     "pg-promise": "^8.5.0",
     "typescript": "^3.1.3"
